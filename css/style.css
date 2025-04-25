@@ -1,3 +1,7 @@
+* {
+    -webkit-tap-highlight-color: transparent;
+  }
+
 body {
   background: black;
   font-family: 'Exo 2', sans-serif;
@@ -12,6 +16,20 @@ a {
   text-decoration: none;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
+::-moz-selection {
+  color: red;
+  background: green;
+}
+
+::selection {
+  color: greenyellow;
+  background: transparent;
+}
+
 .size-box {
   height: 1vw;
 }
@@ -22,8 +40,11 @@ h2 {
   text-align: center;
 }
 
+
 .loader{
-  background: black;
+  top: 0;
+  height: 100dvh;
+  background: rgb(0, 0, 0);
 }
 
 .grid {
@@ -41,10 +62,10 @@ h2 {
   overflow: hidden;
   color: rgb(214, 214, 214);
   border-radius: 2em;
-  box-shadow: 0 0 15px 10px rgb(50, 54, 57);
   background-color: #1a1a1a;
   cursor: pointer;
   transform: scale(1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2);
   transition: transform 0.3s ease-in-out;
 }
 
@@ -81,41 +102,20 @@ h2 {
   font-weight: 600;
 }
 
-.skeleton {
-  position: absolute;
-  inset: 0;
-  border-radius: 2em 2em 0 0;
-  background: linear-gradient(-90deg, #2a2a2a 0%, #3a3a3a 50%, #2a2a2a 100%);
-  background-size: 400% 400%;
-  animation: skeletonLoading 1.2s ease-in-out infinite;
-  z-index: 1;
-  aspect-ratio: 16 / 9;
-}
-
-@keyframes skeletonLoading {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: -100% 0;
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    column-gap: 5vw;
+    row-gap: 6vh;
+    margin: 7vh 6vw;
   }
 }
 
-.fade-in {
-  animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  transform: translateY(10px);
-  opacity: 0;
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-    filter: blur(3px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+@media (min-width: 768px) and (max-width: 1084px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 2fr));
+    column-gap: 5vw;
+    row-gap: 8vh;
+    margin: 7vh 6vw;
   }
 }
