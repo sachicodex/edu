@@ -74,6 +74,29 @@
 
     <!-- Canonical Tag -->
     <link rel="canonical" href="https://sachicodex.github.io/" />
+
+    <script>
+      // Sample JSON data for search
+      const educationData = [
+        { title: "Advanced Level Mathematics", description: "Studied advanced mathematics concepts including calculus and algebra." },
+        { title: "Physics for Engineers", description: "Focused on mechanics, thermodynamics, and electromagnetism." },
+        { title: "Chemistry Basics", description: "Covered organic and inorganic chemistry fundamentals." },
+        { title: "English Literature", description: "Analyzed classic and modern literary works." }
+      ];
+
+      // Function to handle search
+      function handleSearch() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const results = educationData.filter(item => item.title.toLowerCase().includes(query));
+        const resultsContainer = document.getElementById('searchResults');
+        resultsContainer.innerHTML = results.map(item => `
+          <div class="result-item">
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+          </div>
+        `).join('');
+      }
+    </script>
   </head>
   <body>
     <!-- Preloader -->
@@ -129,8 +152,17 @@
       </div>
     </div>
 
-    <div class="size-box"></div>
-    <h2>A/L EDUCATION SUMMARY</h2>
+    <!-- Search Section -->
+    <div class="search-container">
+      <div class="content">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search education topics..." />
+        <div id="suggestedItems" class="suggested-items"></div>
+      </div>
+    </div>
+
     <div class="grid" id="imageGrid"></div>
 
     <script src="https://sachicodex.github.io/js/preloader.js"></script>

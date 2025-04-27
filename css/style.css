@@ -47,9 +47,111 @@ h2 {
   background: rgb(0, 0, 0);
 }
 
+.search-container {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  padding: 1rem 2rem;
+  margin-right: 2rem;
+}
+
+.search-container .content {
+  position: relative;
+  width: 330px;
+}
+
+.search-container svg {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  fill: #aaa;
+  width: 1.5em;
+  height: 1.5em;
+  pointer-events: none; /* Prevent interaction with the icon */
+   transition: fill 0.3s ease;
+}
+
+.search-container .content:focus-within svg {
+  fill: #fff;
+}
+
+
+#searchInput {
+  width: 300px;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  font-size: 1rem;
+  border: 1px solid #333;
+  border-radius: 20px;
+  background-color: #121212;
+  color: #fff;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+#searchInput::placeholder {
+  color: #aaa;
+}
+
+#searchInput {
+  border-color: transparent; /* Hide border initially */
+  box-shadow: none; /* Hide shadow initially */
+}
+
+#searchInput:focus,
+#searchInput:not(:placeholder-shown) {
+  border-color: #ff0000; /* Show red border on focus or when input has content */
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8); /* Show shadow */
+}
+
+.no-suggestions {
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  text-align: center;
+}
+
+/* Suggested items styling */
+.suggested-items {
+  position: absolute;
+  margin-top: 0.5rem; /* Space between input and suggestions */
+  width: 363px; /* Match the width of the input field */
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.suggestion-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.suggestion-item:hover {
+  background-color: #333;
+  color: #fff;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr 1fr 1fr;
   column-gap: 3.5vw;
   row-gap: 10vh;
   margin: 7vh 5vw;
@@ -102,20 +204,60 @@ h2 {
   font-weight: 600;
 }
 
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    column-gap: 5vw;
-    row-gap: 6vh;
-    margin: 7vh 6vw;
-  }
-}
-
 @media (min-width: 768px) and (max-width: 1084px) {
   .grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 2fr));
+    grid-template-columns: 1fr 1fr;
     column-gap: 5vw;
     row-gap: 8vh;
     margin: 7vh 6vw;
   }
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    display: flex;
+    justify-content: center; /* Center the search container */
+    padding: 1rem 2rem;
+    position: relative; /* Ensure suggestions are positioned relative to this container */
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    column-gap: 5vw;
+    row-gap: 6vh;
+    margin: 7vh 6vw;
+  }
+
+  .search-container .content {
+  width: 100%;
+}
+
+
+#searchInput {
+  width: calc(100% - 2.1rem);
+}
+
+/* Suggested items styling */
+.suggested-items {
+  width: calc(100% + 2rem);
+}
+}
+
+.suggested-items.hidden {
+  display: none; /* Hide suggestions */
+}
+
+#searchInput:focus + .suggested-items {
+  display: block; /* Show suggestions when input is focused */
+}
+
+.suggested-items.hidden-scroll {
+  display: none; /* Hide suggestions when scrolling */
+}
+
+img {
+  user-select: none; /* Prevent text selection */
+  -webkit-user-drag: none; /* Disable dragging in WebKit browsers */
+  -moz-user-select: none; /* Prevent selection in Firefox */
+  -ms-user-select: none; /* Prevent selection in IE/Edge */
 }
