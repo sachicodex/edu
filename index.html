@@ -67,6 +67,59 @@
         .animate-fade-in-up {
             animation: fadeInMoveUp 0.3s ease-out forwards;
         }
+
+        /* Modal specific styles (removed as summary modal is removed) */
+        /*
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #1a202c;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease-out;
+            position: relative;
+            border: 1px solid #4a5568;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        */
     </style>
 </head>
 <body class="min-h-screen bg-gray-950 text-gray-100 font-inter overflow-x-hidden p-6">
@@ -145,10 +198,8 @@
                 id="sendMessageButton"
                 class="ml-2 p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:ring-offset-gray-800"
             >
-                <!-- Replaced Lucide icon with direct SVG for send icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m22 2-7 7m0 0-3 3m3-3L2 22l7-7m0 0 3-3"/>
-                </svg>
+                <!-- Changed to Lucide Send icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
             </button>
         </div>
     </div>
@@ -260,6 +311,8 @@
                 `;
                 tutorialGrid.insertAdjacentHTML('beforeend', cardHtml);
             });
+
+            // Removed event listeners for summary buttons as the feature is removed.
         }
 
         // --- AI Search Functionality ---
@@ -311,7 +364,8 @@ Examples of expected output based on various queries:
 
                 const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                 const payload = { contents: chatHistory };
-                const apiKey = ""; // Canvas will provide this at runtime
+                // --- IMPORTANT: Your Gemini API Key for GitHub Pages deployment ---
+                const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw"; // Re-inserted API Key
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -322,7 +376,7 @@ Examples of expected output based on various queries:
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error(`API Error: ${response.status} - ${response.statusText} - ${errorText}`); // Added status and statusText
+                    console.error(`API Error: ${response.status} - ${response.statusText} - ${errorText}`);
                     throw new Error(`API returned an error: ${response.statusText || 'Unknown Error'}`);
                 }
 
@@ -469,7 +523,8 @@ Examples of expected output based on various queries:
                     chatHistory.push({ role: "user", parts: [{ text: message }] });
 
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // Canvas will provide this at runtime. DO NOT put your actual key here.
+                    // --- IMPORTANT: Your Gemini API Key for GitHub Pages deployment ---
+                    const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw"; // Re-inserted API Key
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
@@ -480,7 +535,7 @@ Examples of expected output based on various queries:
 
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error(`Chatbot API Error: ${response.status} - ${response.statusText} - ${errorText}`); // Added status and statusText
+                        console.error(`Chatbot API Error: ${response.status} - ${response.statusText} - ${errorText}`);
                         throw new Error(`API returned an error: ${response.statusText || 'Unknown Error'}`);
                     }
 
@@ -557,6 +612,18 @@ Examples of expected output based on various queries:
                     sendChatMessage();
                 }
             });
+
+            // Removed event listeners for summary modal as the feature is removed.
+            // document.getElementById('closeSummaryModal').addEventListener('click', () => {
+            //     document.getElementById('summaryModal').style.display = 'none';
+            // });
+
+            // window.addEventListener('click', (event) => {
+            //     const summaryModal = document.getElementById('summaryModal');
+            //     if (event.target === summaryModal) {
+            //         summaryModal.style.display = 'none';
+            //     }
+            // });
         });
     </script>
 </body>
