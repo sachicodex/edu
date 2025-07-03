@@ -1,0 +1,14 @@
+{
+  "name": "learnsphere-tutorials",
+  "version": "1.0.0",
+  "description": "A web application for learning tutorials, with dynamic content loading.",
+  "main": "index.html",
+  "scripts": {
+    "generate-tutorials": "node generate-tutorial-list.js",
+    "start": "npm run generate-tutorials && http-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["tutorials", "web development", "design", "learning"],
+  "author": "Your Name",
+  "license": "ISC"
+}
