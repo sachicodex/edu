@@ -231,7 +231,6 @@
             border-radius: 50%;
             pointer-events: none; /* Allows clicks to pass through */
             z-index: 9999; /* Ensure it's on top */
-            /* Removed transform: translate(-50%, -50%) from here for the dot to be the true center */
             transition: transform 0.1s ease-out, opacity 0.2s ease-out; /* Add opacity transition */
         }
 
@@ -246,10 +245,10 @@
         #custom-cursor-circle {
             width: 30px;
             height: 30px;
-            border: 1px solid var(--color-purple-500); /* Purple border */
+            border: 2px solid var(--color-purple-500); /* Purple border */
             background-color: rgba(167, 139, 250, 0.1); /* Semi-transparent purple fill */
             /* Adjusted transition for smooth color change */
-            transition: transform 0.2s ease-out, opacity 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out;
+            transition: transform 0.1s ease-out, opacity 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out; /* Adjusted transition for tighter follow */
             opacity: 1; /* Default visible */
             transform: translate(-50%, -50%); /* Keep centered */
         }
@@ -404,6 +403,7 @@
             <input
                 type="text"
                 id="chatInput"
+                autocomplete="off"
                 placeholder="Type your message..."
                 class="flex-1 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
@@ -485,6 +485,7 @@
 
             if (tutorialsToRender.length === 0) {
                 noResultsMessage.classList.remove('hidden');
+                // Adjust message based on whether a search was performed or if it's truly empty
                 if (isSearching) {
                     noResultsMessage.textContent = 'Searching for tutorials...';
                 } else {
@@ -498,7 +499,7 @@
             tutorialsToRender.forEach((tutorial, index) => {
                 const cardHtml = `
                     <div class="bg-gray-900 rounded-xl shadow-xl overflow-hidden group hover:shadow-purple-500/50 hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out border border-gray-700 hover:border-purple-500 hover:ring-2 hover:ring-purple-500 relative tutorial-card animate-on-scroll"
-                        style="border: 1px solid var(--color-card-border);"> <!-- Using CSS variable for border color -->
+                        style="border: 2px solid var(--color-card-border);"> <!-- Using CSS variable for border color -->
                         <img
                             src="${tutorial.imageUrl}"
                             alt="${tutorial.title}"
@@ -548,19 +549,19 @@
         async function performAISearch(query) {
             isSearching = true;
             document.getElementById('searchLoader').classList.remove('hidden');
-            renderTutorials([]); // Show "Searching..." message
+            renderTutorials([]); // Show "Searching..." message (or "No tutorials found...")
 
             if (query.trim() === '') {
-                // If the query is empty, clear filtered tutorials and show no results message
-                filteredTutorials = [];
+                // If the query is empty, show all tutorials
+                filteredTutorials = [...allTutorials]; // FIX: Show all cards
                 isSearching = false;
-                renderTutorials(filteredTutorials); // This will now show "No tutorials found..."
+                renderTutorials(filteredTutorials);
                 document.getElementById('searchLoader').classList.add('hidden');
                 return;
             }
 
             try {
-                // Prompt for search functionality
+                // Prompt for search functionality - Enhanced for complex queries
                 const prompt = `You are an intelligent tutorial search assistant for LearnSphere. Your primary goal is to find the most relevant tutorial IDs based on a user's query, making the search experience user-friendly and highly engaging.
 
 Here is the list of available tutorials, including their IDs, titles, descriptions, and tags (which represent categories, subjects, and skill levels):
@@ -576,6 +577,7 @@ Instructions for Advanced Search:
     * **Category/Subject Inference:** Infer relevant categories or subjects from the refined query (e.g., 'wire' -> 'electronics', 'design' -> 'UI/UX', 'ML' -> 'Machine Learning', 'tax' -> 'Finance').
     * **Skill Level Detection:** Identify any specified skill levels (e.g., 'advanced', 'beginner', 'basics', 'mastering', 'intro').
     * **Synonym and Related Concepts:** Consider synonyms and closely related concepts to broaden the search intelligently.
+    * **Combine Criteria:** Understand and combine multiple criteria from the query (e.g., "beginner web development" should prioritize tutorials that are both beginner-friendly and cover web development).
 3.  **Relevance Matching:** Find the tutorial IDs that are most relevant based on a combination of:
     * Direct keyword matches (from the refined query).
     * Inferred categories/subjects.
@@ -612,27 +614,39 @@ Examples of expected output based on various queries:
 
                 const result = await response.json();
 
+                let aiResponse = '';
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
-                    const aiResponse = result.candidates[0].content.parts[0].text.trim();
-                    console.log("AI Search Response:", aiResponse);
-                    if (aiResponse.toLowerCase() === 'none' || aiResponse === '') {
-                        filteredTutorials = [];
-                    } else {
-                        const relevantIds = aiResponse.split(',').map(id => id.trim());
-                        filteredTutorials = allTutorials.filter(tutorial => relevantIds.includes(tutorial.id));
-                    }
+                    aiResponse = result.candidates[0].content.parts[0].text.trim();
+                }
+
+                console.log("AI Search Response:", aiResponse);
+
+                if (aiResponse.toLowerCase() === 'none' || aiResponse === '') {
+                    filteredTutorials = []; // No relevant IDs from AI, so show nothing
                 } else {
-                    console.warn("AI search response unexpected or empty, falling back to client-side search.");
-                    fallbackClientSideSearch(query);
+                    // Attempt to parse AI response as comma-separated IDs
+                    const relevantIds = aiResponse.split(',').map(id => id.trim());
+                    // Filter based on IDs returned by AI
+                    filteredTutorials = allTutorials.filter(tutorial => relevantIds.includes(tutorial.id));
+
+                    // If AI returned IDs but none matched existing tutorials, or if parsing failed to yield valid IDs,
+                    // consider a fallback or a more specific "no results" message.
+                    if (filteredTutorials.length === 0 && relevantIds.length > 0) {
+                        console.warn("AI returned IDs, but none matched existing tutorials. Falling back to client-side search.");
+                        // Fallback to client-side search if AI's IDs don't match anything
+                        fallbackClientSideSearch(query);
+                    }
                 }
             } catch (error) {
-                console.error('Error during AI search:', error);
-                appendMessage('bot', "Oops! Something went wrong on my end. Please try again later.");
+                console.error('Error during AI search or parsing AI response:', error);
+                // Fallback to client-side search on API error or parsing error
+                fallbackClientSideSearch(query);
+                // Removed: appendMessage('bot', "Oops! Something went wrong with the AI search. Falling back to basic search.");
             } finally {
                 isSearching = false;
-                renderTutorials(filteredTutorials);
+                renderTutorials(filteredTutorials); // Render whatever filteredTutorials ended up being
                 document.getElementById('searchLoader').classList.add('hidden');
             }
         }
@@ -923,7 +937,7 @@ Examples of expected output based on various queries:
             const target = e.target;
             const isStartTutorialLink = target.closest('.start-tutorial-link');
             const isTutorialCard = target.closest('.tutorial-card');
-            const isInputOrButton = target.tagName === 'BUTTON' || target.tagName === 'INPUT';
+            const isInputOrButton = target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.closest('button') || target.closest('a');
 
             // Reset all custom cursor classes first
             document.body.classList.remove('hide-custom-cursor');
@@ -963,8 +977,8 @@ Examples of expected output based on various queries:
         function animateCustomCursor() {
             // Lerp (linear interpolation) for smooth trailing effect
             // The circle now interpolates towards the dot's position (which is the true mouseX, mouseY)
-            circleX += (mouseX - circleX) * 0.2; /* Adjusted lerp for tighter follow */
-            circleY += (mouseY - circleY) * 0.2; /* Adjusted lerp for tighter follow */
+            circleX += (mouseX - circleX) * 0.8; /* Adjusted lerp for very tight follow */
+            circleY += (mouseY - circleY) * 0.8; /* Adjusted lerp for very tight follow */
 
             customCursorCircle.style.left = `${circleX}px`;
             customCursorCircle.style.top = `${circleY}px`;
