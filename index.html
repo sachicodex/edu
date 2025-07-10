@@ -3,72 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnSphere Tutorials</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>LearnSphere Tutorials - Modern Dark Theme</title>
     <!-- Lucide Icons CDN (for Search, BookOpen, MessageSquare, X, Send, Loader2 icons) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Custom global styles */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        /* Custom global styles - System UI Style with Brand Colors (Inspired by Coxora Website) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
 
         :root {
-            /* Background and Primary Text Colors */
-            --color-gray-950: #0F172A;
-            --color-gray-900: #111827;
-            --color-gray-800: #1F2937;
-            --color-gray-700: #374151;
-            --color-gray-600: #4B5563;
-            --color-gray-500: #6B7280;
-            --color-gray-400: #9CA3AF;
-            --color-gray-300: #D1D5DB;
-            --color-gray-100: #F3F4F6;
+            /* Background and Primary Text Colors (Inspired by Coxora Website) */
+            --color-background-primary: #000002; /* Very Deep Purple-Black */
+            --color-card-background: linear-gradient(135deg, #151820, #151820); /* Darker purple gradient for cards/footer */
+            --color-input-background: #151820; /* Dark purple for inputs */
+            --color-chatbot-header-background: #151820; /* Medium purple for chatbot header */
+            --color-tag-background: transparent; /* Tags will be outlined */
+            --color-border-primary: #353843; /* Border for main elements (cards, search, chatbot) */
+            --color-border-secondary: #353843; /* Slightly lighter border for internal dividers */
+            --color-footer-text: #B0B0E0; /* Soft light blue/purple for footer text */
+            --color-placeholder-text: #62646d; /* Muted purple placeholder text */
+            --color-secondary-text: #D0D0FF; /* Medium light blue/purple for descriptions, icons */
+            --color-paragraph-text: #E8E8FF; /* Light blue/purple for main paragraphs */
+            --color-primary-text: #F8F8FF; /* Near white for headings and main content */
 
-            /* Pink Brand Colors */
-            --color-pink-700: #DB2777;
-            --color-pink-600: #EC4899;
-            --color-pink-500: #EC4899; /* Used for focus rings, matching pink-600 */
-            --color-pink-400: #F472B6;
-            --color-pink-300: #F472B6; /* Used for hover text, matching pink-400 */
+            /* Brand Colors (Inspired by Coxora - Primary Accent: Vibrant Blue/Cyan) */
+            --color-brand-accent-blue-pure: #00CCFF; /* Vibrant Sky Blue for strong highlights */
+            --color-brand-accent-blue-interactive: #00AADD; /* Slightly desaturated for interactive elements (links, card titles) */
+            --color-brand-accent-blue-dark: #0077AA; /* Darker shade for gradients/shadows */
+            --color-brand-accent-blue-light: #66EEFF; /* Lighter shade for glows */
 
-            /* Purple Brand Colors */
-            --color-purple-600: #6D28D9;
-            --color-purple-500: #A78BFA;
-            --color-purple-400: #DDAAEC; /* Used for loader, matching purple-300 */
-            --color-purple-300: #DDAAEC;
+            /* Brand Colors (Inspired by Coxora - Secondary Accent: Vibrant Pink/Magenta) */
+            --color-brand-accent-pink-pure: #FF00FF; /* Vibrant Pink/Magenta for general UI buttons, main heading glow */
+            --color-brand-accent-pink-interactive: #DD00DD; /* Desaturated Pink/Magenta for general UI interactive elements */
+            --color-brand-accent-pink-dark: #AA00AA; /* Darker pink for button hover */
 
-            /* Red for specific hover */
-            --color-red-500: #EF4444;
+            /* Derived Colors for UI Elements (General UI, Chatbot, Search) */
+            --color-button-primary-bg: rgb(255, 174, 0); /* Chatbot button, general UI buttons */
+            --color-button-primary-hover-bg: var(--color-brand-accent-pink-dark); /* Darker pink on hover */
+            --color-focus-ring-accent: #4b4e58; /* Search input focus, general focus */
+            --color-heading-primary: var(--color-primary-text); /* Main headings */
+            --color-link-primary: var(--color-brand-accent-pink-interactive); /* General links */
+            --color-link-hover: var(--color-brand-accent-pink-pure); /* Pure pink on general link hover */
 
-            /* Green for Start Tutorial link hover */
-            --color-green-700: #047857; /* A dark green */
+            /* Cursor Colors - Primary accent (Blue/Cyan) for card hover, Secondary (Pink/Magenta) for general interactive */
+            --color-cursor-dot: var(--color-brand-accent-blue-pure); /* Dot uses blue/cyan */
+            --color-cursor-interactive-border-hover: var(--color-brand-accent-pink-interactive); /* General interactive uses pink */
+            --color-cursor-card-hover-border: var(--color-brand-accent-blue-pure); /* Blue glow for card hover */
+            --color-cursor-link-hover-border: var(--color-brand-accent-blue-interactive); /* Blue glow for card link hover */
 
-            /* Ripple Color */
-            --color-ripple: rgba(172, 126, 255, 0.5); /* Light purple with transparency */
+            /* Chatbot Specific Colors */
+            --color-chatbot-user-message-bg: #212630; /* Darker purple for user messages */
+            --color-chatbot-bot-message-bg: #25282e; /* Slightly lighter purple for bot messages */
+            --color-chatbot-header-text: var(--color-primary-text); /* Chatbot header text is primary */
+
+            /* Tutorial Card Specific Colors - Using Blue/Cyan accents */
+            --color-tutorial-title: var(--color-brand-accent-blue-interactive); /* Card titles use interactive blue/cyan */
+            --color-card-hover-shadow: rgba(0, 204, 255, 0.4); /* Interactive blue/cyan glow for card hover */
+            --color-card-hover-border: #4b4e58; /* Pure blue/cyan border on card hover */
+            --color-link-primary-card: var(--color-brand-accent-blue-interactive); /* Card specific link color */
+            --color-link-hover-card: var(--color-brand-accent-blue-pure); /* Card specific link hover color */
+            --color-tag-border: var(--color-brand-accent-blue-interactive); /* Blue/cyan border for tags */
+            --color-tag-hover-bg: rgba(0, 204, 255, 0.1); /* Subtle transparent blue/cyan for tag hover */
+
+            --color-loader-icon: var(--color-brand-accent-pink-interactive); /* Loader icon uses pink accent */
+
+            --color-ripple-effect: rgba(255, 0, 255, 0.4); /* Ripple effect uses pink accent */
 
             /* Scrollbar Colors */
-            --color-scrollbar-track: #1a202c;
-            --color-scrollbar-thumb: #4a5568;
-            --color-scrollbar-thumb-hover: #6b7280;
+            --color-scrollbar-track: #1A0033; /* Matches primary background */
+            --color-scrollbar-thumb: #5500AA; /* Matches primary border */
+            --color-scrollbar-thumb-hover: #7700DD; /* Lighter on hover */
 
             /* Chatbot Specific Scrollbar Colors */
-            --color-chatbot-scrollbar-track: #374151;
-            --color-chatbot-scrollbar-thumb: #6b7280;
-            --color-chatbot-scrollbar-thumb-hover: #9ca3af;
+            --color-chatbot-scrollbar-track: #330066; /* Matches input background */
+            --color-chatbot-scrollbar-thumb: #7700DD;
+            --color-chatbot-scrollbar-thumb-hover: #9900FF;
 
-            /* New: Card Border Color */
-            --color-card-border: #4B5563; /* Using gray-600 for the border, as per original border-gray-600 usage */
+            /* Error and Success Colors (Adjusted for new palette) */
+            --color-error-text: #FF9999; /* Softer Red */
+            --color-error-background: #660033; /* Dark Reddish Purple */
+            --color-success-text: #99FF99; /* Softer Green */
+            --color-success-background: #336600; /* Dark Greenish Purple */
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif; /* Primary body font for readability */
             margin: 0;
-            background-color: #0F172A; /* gray-950 */
-            color: #F3F4F6; /* gray-100 */
+            background-color: var(--color-background-primary);
+            color: var(--color-primary-text);
             overflow-x: hidden;
-            padding: 1.5rem; /* p-6 */
-            /* Hide default cursor */
-            cursor: none;
+            padding: 2.5rem; /* Increased padding for spacious feel */
+            cursor: none; /* Hide default cursor */
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother fonts */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 767px) {
+            body {
+                padding: 1rem; /* Reduced padding on mobile */
+            }
+        }
+
+        /* Utility class for hiding elements */
+        .hidden {
+            display: none !important;
         }
 
         /* Custom scrollbar for dark theme */
@@ -106,7 +145,7 @@
         @keyframes fadeInMoveUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -114,14 +153,14 @@
             }
         }
         .animate-fade-in-up {
-            animation: fadeInMoveUp 0.3s ease-out forwards;
+            animation: fadeInMoveUp 0.4s ease-out forwards;
         }
 
         /* Modern Scroll Animation Styles */
         @keyframes fadeInSlideUp {
             from {
                 opacity: 0;
-                transform: translateY(50px) scale(0.95);
+                transform: translateY(60px) scale(0.9);
             }
             to {
                 opacity: 1;
@@ -132,7 +171,7 @@
         @keyframes fadeInFromLeft {
             from {
                 opacity: 0;
-                transform: translateX(-50px);
+                transform: translateX(-70px);
             }
             to {
                 opacity: 1;
@@ -143,7 +182,7 @@
         @keyframes fadeInFromRight {
             from {
                 opacity: 0;
-                transform: translateX(50px);
+                transform: translateX(70px);
             }
             to {
                 opacity: 1;
@@ -154,7 +193,7 @@
         @keyframes fadeInZoomIn {
             from {
                 opacity: 0;
-                transform: scale(0.8);
+                transform: scale(0.7);
             }
             to {
                 opacity: 1;
@@ -165,9 +204,9 @@
         /* Base class for elements to be animated */
         .animate-on-scroll {
             opacity: 0;
-            transform: translateY(30px) scale(0.98);
-            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                        transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateY(40px) scale(0.95);
+            transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                        transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         /* Class applied when element is in view */
@@ -178,49 +217,666 @@
 
         /* Specific animations for different elements */
         .section-heading.animate-on-scroll {
-            animation: fadeInFromLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: fadeInFromLeft 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
             opacity: 0;
-            transform: translateX(-50px);
+            transform: translateX(-70px);
         }
         .section-heading.animate-on-scroll.is-visible {
             animation-play-state: running;
         }
 
         .section-paragraph.animate-on-scroll {
-            animation: fadeInFromRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: fadeInFromRight 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
             opacity: 0;
-            transform: translateX(50px);
+            transform: translateX(70px);
         }
         .section-paragraph.animate-on-scroll.is-visible {
             animation-play-state: running;
         }
 
-        .search-bar-animate.animate-on-scroll {
-            animation: fadeInSlideUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        .search-bar-container.animate-on-scroll {
+            animation: fadeInSlideUp 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
             opacity: 0;
-            transform: translateY(50px) scale(0.95);
+            transform: translateY(60px) scale(0.9);
         }
-        .search-bar-animate.animate-on-scroll.is-visible {
+        .search-bar-container.animate-on-scroll.is-visible {
             animation-play-state: running;
         }
 
-        /* Staggered animation for tutorial cards */
+        /* Tutorial Card Base Styles */
+        .tutorial-card {
+            border-radius: 0.75rem; /* Rounded corners */
+            /* Updated box-shadow to include a subtle blue/cyan glow */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 10px var(--color-card-hover-shadow);
+            overflow: hidden;
+            border: 0.16em solid var(--color-border-primary);
+            background-image: var(--color-card-background);
+            position: relative;
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Staggered animation for tutorial cards (keep existing) */
         .tutorial-card.animate-on-scroll {
             opacity: 0;
-            transform: scale(0.8);
-            transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+            transform: scale(0.7);
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                         box-shadow 0.3s ease-out, border-color 0.3s ease-out;
         }
         .tutorial-card.animate-on-scroll.is-visible {
-            animation: fadeInZoomIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: fadeInZoomIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
-        /* Hover animation for tutorial cards */
+        /* Hover animation for tutorial cards (pure CSS) */
         .tutorial-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(172, 126, 255, 0.3);
-            border-color: var(--color-purple-500);
-            cursor: none; /* Hide default pointer on hover */
+            transform: translateY(-6px) scale(1.02); /* Subtle lift */
+            /* Stronger blue/cyan glow on hover */
+            box-shadow: 0 12px 35px var(--color-card-hover-shadow), 0 0 0 3px var(--color-card-hover-border);
+            border-color: transparent; /* Pure blue/cyan border on hover */
+            cursor: none;
+        }
+
+        /* Tutorial Card Image */
+        .tutorial-card-image {
+            width: 100%;
+            height: 12rem; /* Consistent image height */
+            object-fit: cover;
+            transition: opacity 0.3s;
+            border-bottom: 1px solid var(--color-border-secondary); /* Separator */
+        }
+        /* Mobile adjustment for image height */
+        @media (max-width: 767px) {
+            .tutorial-card-image {
+                height: 10rem; /* Slightly shorter on mobile */
+            }
+        }
+
+        /* Tutorial Card Content Area */
+        .tutorial-card-content {
+            padding: 1.5rem;
+            flex-grow: 1; /* Allows content to expand */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Mobile adjustment for content padding */
+        @media (max-width: 767px) {
+            .tutorial-card-content {
+                padding: 1rem;
+            }
+        }
+
+        /* Tutorial Title - Now uses Blue/Cyan accent */
+        .tutorial-title {
+            font-family: 'Inter'; /* Heading font */
+            font-size: 1.7rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-tutorial-title); /* Uses new blue/cyan accent */
+        }
+        /* Mobile adjustment for title font size */
+        @media (max-width: 767px) {
+            .tutorial-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Tutorial Description */
+        .tutorial-description {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: var(--color-secondary-text);
+            flex-grow: 1; /* Allows description to take available space */
+        }
+        /* Mobile adjustment for description font size */
+        @media (max-width: 767px) {
+            .tutorial-description {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Tutorial Tags Container */
+        .tutorial-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem; /* Space above tags */
+            margin-bottom: 1.25rem;
+        }
+        /* Mobile adjustment for tag gap */
+        @media (max-width: 767px) {
+            .tutorial-tags {
+                gap: 0.4rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Individual Tag - Now uses Blue/Cyan border and subtle hover */
+        .tutorial-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem; /* Slightly less rounded */
+            background-color: transparent; /* Transparent background */
+            color: var(--color-secondary-text); /* Tags text is secondary text color */
+            border: 1px solid var(--color-tag-border); /* Blue/cyan border for tags */
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .tutorial-tag:hover {
+            background-color: var(--color-tag-hover-bg); /* Subtle transparent blue/cyan fill on hover */
+            border-color: var(--color-brand-accent-blue-pure); /* Pure blue/cyan border on hover */
+        }
+        /* Mobile adjustment for tag font size and padding */
+        @media (max-width: 767px) {
+            .tutorial-tag {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+            }
+        }
+
+        /* Start Tutorial Link Container */
+        .start-tutorial-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        /* Mobile adjustment for link container margin */
+        @media (max-width: 767px) {
+            .start-tutorial-link-container {
+                margin-top: 0.75rem;
+            }
+        }
+
+        /* Start Tutorial Link - Now uses Blue/Cyan accent */
+        .start-tutorial-link {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--color-link-primary-card); /* Uses new blue/cyan accent for links */
+            transition: color 0.3s, text-shadow 0.3s, border-color 0.3s;
+            text-decoration: none;
+            padding: 0.5rem 0.75rem; /* Added padding for better click area */
+            border-radius: 0.5rem;
+            border: 1px solid transparent; /* Placeholder border for transition */
+        }
+        .start-tutorial-link:hover {
+            color: var(--color-link-hover-card); /* Pure blue/cyan on link hover for pop */
+            text-shadow: 0 0 6px var(--color-link-hover-card);
+            border-color: var(--color-brand-accent-blue-pure); /* Border glow on hover */
+        }
+        /* Mobile adjustment for link padding and font size */
+        @media (max-width: 767px) {
+            .start-tutorial-link {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.9rem;
+            }
+        }
+
+
+        /* Section Heading */
+        .section-heading {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: var(--color-primary-text); /* Headings use primary text color */
+            /* Stronger pink/magenta glow for main headings */
+            text-shadow: 0 0 12px var(--color-brand-accent-pink-interactive); /* Uses interactive pink for glow */
+        }
+        @media (max-width: 767px) { /* Mobile adjustment */
+            .section-heading {
+                font-size: 2rem; /* Smaller on mobile */
+                margin-bottom: 1.5rem;
+            }
+        }
+        @media (min-width: 768px) {
+            .section-heading {
+                font-size: 4rem;
+            }
+        }
+
+        /* Section Paragraph */
+        .section-paragraph {
+            text-align: center;
+            margin-bottom: 3rem;
+            max-width: 48rem;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 1.1rem;
+            color: var(--color-paragraph-text);
+        }
+        /* Mobile adjustment for paragraph */
+        @media (max-width: 767px) {
+            .section-paragraph {
+                font-size: 0.9rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* Search Bar Container */
+        .search-bar-container {
+            max-width: 38rem;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 3.5rem;
+            position: relative;
+        }
+        /* Mobile adjustment for search bar container */
+        @media (max-width: 767px) {
+            .search-bar-container {
+                margin-bottom: 2.5rem;
+            }
+        }
+
+        /* Search Input */
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            padding-left: 3rem;
+            border-radius: 0.75rem; /* Consistent rounding */
+            outline: none;
+            border: 0.15em solid var(--color-border-primary);
+            background-color: var(--color-input-background);
+            color: var(--color-primary-text);
+            transition: box-shadow 0.3s, border-color 0.3s;
+            font-size: 1rem;
+            box-sizing: border-box; /* Ensures padding doesn't add to the width */
+        }
+        .search-input::placeholder {
+            color: var(--color-placeholder-text);
+        }
+        .search-input:focus {
+            box-shadow: 0 0 10px var(--color-focus-ring-accent); /* Pink/Magenta glow on focus */
+            border-color: var(--color-focus-ring-accent);
+
+        }
+        /* Mobile adjustment for search input */
+        @media (max-width: 767px) {
+            .search-input {
+                padding: 0.8rem;
+                padding-left: 1.8rem; /* Reduced padding on mobile */
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Search Icon */
+        .search-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-placeholder-text);
+        }
+        
+        /* Mobile adjustment for search icon */
+        @media (max-width: 767px) {
+            .search-icon {
+                left: 0.5rem; /* Adjusted to match new padding */
+            }
+        }
+
+        /* Search Loader */
+        .search-loader {
+            display: none;
+            position: absolute;
+            right: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: spin 1s linear infinite;
+            color: var(--color-loader-icon);
+        }
+        /* Mobile adjustment for search loader */
+        @media (max-width: 767px) {
+            .search-loader {
+                right: 0.7rem;
+            }
+        }
+
+        /* Tutorial Grid */
+        .tutorial-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+            max-width: 80rem;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 3rem;
+        }
+        /* Mobile adjustment for grid gap and padding */
+        @media (max-width: 767px) {
+            .tutorial-grid {
+                gap: 1.5rem;
+                padding-bottom: 2rem;
+            }
+        }
+        @media (min-width: 768px) {
+            .tutorial-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .tutorial-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Initial Loading Message */
+        .initial-loading-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 1.3rem;
+            padding-top: 5rem;
+            padding-bottom: 5rem;
+            color: var(--color-secondary-text);
+        }
+        /* Mobile adjustment for loading message */
+        @media (max-width: 767px) {
+            .initial-loading-message {
+                font-size: 1rem;
+                padding-top: 3rem;
+                padding-bottom: 3rem;
+            }
+            .initial-loading-message .loader-icon {
+                width: 1.8rem;
+                height: 1.8rem;
+            }
+        }
+
+        /* No Results Message */
+        .no-results-message {
+            text-align: center;
+            font-size: 1.3rem;
+            padding-top: 5rem;
+            padding-bottom: 5rem;
+            display: none;
+            color: var(--color-secondary-text);
+        }
+        /* Mobile adjustment for no results message */
+        @media (max-width: 767px) {
+            .no-results-message {
+                font-size: 1rem;
+                padding-top: 3rem;
+                padding-bottom: 3rem;
+            }
+        }
+
+        /* Floating Chatbot Button */
+        .chatbot-toggle-button {
+            cursor: none;
+            background-color: var(--color-button-primary-bg); /* Uses pink accent */
+            color: var(--color-primary-text); /* Icon color on button */
+            padding: 1rem;
+            border-radius: 50%; /* Circular button */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px var(--color-brand-accent-pink-interactive); /* Subtle pink glow */
+            z-index: 50;
+            transform: scale(1);
+            transition: all 0.3s ease-in-out;
+            position: fixed;
+            bottom: 1.8rem;
+            right: 1.8rem;
+            border: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px; /* Fixed size for circular button */
+            height: 60px; /* Fixed size for circular button */
+        }
+        .chatbot-toggle-button:hover {
+            background-color: var(--color-button-primary-hover-bg); /* Darker pink on hover */
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--color-brand-accent-pink-pure); /* Stronger pure pink glow on hover */
+        }
+        .chatbot-toggle-button svg {
+            display: block;
+        }
+        .chatbot-toggle-button .hidden-icon {
+            display: none;
+        }
+        /* Mobile adjustment for chatbot toggle button */
+        @media (max-width: 767px) {
+            .chatbot-toggle-button {
+                bottom: 1rem;
+                right: 1rem;
+                width: 50px; /* Slightly smaller on mobile */
+                height: 50px;
+                padding: 0.75rem;
+            }
+            .chatbot-toggle-button svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* Chatbot Widget */
+        .chatbot-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 24rem; /* Standard width */
+            border-radius: 0.75rem; /* Consistent rounding */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--color-card-hover-shadow); /* Stronger pink glow */
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            background-color: var(--color-input-background);
+            border: 0.15em solid var(--color-border-primary);
+        }
+        @media (max-width: 767px) { /* Mobile adjustment for chatbot container */
+            .chatbot-container {
+                width: calc(100% - 2rem); /* Full width minus padding */
+                left: 1rem; /* Centered with padding */
+                right: 1rem;
+                bottom: 1rem;
+                max-height: 70vh; /* Limit height to prevent overflow on small screens */
+            }
+            .messages-container {
+                max-height: calc(70vh - 100px); /* Adjust max-height based on header/input */
+            }
+        }
+        @media (min-width: 768px) {
+            .chatbot-container {
+                width: 28rem;
+            }
+        }
+
+        /* Chatbot Header */
+        .chatbot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.9rem;
+            border-top-left-radius: 0.65rem; /* Match container radius */
+            border-top-right-radius: 0.65rem; /* Match container radius */
+            border-bottom: 1.5px solid var(--color-border-secondary);
+            background-color: var(--color-chatbot-header-background);
+        }
+
+        .chatbot-close-button{
+            background-color: transparent;
+            border: none;
+        }
+
+        .chatbot-close-button svg{
+            color: var(--color-chatbot-header-text);
+        } 
+
+        /* Mobile adjustment for chatbot header */
+        @media (max-width: 767px) {
+            .chatbot-header {
+                padding: 0.7rem;
+            }
+            .chatbot-header-title {
+                font-size: 1rem;
+            }
+
+        }
+
+        /* Chatbot Messages Container */
+        .messages-container {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 20rem;
+        }
+        /* Mobile adjustment for messages container */
+        @media (max-width: 767px) {
+            .messages-container {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Initial Chatbot Message */
+        .initial-chatbot-message {
+            text-align: center;
+            font-size: 0.85rem;
+            font-style: italic;
+            color: var(--color-secondary-text);
+            padding: 0.4rem;
+            border-radius: 0.4rem;
+            background-color: var(--color-chatbot-bot-message-bg); /* Use bot message background */
+        }
+        /* Mobile adjustment for initial chatbot message */
+        @media (max-width: 767px) {
+            .initial-chatbot-message {
+                font-size: 0.75rem;
+                padding: 0.3rem;
+            }
+        }
+
+        /* Chat Message */
+        .chat-message {
+            margin-bottom: 0.75rem;
+        }
+        .chat-message.user-message {
+            text-align: right;
+        }
+        .chat-message.bot-message {
+            text-align: left;
+        }
+        .chat-message span {
+            display: inline-block;
+            padding: 0.6rem 0.9rem;
+            border-radius: 0.6rem;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            color: var(--color-primary-text); /* Ensure message text is readable */
+        }
+        .chat-message.user-message span {
+            background-color: var(--color-chatbot-user-message-bg);
+        }
+        .chat-message.bot-message span {
+            background-color: var(--color-chatbot-bot-message-bg);
+        }
+        /* Mobile adjustment for chat message bubbles */
+        @media (max-width: 767px) {
+            .chat-message span {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.8rem;
+                max-width: 90%; /* Allow bubbles to be slightly wider */
+            }
+        }
+
+        /* Chat Input Area */
+        .chat-input-area {
+            padding: 0.8rem;
+            border-top: 1px solid var(--color-border-secondary);
+            display: flex;
+            align-items: center;
+            border-bottom-left-radius: 0.65rem;
+            border-bottom-right-radius: 0.65rem;
+        }
+        /* Mobile adjustment for chat input area */
+        @media (max-width: 767px) {
+            .chat-input-area {
+                padding: 0.6rem;
+            }
+        }
+
+        /* Chat Input */
+        .chat-input {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 0.6rem;
+            outline: none;
+            border: 1px solid var(--color-border-secondary);
+            background-color: var(--color-chatbot-header-background); /* Consistent with chatbot header */
+            color: var(--color-primary-text);
+            transition: box-shadow 0.2s, border-color 0.2s;
+            font-size: 0.9rem;
+        }
+        .chat-input::placeholder {
+            color: var(--color-placeholder-text);
+        }
+        .chat-input:focus {
+            box-shadow: 0 0 8px var(--color-focus-ring-accent);
+            border-color: var(--color-focus-ring-accent);
+        }
+        /* Mobile adjustment for chat input */
+        @media (max-width: 767px) {
+            .chat-input {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Send Message Button */
+        .send-message-button {
+            cursor: none;
+            margin-left: 0.6rem;
+            padding: 0.6rem;
+            background-color: var(--color-button-primary-bg); /* Uses pink accent */
+            color: var(--color-primary-text); /* Icon color */
+            border-radius: 0.6rem;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            border: none;
+            outline: none;
+        }
+        .send-message-button:hover {
+            background-color: var(--color-button-primary-hover-bg); /* Darker pink on hover */
+            transform: scale(1.05);
+            box-shadow: 0 0 8px var(--color-brand-accent-pink-pure); /* Pure pink glow */
+        }
+        .send-message-button:focus {
+            outline: 2px solid var(--color-focus-ring-accent);
+            outline-offset: 2px;
+            background-color: var(--color-button-primary-hover-bg); /* Keep hover color on focus */
+        }
+        /* Mobile adjustment for send button */
+        @media (max-width: 767px) {
+            .send-message-button {
+                margin-left: 0.4rem;
+                padding: 0.5rem;
+            }
+            .send-message-button svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        /* Footer */
+        .main-footer {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            margin-top: 3.5rem;
+            background-image: var(--color-card-background); /* Uses card background gradient */
+            color: var(--color-footer-text);
+            box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.3);
+        }
+        /* Mobile adjustment for footer */
+        @media (max-width: 767px) {
+            .main-footer {
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+                font-size: 0.75rem;
+                margin-top: 2.5rem;
+            }
         }
 
         /* Custom mouse pointer styles */
@@ -229,64 +885,75 @@
             top: 0;
             left: 0;
             border-radius: 50%;
-            pointer-events: none; /* Allows clicks to pass through */
-            z-index: 9999; /* Ensure it's on top */
-            transition: transform 0.1s ease-out, opacity 0.2s ease-out; /* Add opacity transition */
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease-out, opacity 0.2s ease-out;
         }
 
         #custom-cursor-dot {
             width: 6px;
             height: 6px;
-            background-color: var(--color-pink-400); /* Changed to pink */
-            opacity: 1; /* Default visible */
-            transform: translate(-50%, -50%); /* Center the dot on the exact mouse position */
+            background-color: var(--color-cursor-dot);
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 4px var(--color-cursor-dot);
         }
 
         #custom-cursor-circle {
             width: 30px;
             height: 30px;
-            border: 2px solid var(--color-purple-500); /* Purple border */
-            background-color: rgba(167, 139, 250, 0.1); /* Semi-transparent purple fill */
-            /* Adjusted transition for smooth color change */
-            transition: transform 0.1s ease-out, opacity 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out; /* Adjusted transition for tighter follow */
-            opacity: 1; /* Default visible */
-            transform: translate(-50%, -50%); /* Keep centered */
+            border: 1px solid var(--color-brand-accent-pink-interactive); /* Pink border for general interactive */
+            background-color: rgba(221, 0, 221, 0.1); /* Semi-transparent pink */
+            transition: transform 0.1s ease-out, opacity 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out;
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px var(--color-brand-accent-pink-interactive); /* Subtle pink glow */
+        }
+
+        /* Hide custom cursor on mobile */
+        @media(max-width: 767px) {
+            #custom-cursor-circle,
+            #custom-cursor-dot {
+                display: none;
+            }
         }
 
         /* General interactive element hover effects for custom cursor */
         .interactive-element-hover #custom-cursor-dot {
-            opacity: 0; /* Hide dot */
+            opacity: 0;
         }
 
         .interactive-element-hover #custom-cursor-circle {
-            width: 45px; /* Slightly larger on hover */
-            height: 45px; /* Slightly larger on hover */
-            background-color: rgba(236, 72, 153, 0.3); /* More noticeable pink tint on hover */
-            border-color: var(--color-pink-600);
-        }
-
-        /* Red hover effect for custom cursor on tutorial cards */
-        .tutorial-card-hover-red #custom-cursor-dot {
-            opacity: 0; /* Hide dot */
-        }
-
-        .tutorial-card-hover-red #custom-cursor-circle {
-            width: 45px; /* Same size as other interactive elements */
+            width: 45px;
             height: 45px;
-            background-color: rgba(239, 68, 68, 0.3); /* Red tint */
-            border-color: var(--color-red-500); /* Red border */
+            background-color: rgba(255, 0, 255, 0.3); /* More noticeable pure pink tint on hover */
+            border-color: var(--color-brand-accent-pink-pure);
+            box-shadow: 0 0 12px var(--color-brand-accent-pink-pure);
         }
 
-        /* Dark green hover effect for custom cursor on 'Start Tutorial' links */
-        .start-tutorial-link-hover-green #custom-cursor-dot {
-            opacity: 0; /* Hide dot */
+        /* Accent-specific hover effects for custom cursor - Blue/Cyan for cards */
+        .tutorial-card-hover-accent #custom-cursor-dot {
+            opacity: 0;
         }
 
-        .start-tutorial-link-hover-green #custom-cursor-circle {
-            width: 45px; /* Same size as other interactive elements */
+        .tutorial-card-hover-accent #custom-cursor-circle {
+            width: 45px;
             height: 45px;
-            background-color: rgba(4, 120, 87, 0.3); /* Dark green tint */
-            border-color: var(--color-green-700); /* Dark green border */
+            background-color: rgba(0, 204, 255, 0.3); /* Pure blue/cyan tint for card hover */
+            border-color: var(--color-brand-accent-blue-pure); /* Pure blue/cyan border */
+            box-shadow: 0 0 12px var(--color-brand-accent-blue-pure); /* Pure blue/cyan glow */
+        }
+
+        .start-tutorial-link-hover-accent #custom-cursor-dot {
+            opacity: 0;
+        }
+
+        .start-tutorial-link-hover-accent #custom-cursor-circle {
+            width: 45px;
+            height: 45px;
+            background-color: rgba(0, 170, 221, 0.3); /* Interactive blue/cyan tint for link hover */
+            border-color: var(--color-brand-accent-blue-interactive); /* Interactive blue/cyan border */
+            box-shadow: 0 0 12px var(--color-brand-accent-blue-interactive); /* Interactive blue/cyan glow */
         }
 
         /* Custom Ripple Effect */
@@ -296,12 +963,12 @@
             left: 0;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 9998; /* Below main cursor but above content */
-            background-color: var(--color-ripple);
+            z-index: 9998;
+            background-color: var(--color-ripple-effect);
             opacity: 0;
             transform: translate(-50%, -50%) scale(0);
-            width: 40px; /* Base size for the ripple */
-            height: 40px; /* Base size for the ripple */
+            width: 40px;
+            height: 40px;
         }
 
         @keyframes ripple-effect {
@@ -310,24 +977,23 @@
                 opacity: 1;
             }
             100% {
-                transform: translate(-50%, -50%) scale(4); /* Increased scale for more impact */
+                transform: translate(-50%, -50%) scale(4);
                 opacity: 0;
             }
         }
 
         .animate-ripple {
-            animation: ripple-effect 0.5s ease-out forwards; /* Adjust duration as needed */
+            animation: ripple-effect 0.5s ease-out forwards;
         }
-
 
         /* Ensure interactive elements still show pointer cursor */
         button, a, input[type="text"], .tutorial-card {
-            cursor: none; /* This will be overridden by the JS for custom cursor, but good for fallback */
+            cursor: none;
         }
 
     </style>
 </head>
-<body class="min-h-screen bg-gray-950 text-gray-100 font-inter overflow-x-hidden p-6">
+<body>
 
     <!-- Custom Mouse Pointer Elements -->
     <div id="custom-cursor-dot"></div>
@@ -335,41 +1001,41 @@
     <div id="custom-cursor-ripple"></div> <!-- New element for click effect -->
 
     <!-- Tutorials Section -->
-    <section class="py-12 px-4 bg-gray-950">
-        <h1 class="text-4xl md:text-5xl font-bold text-center text-pink-400 mb-10 animate-on-scroll section-heading">Our Popular Tutorials</h1>
-        <p class="text-center text-gray-300 mb-10 max-w-2xl mx-auto text-lg animate-on-scroll section-paragraph">
+    <section class="tutorials-section">
+        <h1 class="section-heading animate-on-scroll">Our Popular Tutorials</h1>
+        <p class="section-paragraph animate-on-scroll">
             Explore our curated collection of tutorials. Use the search bar below to find exactly what you're looking for!
         </p>
 
         <!-- Search Bar -->
-        <div class="max-w-xl mx-auto mb-12 relative animate-on-scroll search-bar-animate">
+        <div class="search-bar-container animate-on-scroll">
             <input
                 type="text"
                 id="searchTermInput"
                 autocomplete="off"
                 placeholder="Search for tutorials (e.g., React, Figma, JavaScript basics)..."
-                class="w-full p-4 pl-12 bg-gray-800 border border-gray-700 rounded-full text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200"
+                class="search-input"
             />
-            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <div class="search-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </div>
-            <div id="searchLoader" class="hidden absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 animate-spin">
+            <div id="searchLoader" class="search-loader">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
             </div>
         </div>
 
         <!-- Tutorial Grid -->
-        <div id="tutorialGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto">
+        <div id="tutorialGrid" class="tutorial-grid">
             <!-- Initial loading message -->
-            <div id="initialLoadingMessage" class="col-span-full text-center text-gray-400 text-xl py-20">
+            <div id="initialLoadingMessage" class="initial-loading-message">
                 Loading tutorials...
-                <div class="mt-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2 animate-spin mx-auto text-purple-400"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <div class="loader-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 </div>
             </div>
             <!-- Tutorials will be rendered here by JavaScript -->
         </div>
-        <div id="noResultsMessage" class="text-center text-gray-400 text-xl py-20 hidden">
+        <div id="noResultsMessage" class="no-results-message">
             No tutorials found matching your search. Try a different query!
         </div>
     </section>
@@ -377,40 +1043,38 @@
     <!-- Floating Chatbot Button -->
     <button
         id="chatbotToggleButton"
-        style="cursor: none;"
-        class="fixed bottom-6 right-6 bg-pink-600 hover:bg-pink-700 text-white p-4 rounded-full shadow-lg z-50 transform hover:scale-110 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-        aria-label="Toggle Chatbot" 
+        class="chatbot-toggle-button"
+        aria-label="Toggle Chatbot"
     >
         <svg id="chatbotOpenIcon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <svg id="chatbotCloseIcon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x hidden"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <svg id="chatbotCloseIcon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x hidden-icon"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
 
     <!-- Chatbot Widget -->
-    <div id="chatbotContainer" class="fixed bottom-4 right-4 w-80 md:w-96 bg-gray-800 rounded-lg shadow-2xl flex flex-col z-50 border border-gray-700 hidden" >
-        <div class="flex justify-between items-center bg-gray-700 p-3 rounded-t-lg border-b border-gray-600">
-            <h3 class="text-lg font-semibold text-purple-300">Chat with AI</h3>
-            <button id="chatbotCloseButton" class="text-gray-400 hover:text-white transition duration-200" style="cursor: none;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    <div id="chatbotContainer" class="chatbot-container hidden">
+        <div class="chatbot-header">
+            <h3 class="chatbot-header-title">Chat with AI</h3>
+            <button id="chatbotCloseButton" class="chatbot-close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
         </div>
-        <div id="messagesContainer" class="flex-1 p-4 overflow-y-auto max-h-80 custom-scrollbar">
-            <p id="initialChatbotMessage" class="text-gray-400 text-center text-sm italic">
+        <div id="messagesContainer" class="messages-container custom-scrollbar">
+            <p id="initialChatbotMessage" class="initial-chatbot-message">
                 Hello! How can I assist you with LearnSphere tutorials today?
             </p>
             <!-- Messages will be appended here -->
         </div>
-        <div class="p-3 border-t border-gray-600 flex items-center rounded-b-lg">
+        <div class="chat-input-area">
             <input
                 type="text"
                 id="chatInput"
                 autocomplete="off"
                 placeholder="Type your message..."
-                class="flex-1 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                class="chat-input"
             />
             <button
                 id="sendMessageButton"
-                style="cursor: none;"
-                class="ml-2 p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+                class="send-message-button"
             >
                 <!-- Changed to Lucide Send icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
@@ -419,7 +1083,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 py-8 text-center text-gray-500 text-sm rounded-t-xl mt-12 animate-on-scroll">
+    <footer class="main-footer animate-on-scroll">
         <p>&copy; <span id="currentYear"></span> LearnSphere. All rights reserved.</p>
         <p>Empowering Your Learning Journey</p>
     </footer>
@@ -487,7 +1151,7 @@
                 noResultsMessage.classList.remove('hidden');
                 // Adjust message based on whether a search was performed or if it's truly empty
                 if (isSearching) {
-                    noResultsMessage.textContent = 'Searching for tutorials...';
+                    noResultsMessage.textContent = 'Searching for tutorials...'; // This message is shown while AI is processing
                 } else {
                     noResultsMessage.textContent = 'No tutorials found matching your search. Try a different query!';
                 }
@@ -498,28 +1162,27 @@
 
             tutorialsToRender.forEach((tutorial, index) => {
                 const cardHtml = `
-                    <div class="bg-gray-900 rounded-xl shadow-xl overflow-hidden group hover:shadow-purple-500/50 hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out border border-gray-700 hover:border-purple-500 hover:ring-2 hover:ring-purple-500 relative tutorial-card animate-on-scroll"
-                        style="border: 2px solid var(--color-card-border);"> <!-- Using CSS variable for border color -->
+                    <div class="tutorial-card group relative animate-on-scroll">
                         <img
                             src="${tutorial.imageUrl}"
                             alt="${tutorial.title}"
-                            class="w-full h-48 object-cover group-hover:opacity-80 transition duration-300"
+                            class="tutorial-card-image"
                             onerror="this.onerror=null;this.src='https://placehold.co/600x400/374151/d1d5db?text=Image+Error';"
                         />
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold text-purple-300 mb-2">${tutorial.title}</h3>
-                            <p class="text-gray-400 text-sm mb-4">
+                        <div class="tutorial-card-content">
+                            <h3 class="tutorial-title">${tutorial.title}</h3>
+                            <p class="tutorial-description">
                                 ${tutorial.description}
                             </p>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                ${tutorial.tags.map(tag => `<span class="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">${tag}</span>`).join('')}
+                            <div class="tutorial-tags">
+                                ${tutorial.tags.map(tag => `<span class="tutorial-tag">${tag}</span>`).join('')}
                             </div>
-                            <div class="flex justify-end mt-4">
+                            <div class="start-tutorial-link-container">
                                 <a
                                     href="${tutorial.link}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="text-pink-400 hover:text-pink-300 font-medium flex items-center space-x-1 start-tutorial-link"
+                                    class="start-tutorial-link"
                                 >
                                 <span style="display: inline-flex; align-items: center;">
                                 Start Tutorial
@@ -547,18 +1210,23 @@
 
         // --- AI Search Functionality ---
         async function performAISearch(query) {
-            isSearching = true;
-            document.getElementById('searchLoader').classList.remove('hidden');
-            renderTutorials([]); // Show "Searching..." message (or "No tutorials found...")
+            const searchLoader = document.getElementById('searchLoader');
+            const noResultsMessage = document.getElementById('noResultsMessage');
 
             if (query.trim() === '') {
                 // If the query is empty, show all tutorials
-                filteredTutorials = [...allTutorials]; // FIX: Show all cards
-                isSearching = false;
-                renderTutorials(filteredTutorials);
-                document.getElementById('searchLoader').classList.add('hidden');
-                return;
+                isSearching = false; // Not actively searching if query is empty
+                searchLoader.classList.add('hidden'); // Hide loader
+                noResultsMessage.classList.add('hidden'); // Hide no results message
+                filteredTutorials = [...allTutorials]; // Reset to all tutorials
+                renderTutorials(filteredTutorials); // Render all tutorials
+                return; // Exit the function
             }
+
+            // Only show loader and "Searching..." message if a non-empty query is being processed
+            isSearching = true;
+            searchLoader.classList.remove('hidden');
+            renderTutorials([]); // Temporarily clear and show "Searching..." while AI processes
 
             try {
                 // Prompt for search functionality - Enhanced for complex queries
@@ -597,7 +1265,7 @@ Examples of expected output based on various queries:
                 const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                 const payload = { contents: chatHistory };
                 // --- IMPORTANT: Your Gemini API Key for GitHub Pages deployment ---
-                const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw"; // Re-inserted API Key
+                const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -641,13 +1309,13 @@ Examples of expected output based on various queries:
                 }
             } catch (error) {
                 console.error('Error during AI search or parsing AI response:', error);
-                // Fallback to client-side search on API error or parsing error
-                fallbackClientSideSearch(query);
-                // Removed: appendMessage('bot', "Oops! Something went wrong with the AI search. Falling back to basic search.");
+                appendMessage('bot', "Oops! Something went wrong on my end. Please try again later.");
+                // Ensure filtered tutorials are reset or handled on error to avoid empty grid
+                filteredTutorials = [...allTutorials]; // Fallback to showing all tutorials on error
             } finally {
                 isSearching = false;
-                renderTutorials(filteredTutorials); // Render whatever filteredTutorials ended up being
                 document.getElementById('searchLoader').classList.add('hidden');
+                renderTutorials(filteredTutorials); // Render whatever filteredTutorials ended up being
             }
         }
 
@@ -680,18 +1348,10 @@ Examples of expected output based on various queries:
             }
 
             const messageDiv = document.createElement('div');
-            messageDiv.classList.add('mb-3');
-            messageDiv.classList.add(sender === 'user' ? 'text-right' : 'text-left');
+            messageDiv.classList.add('chat-message');
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
 
             const messageSpan = document.createElement('span');
-            messageSpan.classList.add('inline-block', 'p-2', 'rounded-lg', 'max-w-[80%]');
-            if (sender === 'user') {
-                messageSpan.style.backgroundColor = 'var(--color-purple-600)';
-                messageSpan.style.color = 'white';
-            } else {
-                messageSpan.style.backgroundColor = 'var(--color-gray-700)';
-                messageSpan.style.color = 'var(--color-text-gray-100)';
-            }
             messageSpan.textContent = text;
             messageDiv.appendChild(messageSpan);
             messagesContainer.appendChild(messageDiv);
@@ -712,8 +1372,8 @@ Examples of expected output based on various queries:
                 if (!loadingDiv) {
                     loadingDiv = document.createElement('div');
                     loadingDiv.id = 'chatbotLoadingDiv';
-                    loadingDiv.classList.add('text-left', 'mb-3');
-                    loadingDiv.innerHTML = `<span class="inline-block p-2 rounded-lg" style="background-color: var(--color-gray-700); color: var(--color-text-gray-100);">Thinking...</span>`;
+                    loadingDiv.classList.add('chat-message', 'bot-message');
+                    loadingDiv.innerHTML = `<span>Thinking...</span>`;
                     messagesContainer.appendChild(loadingDiv);
                 }
                 messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to show thinking message
@@ -771,7 +1431,7 @@ Examples of expected output based on various queries:
 
                     const payload = { contents: chatHistory };
                     // --- IMPORTANT: Your Gemini API Key for GitHub Pages deployment ---
-                    const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw"; // Re-inserted API Key
+                    const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
@@ -825,13 +1485,13 @@ Examples of expected output based on various queries:
             if (chatbotContainer.classList.contains('hidden')) {
                 chatbotContainer.classList.remove('hidden');
                 chatbotContainer.classList.add('animate-fade-in-up');
-                openIcon.classList.add('hidden');
-                closeIcon.classList.remove('hidden');
+                openIcon.classList.add('hidden-icon');
+                closeIcon.classList.remove('hidden-icon');
             } else {
                 chatbotContainer.classList.add('hidden');
                 chatbotContainer.classList.remove('animate-fade-in-up');
-                openIcon.classList.remove('hidden');
-                closeIcon.classList.add('hidden');
+                openIcon.classList.remove('hidden-icon');
+                closeIcon.classList.add('hidden-icon');
             }
         }
 
@@ -850,9 +1510,9 @@ Examples of expected output based on various queries:
                         // Reset animation for elements that use keyframe animations
                         if (entry.target.classList.contains('section-heading') ||
                             entry.target.classList.contains('section-paragraph') ||
-                            entry.target.classList.contains('search-bar-animate') ||
+                            entry.target.classList.contains('search-bar-container') ||
                             entry.target.classList.contains('tutorial-card') ||
-                            entry.target.tagName.toLowerCase() === 'footer') {
+                            entry.target.classList.contains('main-footer')) {
                             // To re-trigger keyframe animations, remove and re-add the class
                             // A small timeout ensures the browser registers the removal before re-adding
                             setTimeout(() => {
@@ -942,14 +1602,14 @@ Examples of expected output based on various queries:
             // Reset all custom cursor classes first
             document.body.classList.remove('hide-custom-cursor');
             document.body.classList.remove('interactive-element-hover');
-            document.body.classList.remove('tutorial-card-hover-red');
-            document.body.classList.remove('start-tutorial-link-hover-green');
+            document.body.classList.remove('tutorial-card-hover-accent');
+            document.body.classList.remove('start-tutorial-link-hover-accent');
 
 
             if (isStartTutorialLink) {
-                document.body.classList.add('start-tutorial-link-hover-green');
+                document.body.classList.add('start-tutorial-link-hover-accent');
             } else if (isTutorialCard) {
-                document.body.classList.add('tutorial-card-hover-red');
+                document.body.classList.add('tutorial-card-hover-accent');
             } else if (isInputOrButton) {
                 document.body.classList.add('interactive-element-hover');
             }
@@ -958,9 +1618,9 @@ Examples of expected output based on various queries:
         // Handle mousedown for ripple effect
         document.addEventListener('mousedown', (e) => {
             // Only trigger ripple if the custom cursor is visible (not on 'start tutorial' link)
-            // The `start-tutorial-link-hover-green` class is applied when hovering over the link,
+            // The `start-tutorial-link-hover-accent` class is applied when hovering over the link,
             // which also means the custom cursor is hidden. So, if this class is present, don't show ripple.
-            if (!document.body.classList.contains('start-tutorial-link-hover-green')) {
+            if (!document.body.classList.contains('start-tutorial-link-hover-accent')) {
                 customCursorRipple.style.left = `${e.clientX}px`;
                 customCursorRipple.style.top = `${e.clientY}px`;
 
@@ -1000,8 +1660,8 @@ Examples of expected output based on various queries:
             // Observe all relevant elements for animation
             observeElementsForAnimation('.section-heading', 'is-visible');
             observeElementsForAnimation('.section-paragraph', 'is-visible');
-            observeElementsForAnimation('.search-bar-animate', 'is-visible');
-            observeElementsForAnimation('footer', 'is-visible');
+            observeElementsForAnimation('.search-bar-container', 'is-visible');
+            observeElementsForAnimation('.main-footer', 'is-visible');
             // Tutorial cards are observed within renderTutorials to ensure they are present in DOM
 
 
