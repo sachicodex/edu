@@ -11,85 +11,78 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
 
         :root {
-            /* Background and Primary Text Colors (Inspired by Coxora Website) */
-            --color-background-primary: #000002; /* Very Deep Purple-Black */
-            --color-card-background: linear-gradient(135deg, #151820, #151820); /* Darker purple gradient for cards/footer */
-            --color-input-background: #151820; /* Dark purple for inputs */
-            --color-chatbot-header-background: #151820; /* Medium purple for chatbot header */
-            --color-tag-background: transparent; /* Tags will be outlined */
-            --color-border-primary: #353843; /* Border for main elements (cards, search, chatbot) */
-            --color-border-secondary: #353843; /* Slightly lighter border for internal dividers */
-            --color-footer-text: #B0B0E0; /* Soft light blue/purple for footer text */
-            --color-placeholder-text: #62646d; /* Muted purple placeholder text */
-            --color-secondary-text: #D0D0FF; /* Medium light blue/purple for descriptions, icons */
-            --color-paragraph-text: #E8E8FF; /* Light blue/purple for main paragraphs */
-            --color-primary-text: #F8F8FF; /* Near white for headings and main content */
+            /* Core Colors */
+            --bg-dark: #000002;
+            --bg-card: linear-gradient(135deg, #151820, #151820);
+            --bg-bot: #13161d;
+            --bg-input: #151821;
+            --border-main: #353843;
+            --text-light: #F8F8FF;
+            --text-med: #E8E8FF;
+            --text-sub: #D0D0FF;
+            --text-footer: #B0B0E0;
+            --text-placeholder: #62646d;
+            --focus-accent: #4b4e58;
 
-            /* Brand Colors (Inspired by Coxora - Primary Accent: Vibrant Blue/Cyan) */
-            --color-brand-accent-blue-pure: #00CCFF; /* Vibrant Sky Blue for strong highlights */
-            --color-brand-accent-blue-interactive: #00AADD; /* Slightly desaturated for interactive elements (links, card titles) */
-            --color-brand-accent-blue-dark: #0077AA; /* Darker shade for gradients/shadows */
-            --color-brand-accent-blue-light: #66EEFF; /* Lighter shade for glows */
+            /* Brand Accents - Blue/Cyan */
+            --blue-pure: #00CCFF;
+            --blue-int: #00AADD;
 
-            /* Brand Colors (Inspired by Coxora - Secondary Accent: Vibrant Pink/Magenta) */
-            --color-brand-accent-pink-pure: #FF00FF; /* Vibrant Pink/Magenta for general UI buttons, main heading glow */
-            --color-brand-accent-pink-interactive: #DD00DD; /* Desaturated Pink/Magenta for general UI interactive elements */
-            --color-brand-accent-pink-dark: #AA00AA; /* Darker pink for button hover */
+            /* Brand Accents - Pink/Magenta */
+            --pink-pure: #FF00FF;
+            --pink-int: #DD00DD;
 
-            /* Derived Colors for UI Elements (General UI, Chatbot, Search) */
-            --color-button-primary-bg: rgb(255, 174, 0); /* Chatbot button, general UI buttons */
-            --color-button-primary-hover-bg: var(--color-brand-accent-pink-dark); /* Darker pink on hover */
-            --color-focus-ring-accent: #4b4e58; /* Search input focus, general focus */
-            --color-heading-primary: var(--color-primary-text); /* Main headings */
-            --color-link-primary: var(--color-brand-accent-pink-interactive); /* General links */
-            --color-link-hover: var(--color-brand-accent-pink-pure); /* Pure pink on general link hover */
+            /* Derived UI Element Colors */
+            --btn-bg: #FF00FF;
+            --btn-hover-bg: #AA00AA;
+            --link-main: #DD00DD;
+            --link-hover: #FF00FF;
 
-            /* Cursor Colors - Primary accent (Blue/Cyan) for card hover, Secondary (Pink/Magenta) for general interactive */
-            --color-cursor-dot: var(--color-brand-accent-blue-pure); /* Dot uses blue/cyan */
-            --color-cursor-interactive-border-hover: var(--color-brand-accent-pink-interactive); /* General interactive uses pink */
-            --color-cursor-card-hover-border: var(--color-brand-accent-blue-pure); /* Blue glow for card hover */
-            --color-cursor-link-hover-border: var(--color-brand-accent-blue-interactive); /* Blue glow for card link hover */
+            /* Cursor Colors */
+            --cursor-dot: #ffae00;
+            --cursor-circle: #ffae00;
+            --cursor-card-hover: #00ccff4d;
+            --cursor-link-hover: #0dff004d;
 
             /* Chatbot Specific Colors */
-            --color-chatbot-user-message-bg: #212630; /* Darker purple for user messages */
-            --color-chatbot-bot-message-bg: #25282e; /* Slightly lighter purple for bot messages */
-            --color-chatbot-header-text: var(--color-primary-text); /* Chatbot header text is primary */
+            --bot-header: #151821;
+            --chat-user-bg: #212630;
+            --chat-bot-bg: #25282e;
 
-            /* Tutorial Card Specific Colors - Using Blue/Cyan accents */
-            --color-tutorial-title: var(--color-brand-accent-blue-interactive); /* Card titles use interactive blue/cyan */
-            --color-card-hover-shadow: rgba(0, 204, 255, 0.4); /* Interactive blue/cyan glow for card hover */
-            --color-card-hover-border: #4b4e58; /* Pure blue/cyan border on card hover */
-            --color-link-primary-card: var(--color-brand-accent-blue-interactive); /* Card specific link color */
-            --color-link-hover-card: var(--color-brand-accent-blue-pure); /* Card specific link hover color */
-            --color-tag-border: var(--color-brand-accent-blue-interactive); /* Blue/cyan border for tags */
-            --color-tag-hover-bg: rgba(0, 204, 255, 0.1); /* Subtle transparent blue/cyan for tag hover */
+            /* Tutorial Card Specific Colors */
+            --card-title: #00AADD;
+            --card-hover-shadow: rgba(0, 204, 255, 0.4);
+            --card-hover-border: #00CCFF;
+            --link-card: #00AADD;
+            --link-hover-card: #00CCFF;
+            --tag-border: #00AADD;
+            --tag-hover-bg: rgba(0, 204, 255, 0.1);
 
-            --color-loader-icon: var(--color-brand-accent-pink-interactive); /* Loader icon uses pink accent */
-
-            --color-ripple-effect: rgba(255, 0, 255, 0.4); /* Ripple effect uses pink accent */
+            --loader-icon: #DD00DD;
+            --ripple-effect: rgba(255, 0, 255, 0.4);
 
             /* Scrollbar Colors */
-            --color-scrollbar-track: #1A0033; /* Matches primary background */
-            --color-scrollbar-thumb: #5500AA; /* Matches primary border */
-            --color-scrollbar-thumb-hover: #7700DD; /* Lighter on hover */
+            --scroll-track: #2c2f36;
+            --scroll-thumb: #5b5d63;
+            --scroll-thumb-hover: #7700DD;
 
-            /* Chatbot Specific Scrollbar Colors */
-            --color-chatbot-scrollbar-track: #330066; /* Matches input background */
-            --color-chatbot-scrollbar-thumb: #7700DD;
-            --color-chatbot-scrollbar-thumb-hover: #9900FF;
+            /* Chatbot Scrollbar Colors */
+            --chat-scroll-track: #330066;
+            --chat-scroll-thumb: #7700DD;
+            --chat-scroll-thumb-hover: #9900FF;
 
-            /* Error and Success Colors (Adjusted for new palette) */
-            --color-error-text: #FF9999; /* Softer Red */
-            --color-error-background: #660033; /* Dark Reddish Purple */
-            --color-success-text: #99FF99; /* Softer Green */
-            --color-success-background: #336600; /* Dark Greenish Purple */
+            /* Error and Success Colors */
+            --error-text: #FF9999;
+            --error-bg: #660033;
+            --success-text: #99FF99;
+            --success-bg: #336600;
         }
 
         body {
             font-family: 'Inter', sans-serif; /* Primary body font for readability */
             margin: 0;
-            background-color: var(--color-background-primary);
-            color: var(--color-primary-text);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             overflow-x: hidden;
             padding: 2.5rem; /* Increased padding for spacious feel */
             cursor: none; /* Hide default cursor */
@@ -115,14 +108,14 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: var(--color-scrollbar-track);
+            background: var(--scroll-track);
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--color-scrollbar-thumb);
+            background: var(--scroll-thumb);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--color-scrollbar-thumb-hover);
+            background: var(--scroll-thumb-hover);
         }
 
         /* Custom scrollbar for chatbot messages */
@@ -130,15 +123,15 @@
             width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: var(--color-chatbot-scrollbar-track);
+            background: var(--chat-scroll-track);
             border-radius: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: var(--color-chatbot-scrollbar-thumb);
+            background: var(--chat-scroll-thumb);
             border-radius: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: var(--color-chatbot-scrollbar-thumb-hover);
+            background: var(--chat-scroll-thumb-hover);
         }
 
         /* Fade-in-up animation for chatbot */
@@ -247,10 +240,10 @@
         .tutorial-card {
             border-radius: 0.75rem; /* Rounded corners */
             /* Updated box-shadow to include a subtle blue/cyan glow */
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 10px var(--color-card-hover-shadow);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 10px var(--card-hover-shadow);
             overflow: hidden;
-            border: 0.16em solid var(--color-border-primary);
-            background-image: var(--color-card-background);
+            border: 0.16em solid var(--border-main);
+            background-image: var(--bg-card);
             position: relative;
             transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease-out;
             display: flex;
@@ -272,7 +265,7 @@
         .tutorial-card:hover {
             transform: translateY(-6px) scale(1.02); /* Subtle lift */
             /* Stronger blue/cyan glow on hover */
-            box-shadow: 0 12px 35px var(--color-card-hover-shadow), 0 0 0 3px var(--color-card-hover-border);
+            box-shadow: 0 12px 35px var(--card-hover-shadow), 0 0 0 3px var(--card-hover-border);
             border-color: transparent; /* Pure blue/cyan border on hover */
             cursor: none;
         }
@@ -283,7 +276,7 @@
             height: 12rem; /* Consistent image height */
             object-fit: cover;
             transition: opacity 0.3s;
-            border-bottom: 1px solid var(--color-border-secondary); /* Separator */
+            border-bottom: 1px solid var(--border-main); /* Separator */
         }
         /* Mobile adjustment for image height */
         @media (max-width: 767px) {
@@ -312,7 +305,7 @@
             font-size: 1.7rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            color: var(--color-tutorial-title); /* Uses new blue/cyan accent */
+            color: var(--card-title); /* Uses new blue/cyan accent */
         }
         /* Mobile adjustment for title font size */
         @media (max-width: 767px) {
@@ -325,7 +318,7 @@
         .tutorial-description {
             font-size: 0.9rem;
             margin-bottom: 1rem;
-            color: var(--color-secondary-text);
+            color: var(--text-sub);
             flex-grow: 1; /* Allows description to take available space */
         }
         /* Mobile adjustment for description font size */
@@ -357,13 +350,13 @@
             padding: 0.25rem 0.75rem;
             border-radius: 0.5rem; /* Slightly less rounded */
             background-color: transparent; /* Transparent background */
-            color: var(--color-secondary-text); /* Tags text is secondary text color */
-            border: 1px solid var(--color-tag-border); /* Blue/cyan border for tags */
+            color: var(--text-sub); /* Tags text is secondary text color */
+            border: 1px solid var(--tag-border); /* Blue/cyan border for tags */
             transition: background-color 0.2s, border-color 0.2s, color 0.2s;
         }
         .tutorial-tag:hover {
-            background-color: var(--color-tag-hover-bg); /* Subtle transparent blue/cyan fill on hover */
-            border-color: var(--color-brand-accent-blue-pure); /* Pure blue/cyan border on hover */
+            background-color: var(--tag-hover-bg); /* Subtle transparent blue/cyan fill on hover */
+            border-color: var(--blue-pure); /* Pure blue/cyan border on hover */
         }
         /* Mobile adjustment for tag font size and padding */
         @media (max-width: 767px) {
@@ -392,7 +385,7 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
-            color: var(--color-link-primary-card); /* Uses new blue/cyan accent for links */
+            color: var(--link-card); /* Uses new blue/cyan accent for links */
             transition: color 0.3s, text-shadow 0.3s, border-color 0.3s;
             text-decoration: none;
             padding: 0.5rem 0.75rem; /* Added padding for better click area */
@@ -400,9 +393,9 @@
             border: 1px solid transparent; /* Placeholder border for transition */
         }
         .start-tutorial-link:hover {
-            color: var(--color-link-hover-card); /* Pure blue/cyan on link hover for pop */
-            text-shadow: 0 0 6px var(--color-link-hover-card);
-            border-color: var(--color-brand-accent-blue-pure); /* Border glow on hover */
+            color: var(--link-hover-card); /* Pure blue/cyan on link hover for pop */
+            text-shadow: 0 0 6px var(--link-hover-card);
+            border-color: var(--blue-pure); /* Border glow on hover */
         }
         /* Mobile adjustment for link padding and font size */
         @media (max-width: 767px) {
@@ -420,9 +413,9 @@
             font-weight: 700;
             text-align: center;
             margin-bottom: 2.5rem;
-            color: var(--color-primary-text); /* Headings use primary text color */
+            color: var(--text-light); /* Headings use primary text color */
             /* Stronger pink/magenta glow for main headings */
-            text-shadow: 0 0 12px var(--color-brand-accent-pink-interactive); /* Uses interactive pink for glow */
+            text-shadow: 0 0 12px var(--pink-int); /* Uses interactive pink for glow */
         }
         @media (max-width: 767px) { /* Mobile adjustment */
             .section-heading {
@@ -444,7 +437,7 @@
             margin-left: auto;
             margin-right: auto;
             font-size: 1.1rem;
-            color: var(--color-paragraph-text);
+            color: var(--text-med);
         }
         /* Mobile adjustment for paragraph */
         @media (max-width: 767px) {
@@ -476,19 +469,19 @@
             padding-left: 3rem;
             border-radius: 0.75rem; /* Consistent rounding */
             outline: none;
-            border: 0.15em solid var(--color-border-primary);
-            background-color: var(--color-input-background);
-            color: var(--color-primary-text);
+            border: 0.15em solid var(--border-main);
+            background-color: var(--bg-input);
+            color: var(--text-light);
             transition: box-shadow 0.3s, border-color 0.3s;
             font-size: 1rem;
             box-sizing: border-box; /* Ensures padding doesn't add to the width */
         }
         .search-input::placeholder {
-            color: var(--color-placeholder-text);
+            color: var(--text-placeholder);
         }
         .search-input:focus {
-            box-shadow: 0 0 10px var(--color-focus-ring-accent); /* Pink/Magenta glow on focus */
-            border-color: var(--color-focus-ring-accent);
+            box-shadow: 0 0 10px var(--focus-accent); /* Pink/Magenta glow on focus */
+            border-color: var(--focus-accent);
 
         }
         /* Mobile adjustment for search input */
@@ -506,9 +499,9 @@
             left: 0.9rem;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--color-placeholder-text);
+            color: var(--text-placeholder);
         }
-        
+
         /* Mobile adjustment for search icon */
         @media (max-width: 767px) {
             .search-icon {
@@ -524,7 +517,7 @@
             top: 50%;
             transform: translateY(-50%);
             animation: spin 1s linear infinite;
-            color: var(--color-loader-icon);
+            color: var(--loader-icon);
         }
         /* Mobile adjustment for search loader */
         @media (max-width: 767px) {
@@ -568,7 +561,7 @@
             font-size: 1.3rem;
             padding-top: 5rem;
             padding-bottom: 5rem;
-            color: var(--color-secondary-text);
+            color: var(--text-sub);
         }
         /* Mobile adjustment for loading message */
         @media (max-width: 767px) {
@@ -590,7 +583,7 @@
             padding-top: 5rem;
             padding-bottom: 5rem;
             display: none;
-            color: var(--color-secondary-text);
+            color: var(--text-sub);
         }
         /* Mobile adjustment for no results message */
         @media (max-width: 767px) {
@@ -604,11 +597,11 @@
         /* Floating Chatbot Button */
         .chatbot-toggle-button {
             cursor: none;
-            background-color: var(--color-button-primary-bg); /* Uses pink accent */
-            color: var(--color-primary-text); /* Icon color on button */
+            background-color: var(--btn-bg); /* Uses pink accent */
+            color: var(--text-light); /* Icon color on button */
             padding: 1rem;
             border-radius: 50%; /* Circular button */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px var(--color-brand-accent-pink-interactive); /* Subtle pink glow */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px var(--pink-int); /* Subtle pink glow */
             z-index: 50;
             transform: scale(1);
             transition: all 0.3s ease-in-out;
@@ -624,9 +617,9 @@
             height: 60px; /* Fixed size for circular button */
         }
         .chatbot-toggle-button:hover {
-            background-color: var(--color-button-primary-hover-bg); /* Darker pink on hover */
+            background-color: var(--btn-hover-bg); /* Darker pink on hover */
             transform: scale(1.1);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--color-brand-accent-pink-pure); /* Stronger pure pink glow on hover */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--pink-pure); /* Stronger pure pink glow on hover */
         }
         .chatbot-toggle-button svg {
             display: block;
@@ -656,12 +649,12 @@
             right: 1.5rem;
             width: 24rem; /* Standard width */
             border-radius: 0.75rem; /* Consistent rounding */
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--color-card-hover-shadow); /* Stronger pink glow */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--card-hover-shadow); /* Stronger pink glow */
             display: flex;
             flex-direction: column;
             z-index: 50;
-            background-color: var(--color-input-background);
-            border: 0.15em solid var(--color-border-primary);
+            background-color: var(--bg-bot);
+            border: 0.15em solid var(--border-main);
         }
         @media (max-width: 767px) { /* Mobile adjustment for chatbot container */
             .chatbot-container {
@@ -689,8 +682,8 @@
             padding: 0.9rem;
             border-top-left-radius: 0.65rem; /* Match container radius */
             border-top-right-radius: 0.65rem; /* Match container radius */
-            border-bottom: 1.5px solid var(--color-border-secondary);
-            background-color: var(--color-chatbot-header-background);
+            border-bottom: 1.5px solid var(--border-main);
+            background-color: var(--bot-header);
         }
 
         .chatbot-close-button{
@@ -699,8 +692,8 @@
         }
 
         .chatbot-close-button svg{
-            color: var(--color-chatbot-header-text);
-        } 
+            color: var(--text-light);
+        }
 
         /* Mobile adjustment for chatbot header */
         @media (max-width: 767px) {
@@ -732,10 +725,10 @@
             text-align: center;
             font-size: 0.85rem;
             font-style: italic;
-            color: var(--color-secondary-text);
+            color: var(--text-sub);
             padding: 0.4rem;
             border-radius: 0.4rem;
-            background-color: var(--color-chatbot-bot-message-bg); /* Use bot message background */
+            background-color: var(--chat-bot-bg); /* Use bot message background */
         }
         /* Mobile adjustment for initial chatbot message */
         @media (max-width: 767px) {
@@ -762,13 +755,13 @@
             max-width: 80%;
             word-wrap: break-word;
             font-size: 0.9rem;
-            color: var(--color-primary-text); /* Ensure message text is readable */
+            color: var(--text-light); /* Ensure message text is readable */
         }
         .chat-message.user-message span {
-            background-color: var(--color-chatbot-user-message-bg);
+            background-color: var(--chat-user-bg);
         }
         .chat-message.bot-message span {
-            background-color: var(--color-chatbot-bot-message-bg);
+            background-color: var(--chat-bot-bg);
         }
         /* Mobile adjustment for chat message bubbles */
         @media (max-width: 767px) {
@@ -782,7 +775,7 @@
         /* Chat Input Area */
         .chat-input-area {
             padding: 0.8rem;
-            border-top: 1px solid var(--color-border-secondary);
+            border-top: 1px solid var(--border-main);
             display: flex;
             align-items: center;
             border-bottom-left-radius: 0.65rem;
@@ -801,18 +794,18 @@
             padding: 0.6rem;
             border-radius: 0.6rem;
             outline: none;
-            border: 1px solid var(--color-border-secondary);
-            background-color: var(--color-chatbot-header-background); /* Consistent with chatbot header */
-            color: var(--color-primary-text);
+            border: 1px solid var(--border-main);
+            background-color: var(--bg-input); /* Consistent with chatbot header */
+            color: var(--text-light);
             transition: box-shadow 0.2s, border-color 0.2s;
             font-size: 0.9rem;
         }
         .chat-input::placeholder {
-            color: var(--color-placeholder-text);
+            color: var(--text-placeholder);
         }
         .chat-input:focus {
-            box-shadow: 0 0 8px var(--color-focus-ring-accent);
-            border-color: var(--color-focus-ring-accent);
+            box-shadow: 0 0 8px var(--focus-accent);
+            border-color: var(--focus-accent);
         }
         /* Mobile adjustment for chat input */
         @media (max-width: 767px) {
@@ -827,22 +820,22 @@
             cursor: none;
             margin-left: 0.6rem;
             padding: 0.6rem;
-            background-color: var(--color-button-primary-bg); /* Uses pink accent */
-            color: var(--color-primary-text); /* Icon color */
+            background-color: var(--btn-bg); /* Uses pink accent */
+            color: var(--text-light); /* Icon color */
             border-radius: 0.6rem;
             transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
             border: none;
             outline: none;
         }
         .send-message-button:hover {
-            background-color: var(--color-button-primary-hover-bg); /* Darker pink on hover */
+            background-color: var(--btn-hover-bg); /* Darker pink on hover */
             transform: scale(1.05);
-            box-shadow: 0 0 8px var(--color-brand-accent-pink-pure); /* Pure pink glow */
+            box-shadow: 0 0 8px var(--pink-pure); /* Pure pink glow */
         }
         .send-message-button:focus {
-            outline: 2px solid var(--color-focus-ring-accent);
+            outline: 2px solid var(--focus-accent);
             outline-offset: 2px;
-            background-color: var(--color-button-primary-hover-bg); /* Keep hover color on focus */
+            background-color: var(--btn-hover-bg); /* Keep hover color on focus */
         }
         /* Mobile adjustment for send button */
         @media (max-width: 767px) {
@@ -865,8 +858,8 @@
             border-top-left-radius: 0.75rem;
             border-top-right-radius: 0.75rem;
             margin-top: 3.5rem;
-            background-image: var(--color-card-background); /* Uses card background gradient */
-            color: var(--color-footer-text);
+            background-image: var(--bg-card); /* Uses card background gradient */
+            color: var(--text-footer);
             box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.3);
         }
         /* Mobile adjustment for footer */
@@ -893,21 +886,21 @@
         #custom-cursor-dot {
             width: 6px;
             height: 6px;
-            background-color: var(--color-cursor-dot);
+            background-color: var(--cursor-dot);
             opacity: 1;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 4px var(--color-cursor-dot);
+            box-shadow: 0 0 4px var(--cursor-dot);
         }
 
         #custom-cursor-circle {
             width: 30px;
             height: 30px;
-            border: 1px solid var(--color-brand-accent-pink-interactive); /* Pink border for general interactive */
+            border: 2px solid var(--cursor-circle); /* Pink border for general interactive */
             background-color: rgba(221, 0, 221, 0.1); /* Semi-transparent pink */
             transition: transform 0.1s ease-out, opacity 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out;
             opacity: 1;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px var(--color-brand-accent-pink-interactive); /* Subtle pink glow */
+            box-shadow: 0 0 8px var(--cursor-circle);
         }
 
         /* Hide custom cursor on mobile */
@@ -927,8 +920,8 @@
             width: 45px;
             height: 45px;
             background-color: rgba(255, 0, 255, 0.3); /* More noticeable pure pink tint on hover */
-            border-color: var(--color-brand-accent-pink-pure);
-            box-shadow: 0 0 12px var(--color-brand-accent-pink-pure);
+            border-color: var(--pink-pure);
+            box-shadow: 0 0 12px var(--pink-pure);
         }
 
         /* Accent-specific hover effects for custom cursor - Blue/Cyan for cards */
@@ -939,9 +932,9 @@
         .tutorial-card-hover-accent #custom-cursor-circle {
             width: 45px;
             height: 45px;
-            background-color: rgba(0, 204, 255, 0.3); /* Pure blue/cyan tint for card hover */
-            border-color: var(--color-brand-accent-blue-pure); /* Pure blue/cyan border */
-            box-shadow: 0 0 12px var(--color-brand-accent-blue-pure); /* Pure blue/cyan glow */
+            background-color: var(--cursor-card-hover); /* Pure blue/cyan tint for card hover */
+            border-color: var(--blue-pure); /* Pure blue/cyan border */
+            box-shadow: 0 0 12px var(--blue-pure); /* Pure blue/cyan glow */
         }
 
         .start-tutorial-link-hover-accent #custom-cursor-dot {
@@ -951,9 +944,9 @@
         .start-tutorial-link-hover-accent #custom-cursor-circle {
             width: 45px;
             height: 45px;
-            background-color: rgba(0, 170, 221, 0.3); /* Interactive blue/cyan tint for link hover */
-            border-color: var(--color-brand-accent-blue-interactive); /* Interactive blue/cyan border */
-            box-shadow: 0 0 12px var(--color-brand-accent-blue-interactive); /* Interactive blue/cyan glow */
+            background-color: var(--cursor-link-hover); /* Interactive blue/cyan tint for link hover */
+            border-color: var(--blue-int); /* Interactive blue/cyan border */
+            box-shadow: 0 0 12px var(--blue-int); /* Interactive blue/cyan glow */
         }
 
         /* Custom Ripple Effect */
@@ -964,7 +957,7 @@
             border-radius: 50%;
             pointer-events: none;
             z-index: 9998;
-            background-color: var(--color-ripple-effect);
+            background-color: var(--ripple-effect);
             opacity: 0;
             transform: translate(-50%, -50%) scale(0);
             width: 40px;
@@ -1022,6 +1015,7 @@
             <div id="searchLoader" class="search-loader">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
             </div>
+            <!-- Search Suggestions Container - REMOVED -->
         </div>
 
         <!-- Tutorial Grid -->
@@ -1148,14 +1142,8 @@
             tutorialGrid.innerHTML = ''; // Clear existing tutorials
 
             if (tutorialsToRender.length === 0) {
+                noResultsMessage.textContent = 'No tutorials found matching your search. Try a different query!';
                 noResultsMessage.classList.remove('hidden');
-                // Adjust message based on whether a search was performed or if it's truly empty
-                if (isSearching) {
-                    noResultsMessage.textContent = 'Searching for tutorials...'; // This message is shown while AI is processing
-                } else {
-                    noResultsMessage.textContent = 'No tutorials found matching your search. Try a different query!';
-                }
-                return;
             } else {
                 noResultsMessage.classList.add('hidden');
             }
@@ -1212,55 +1200,71 @@
         async function performAISearch(query) {
             const searchLoader = document.getElementById('searchLoader');
             const noResultsMessage = document.getElementById('noResultsMessage');
+            const tutorialGrid = document.getElementById('tutorialGrid');
+
+            // Always hide loader and no results message initially when search starts or input is cleared
+            searchLoader.classList.add('hidden');
+            noResultsMessage.classList.add('hidden');
 
             if (query.trim() === '') {
-                // If the query is empty, show all tutorials
-                isSearching = false; // Not actively searching if query is empty
-                searchLoader.classList.add('hidden'); // Hide loader
-                noResultsMessage.classList.add('hidden'); // Hide no results message
-                filteredTutorials = [...allTutorials]; // Reset to all tutorials
-                renderTutorials(filteredTutorials); // Render all tutorials
-                return; // Exit the function
+                isSearching = false;
+                filteredTutorials = [...allTutorials]; // Ensure all tutorials are set
+                console.log("Input cleared. Displaying all tutorials:", filteredTutorials.length); // Debugging log
+                renderTutorials(filteredTutorials); // Render all tutorials immediately
+                return;
             }
 
-            // Only show loader and "Searching..." message if a non-empty query is being processed
+            // If query is not empty, start search process
             isSearching = true;
             searchLoader.classList.remove('hidden');
-            renderTutorials([]); // Temporarily clear and show "Searching..." while AI processes
+            // Show "Searching..." message while AI is processing
+            tutorialGrid.innerHTML = `
+                <div class="initial-loading-message">
+                    Searching for tutorials...
+                    <div class="loader-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    </div>
+                </div>
+            `;
+            noResultsMessage.classList.add('hidden'); // Ensure it's hidden
 
             try {
                 // Prompt for search functionality - Enhanced for complex queries
                 const prompt = `You are an intelligent tutorial search assistant for LearnSphere. Your primary goal is to find the most relevant tutorial IDs based on a user's query, making the search experience user-friendly and highly engaging.
-
-Here is the list of available tutorials, including their IDs, titles, descriptions, and tags (which represent categories, subjects, and skill levels):
-${allTutorials.map(t => `- ID: ${t.id}, Title: ${t.title}, Description: ${t.description}, Tags: ${t.tags.join(', ')}`).join('\n')}
-
-User Query: "${query}"
-
-Instructions for Advanced Search:
-1.  **Interpret and Refine Query:**
-    * **Spelling Correction:** First, intelligently correct any obvious spelling mistakes or typos in the user's query (e.g., "electnic" should be understood as "electronic").
-    * **Summarization/Intent Extraction:** If the query is long, conversational, or vague, distill it down to its core intent, key topics, and relevant keywords. Focus on what the user *really* wants to learn.
-2.  **Advanced Analysis:**
-    * **Category/Subject Inference:** Infer relevant categories or subjects from the refined query (e.g., 'wire' -> 'electronics', 'design' -> 'UI/UX', 'ML' -> 'Machine Learning', 'tax' -> 'Finance').
-    * **Skill Level Detection:** Identify any specified skill levels (e.g., 'advanced', 'beginner', 'basics', 'mastering', 'intro').
-    * **Synonym and Related Concepts:** Consider synonyms and closely related concepts to broaden the search intelligently.
-    * **Combine Criteria:** Understand and combine multiple criteria from the query (e.g., "beginner web development" should prioritize tutorials that are both beginner-friendly and cover web development).
-3.  **Relevance Matching:** Find the tutorial IDs that are most relevant based on a combination of:
-    * Direct keyword matches (from the refined query).
-    * Inferred categories/subjects.
-    * Detected skill levels.
-    * Overall semantic similarity to the tutorial content.
-    Prioritize results that offer the best match across these criteria.
-4.  **Output Format:** Respond ONLY with a comma-separated list of the 'id's of the relevant tutorials. Do not include any other text, explanations, or formatting. If no tutorials are relevant after your analysis, respond with "none".
-
-Examples of expected output based on various queries:
-- Query: "electnic advanced" -> Example Output: electronics,advanced-electronics-tutorial-id (assuming such an advanced electronics tutorial exists and is relevant)
-- Query: "basics of figma" -> Example Output: figma-ui-design
-- Query: "how to build a website with react" -> Example Output: react-hooks-mastery,nodejs-rest-apis
-- Query: "learn about wire" -> Example Output: electronics
-- Query: "I want to get into creating digital art for web interfaces, something for people who are just starting out" -> Example Output: graphic-design-basics,figma-ui-design
-- Query: "complex grid layouts for responsive pages" -> Example Output: advanced-css-grid`;
+                
+                Here is the list of available tutorials, including their IDs, titles, descriptions, and tags (which represent categories, subjects, and skill levels):
+                ${allTutorials.map(t => `- ID: ${t.id}, Title: ${t.title}, Description: ${t.description}, Tags: ${t.tags.join(', ')}`).join('\n')}
+                
+                User Query: "${query}"
+                
+                Instructions for Advanced Search:
+                1.  **Interpret and Refine Query:**
+                    * **Spelling Correction:** First, intelligently correct any obvious spelling mistakes or typos in the user's query (e.g., "electnic" should be understood as "electronic", "phython" as "python", "connecctions" as "connections").
+                    * **Summarization/Intent Extraction:** If the query is long, conversational, or vague, distill it down to its core intent, key topics, and relevant keywords. Focus on what the user *really* wants to learn.
+                    * **Synonym and Related Concepts:** Consider synonyms and closely related concepts to broaden the search intelligently (e.g., "coding" for "programming", "visuals" for "design", "wire connections" for "electronics circuits").
+                2.  **Advanced Analysis:**
+                    * **Category/Subject Inference:** Infer relevant categories or subjects from the refined query (e.g., 'wire' -> 'electronics', 'design' -> 'UI/UX', 'ML' -> 'Machine Learning', 'tax' -> 'Finance', "car" -> "automobile", "opinion" -> "survey").
+                    * **Skill Level Detection:** Identify any specified skill levels (e.g., 'advanced', 'beginner', 'basics', 'mastering', 'intro', "for new learners").
+                    * **Logical Combination:** Understand and combine multiple criteria from the query (e.g., "beginner web development" should prioritize tutorials that are both beginner-friendly and cover web development).
+                    * **Prioritization:** If multiple tutorials match, prioritize those with more direct and strong relevance to the core intent.
+                3.  **Relevance Matching:** Find the tutorial IDs that are most relevant based on a combination of:
+                    * Direct keyword matches (from the refined query).
+                    * Inferred categories/subjects.
+                    * Detected skill levels.
+                    * Overall semantic similarity to the tutorial content.
+                    Prioritize results that offer the best match across these criteria.
+                4.  **Output Format:** Respond ONLY with a comma-separated list of the 'id's of the relevant tutorials. Do not include any other text, explanations, or formatting. If no tutorials are relevant after your analysis, respond with "none".
+                
+                Examples of expected output based on various queries:
+                - Query: "electnic advanced" -> Example Output: electronics,advanced-electronics-tutorial-id (assuming such an advanced electronics tutorial exists and is relevant)
+                - Query: "basics of figma" -> Example Output: figma-ui-design
+                - Query: "how to build a website with react" -> Example Output: react-hooks-mastery,nodejs-rest-apis
+                - Query: "learn about wire" -> Example Output: electronics
+                - Query: "I want to get into creating digital art for web interfaces, something for people who are just starting out" -> Example Output: graphic-design-basics,figma-ui-design
+                - Query: "complex grid layouts for responsive pages" -> Example Output: advanced-css-grid
+                - Query: "car repair guide" -> Example Output: automobile
+                - Query: "survey methods" -> Example Output: survey
+                - Query: "I need to find about wire connecctions on circuits" -> Example Output: electronics`;
 
                 const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                 const payload = { contents: chatHistory };
@@ -1300,22 +1304,25 @@ Examples of expected output based on various queries:
                     filteredTutorials = allTutorials.filter(tutorial => relevantIds.includes(tutorial.id));
 
                     // If AI returned IDs but none matched existing tutorials, or if parsing failed to yield valid IDs,
-                    // consider a fallback or a more specific "no results" message.
+                    // fallback to client-side search with a warning.
                     if (filteredTutorials.length === 0 && relevantIds.length > 0) {
                         console.warn("AI returned IDs, but none matched existing tutorials. Falling back to client-side search.");
-                        // Fallback to client-side search if AI's IDs don't match anything
                         fallbackClientSideSearch(query);
                     }
                 }
             } catch (error) {
                 console.error('Error during AI search or parsing AI response:', error);
-                appendMessage('bot', "Oops! Something went wrong on my end. Please try again later.");
-                // Ensure filtered tutorials are reset or handled on error to avoid empty grid
-                filteredTutorials = [...allTutorials]; // Fallback to showing all tutorials on error
+                // Display a user-friendly error message in the tutorial grid
+                tutorialGrid.innerHTML = `
+                    <div class="initial-loading-message">
+                        <p style="color: var(--error-text);">Error during search. Please try again later.</p>
+                    </div>
+                `;
+                filteredTutorials = []; // Clear results on error
             } finally {
                 isSearching = false;
-                document.getElementById('searchLoader').classList.add('hidden');
-                renderTutorials(filteredTutorials); // Render whatever filteredTutorials ended up being
+                searchLoader.classList.add('hidden');
+                renderTutorials(filteredTutorials); // Render the results (or no results message)
             }
         }
 
@@ -1330,7 +1337,7 @@ Examples of expected output based on various queries:
         }
 
         // --- Chatbot Functionality (Rebuilt) ---
-        const chatMessages = []; // Stores the chat history for context
+        let chatMessages = []; // Stores the chat history for context, now reset on page load
         let isChatbotLoading = false; // Prevents multiple simultaneous API calls
 
         /**
@@ -1352,7 +1359,7 @@ Examples of expected output based on various queries:
             messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
 
             const messageSpan = document.createElement('span');
-            messageSpan.textContent = text;
+            messageSpan.innerHTML = text; // Use innerHTML to allow for links and Markdown
             messageDiv.appendChild(messageSpan);
             messagesContainer.appendChild(messageDiv);
 
@@ -1396,71 +1403,84 @@ Examples of expected output based on various queries:
 
             // Append user message to UI and clear input
             appendMessage('user', message);
-            chatMessages.push({ sender: 'user', text: message }); // Add to history
+            // Add user message to chat history for context, ensuring correct role
+            chatMessages.push({ role: 'user', parts: [{ text: message }] });
             chatInput.value = '';
 
             // Disable input and button, show loading indicator
             isChatbotLoading = true;
             chatInput.disabled = true;
-            document.getElementById('sendMessageButton').disabled = true;
+            document.getElementById('sendMessageButton').disabled = false;
             showChatbotLoading(true);
 
             try {
                 let botResponseText;
 
-                // Check for specific "who are you" query
-                if (message.toLowerCase() === 'who are you') {
-                    botResponseText = 'Name : Sachintha Lakshan';
+                // Prepare chat history for the API call, including the system instruction
+                // This system instruction is crucial for the AI's persona and capabilities
+                let currentChatHistory = [{
+                    role: "user",
+                    parts: [{ text: `You are a helpful and friendly assistant for LearnSphere, an online tutorial platform.
+                    Your goal is to provide concise, relevant, and engaging answers.
+                    
+                    **Capabilities:**
+                    - Answer questions about web development, UI/UX design, programming (like JavaScript, React, Node.js, Java), CSS, HTML, electronics, automotive, and general learning.
+                    - **Use emojis occasionally** to make responses more engaging and friendly.
+                    - **Generate information in a table format** when appropriate for structured data. Use Markdown table syntax.
+                    - **Simulate real-time information access:** If asked about current events or widely known public information, answer as if you have just looked it up, leveraging your vast training data. Do not explicitly state you are "searching the internet" but rather provide the information directly.
+                    - **Suggest relevant tutorials:** If a user's query is clearly related to a tutorial, suggest it by its title and provide a clickable link.
+                    - **Remember user's name and preferences within the current session.** If the user introduces themselves, remember their name and use it in subsequent interactions.
+                    
+                    **Constraints:**
+                    - Keep your answers concise and directly related to learning or our tutorials.
+                    - Do not engage in topics outside of LearnSphere's educational content. If asked about something unrelated, politely redirect to our tutorials.
+                    - When suggesting tutorials, use the format: "<a href='{tutorial.link}' target='_blank' rel='noopener noreferrer' style='color: var(--link-main); text-decoration: underline;'>{tutorial.title}</a>".
+                    
+                    Here is the list of available tutorials, including their IDs, titles, descriptions, and tags (which represent categories, subjects, and skill levels):
+                    ${allTutorials.map(t => `- ID: ${t.id}, Title: ${t.title}, Description: ${t.description}, Tags: ${t.tags.join(', ')}`).join('\n')}
+                    ` }]
+                }];
+
+                // Add previous messages to history for context
+                // Ensure roles are 'user' or 'model' for the API
+                // Limit history to keep payload size reasonable and focus on recent context
+                // The `chatMessages` array already contains messages in the correct { role: 'user'/'model', parts: [{ text: '...' }] } format.
+                const recentMessagesForContext = chatMessages.slice(Math.max(chatMessages.length - 10, 0)); // Keep last 10 messages for better memory
+                recentMessagesForContext.forEach(msg => {
+                    currentChatHistory.push(msg);
+                });
+
+                const payload = { contents: currentChatHistory };
+                const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`API Error: ${response.status} - ${response.statusText} - ${errorText}`);
+                    throw new Error(`API returned an error: ${response.statusText || 'Unknown Error'}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    botResponseText = result.candidates[0].content.parts[0].text;
                 } else {
-                    // Prepare chat history for the API call
-                    // Include a system instruction to guide the AI's persona and knowledge base
-                    let chatHistory = [{
-                        role: "user",
-                        parts: [{ text: "You are a helpful assistant for LearnSphere, an online tutorial platform. Answer questions about web development, UI/UX design, programming (like JavaScript, React, Node.js, Java), CSS, HTML, and general learning. Keep your answers concise and directly related to learning or our tutorials. Do not engage in topics outside of LearnSphere's educational content. If asked about something unrelated, politely redirect to our tutorials. " }]
-                    }];
-
-                    // Add previous messages to history for context, limiting to a few for efficiency
-                    // Ensure roles are 'user' or 'model' for the API
-                    const recentMessages = chatMessages.slice(Math.max(chatMessages.length - 6, 0)); // Keep last 6 messages for context
-                    recentMessages.forEach(msg => {
-                        chatHistory.push({ role: msg.sender === 'user' ? 'user' : 'model', parts: [{ text: msg.text }] });
-                    });
-
-                    // Add the current user message
-                    chatHistory.push({ role: "user", parts: [{ text: message }] });
-
-                    const payload = { contents: chatHistory };
-                    // --- IMPORTANT: Your Gemini API Key for GitHub Pages deployment ---
-                    const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error(`API Error: ${response.status} - ${response.statusText} - ${errorText}`);
-                        throw new Error(`API returned an error: ${response.statusText || 'Unknown Error'}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        botResponseText = result.candidates[0].content.parts[0].text;
-                    } else {
-                        console.warn("Chatbot AI response structure unexpected or empty.");
-                        botResponseText = "Sorry, I couldn't get a clear response. Can you please rephrase?";
-                    }
+                    console.warn("Chatbot AI response structure unexpected or empty.");
+                    botResponseText = "Sorry, I couldn't get a clear response. Can you please rephrase?";
                 }
 
                 // Append bot's response to UI and history
                 appendMessage('bot', botResponseText);
-                chatMessages.push({ sender: 'bot', text: botResponseText }); // Add to history
+                // Store bot's response for context, ensuring correct role
+                chatMessages.push({ role: 'model', parts: [{ text: botResponseText }] });
 
             } catch (error) {
                 console.error('Error during chatbot API call:', error);
@@ -1474,6 +1494,7 @@ Examples of expected output based on various queries:
             }
         }
 
+
         /**
          * Toggles the visibility of the chatbot widget.
          */
@@ -1486,13 +1507,12 @@ Examples of expected output based on various queries:
                 chatbotContainer.classList.remove('hidden');
                 chatbotContainer.classList.add('animate-fade-in-up');
                 openIcon.classList.add('hidden-icon');
-                closeIcon.classList.remove('hidden-icon');
             } else {
                 chatbotContainer.classList.add('hidden');
                 chatbotContainer.classList.remove('animate-fade-in-up');
                 openIcon.classList.remove('hidden-icon');
-                closeIcon.classList.add('hidden-icon');
             }
+            closeIcon.classList.toggle('hidden-icon'); // Toggle visibility of close icon
         }
 
         // --- Intersection Observer for Scroll Animations ---
@@ -1533,7 +1553,7 @@ Examples of expected output based on various queries:
             });
         }
 
-        // Smooth scroll for scroll wheel
+        // Smooth scroll for scroll wheel (for main window)
         let currentScrollY = window.scrollY;
         let animationFrameId = null;
 
@@ -1563,7 +1583,7 @@ Examples of expected output based on various queries:
             animationFrameId = requestAnimationFrame(animateScroll);
         }
 
-        // Event listener for scroll wheel
+        // Event listener for scroll wheel on main window
         window.addEventListener('wheel', (e) => {
             e.preventDefault();
 
@@ -1651,6 +1671,15 @@ Examples of expected output based on various queries:
 
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Reset chat messages on page load to ensure a fresh start
+            chatMessages = [];
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.innerHTML = `
+                <p id="initialChatbotMessage" class="initial-chatbot-message">
+                    Hello! How can I assist you with LearnSphere tutorials today?
+                </p>
+            `;
+
             // Set current year in footer
             document.getElementById('currentYear').textContent = new Date().getFullYear();
 
@@ -1665,11 +1694,27 @@ Examples of expected output based on various queries:
             // Tutorial cards are observed within renderTutorials to ensure they are present in DOM
 
 
-            // Search input event listener with debounce
+            // Search input event listener for immediate empty check
             const searchTermInput = document.getElementById('searchTermInput');
-            searchTermInput.addEventListener('input', debounce((e) => {
-                performAISearch(e.target.value);
-            }, 200));
+            searchTermInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query === '') {
+                    // If input is empty, immediately show all tutorials
+                    isSearching = false;
+                    filteredTutorials = [...allTutorials];
+                    console.log("Immediate empty input check: Displaying all tutorials:", filteredTutorials.length);
+                    renderTutorials(filteredTutorials);
+                    document.getElementById('searchLoader').classList.add('hidden'); // Ensure loader is hidden
+                    document.getElementById('noResultsMessage').classList.add('hidden'); // Ensure no results is hidden
+                } else {
+                    // Otherwise, use the debounced function for actual search
+                    debouncePerformAISearch(query);
+                }
+            });
+
+            // Debounced version of performAISearch for actual search queries
+            const debouncePerformAISearch = debounce(performAISearch, 200);
+
 
             // Chatbot button listeners
             document.getElementById('chatbotToggleButton').addEventListener('click', toggleChatbot);
@@ -1679,6 +1724,16 @@ Examples of expected output based on various queries:
                 if (e.key === 'Enter') {
                     sendChatMessage();
                 }
+            });
+
+            // --- Chatbot Scroll Wheel Fix ---
+            messagesContainer.addEventListener('wheel', (e) => {
+                // Prevent default scroll behavior on the messages container
+                e.preventDefault();
+                // Stop event propagation to prevent the main page from scrolling
+                e.stopPropagation();
+                // Adjust scrollTop based on deltaY
+                messagesContainer.scrollTop += e.deltaY;
             });
         });
     </script>
