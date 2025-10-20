@@ -1,1741 +1,662 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnSphere Tutorials - Modern Dark Theme</title>
-    <!-- Lucide Icons CDN (for Search, BookOpen, MessageSquare, X, Send, Loader2 icons) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* Custom global styles - System UI Style with Brand Colors (Inspired by Coxora Website) */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
-
-        :root {
-            /* Core Colors */
-            --bg-dark: #000002;
-            --bg-card: linear-gradient(135deg, #151820, #151820);
-            --bg-bot: #13161d;
-            --bg-input: #151821;
-            --border-main: #353843;
-            --text-light: #F8F8FF;
-            --text-med: #E8E8FF;
-            --text-sub: #D0D0FF;
-            --text-footer: #B0B0E0;
-            --text-placeholder: #62646d;
-            --focus-accent: #4b4e58;
-
-            /* Brand Accents - Blue/Cyan */
-            --blue-pure: #00CCFF;
-            --blue-int: #00AADD;
-
-            /* Brand Accents - Pink/Magenta */
-            --pink-pure: #FF00FF;
-            --pink-int: #DD00DD;
-
-            /* Derived UI Element Colors */
-            --btn-bg: #FF00FF;
-            --btn-hover-bg: #AA00AA;
-            --link-main: #DD00DD;
-            --link-hover: #FF00FF;
-
-            /* Cursor Colors */
-            --cursor-dot: #ffae00;
-            --cursor-circle: #ffae00;
-            --cursor-card-hover: #00ccff4d;
-            --cursor-link-hover: #0dff004d;
-
-            /* Chatbot Specific Colors */
-            --bot-header: #151821;
-            --chat-user-bg: #212630;
-            --chat-bot-bg: #25282e;
-
-            /* Tutorial Card Specific Colors */
-            --card-title: #00AADD;
-            --card-hover-shadow: rgba(0, 204, 255, 0.4);
-            --card-hover-border: #00CCFF;
-            --link-card: #00AADD;
-            --link-hover-card: #00CCFF;
-            --tag-border: #00AADD;
-            --tag-hover-bg: rgba(0, 204, 255, 0.1);
-
-            --loader-icon: #DD00DD;
-            --ripple-effect: rgba(255, 0, 255, 0.4);
-
-            /* Scrollbar Colors */
-            --scroll-track: #2c2f36;
-            --scroll-thumb: #5b5d63;
-            --scroll-thumb-hover: #7700DD;
-
-            /* Chatbot Scrollbar Colors */
-            --chat-scroll-track: #330066;
-            --chat-scroll-thumb: #7700DD;
-            --chat-scroll-thumb-hover: #9900FF;
-
-            /* Error and Success Colors */
-            --error-text: #FF9999;
-            --error-bg: #660033;
-            --success-text: #99FF99;
-            --success-bg: #336600;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif; /* Primary body font for readability */
-            margin: 0;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            overflow-x: hidden;
-            padding: 2.5rem; /* Increased padding for spacious feel */
-            cursor: none; /* Hide default cursor */
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased; /* Smoother fonts */
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 767px) {
-            body {
-                padding: 1rem; /* Reduced padding on mobile */
-            }
-        }
-
-        /* Utility class for hiding elements */
-        .hidden {
-            display: none !important;
-        }
-
-        /* Custom scrollbar for dark theme */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--scroll-track);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--scroll-thumb);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--scroll-thumb-hover);
-        }
-
-        /* Custom scrollbar for chatbot messages */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: var(--chat-scroll-track);
-            border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: var(--chat-scroll-thumb);
-            border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: var(--chat-scroll-thumb-hover);
-        }
-
-        /* Fade-in-up animation for chatbot */
-        @keyframes fadeInMoveUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .animate-fade-in-up {
-            animation: fadeInMoveUp 0.4s ease-out forwards;
-        }
-
-        /* Modern Scroll Animation Styles */
-        @keyframes fadeInSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(60px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes fadeInFromLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-70px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes fadeInFromRight {
-            from {
-                opacity: 0;
-                transform: translateX(70px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes fadeInZoomIn {
-            from {
-                opacity: 0;
-                transform: scale(0.7);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* Base class for elements to be animated */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(40px) scale(0.95);
-            transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                        transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        /* Class applied when element is in view */
-        .animate-on-scroll.is-visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        /* Specific animations for different elements */
-        .section-heading.animate-on-scroll {
-            animation: fadeInFromLeft 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            opacity: 0;
-            transform: translateX(-70px);
-        }
-        .section-heading.animate-on-scroll.is-visible {
-            animation-play-state: running;
-        }
-
-        .section-paragraph.animate-on-scroll {
-            animation: fadeInFromRight 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            opacity: 0;
-            transform: translateX(70px);
-        }
-        .section-paragraph.animate-on-scroll.is-visible {
-            animation-play-state: running;
-        }
-
-        .search-bar-container.animate-on-scroll {
-            animation: fadeInSlideUp 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            opacity: 0;
-            transform: translateY(60px) scale(0.9);
-        }
-        .search-bar-container.animate-on-scroll.is-visible {
-            animation-play-state: running;
-        }
-
-        /* Tutorial Card Base Styles */
-        .tutorial-card {
-            border-radius: 0.75rem; /* Rounded corners */
-            /* Updated box-shadow to include a subtle blue/cyan glow */
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 10px var(--card-hover-shadow);
-            overflow: hidden;
-            border: 0.16em solid var(--border-main);
-            background-image: var(--bg-card);
-            position: relative;
-            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease-out;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Staggered animation for tutorial cards (keep existing) */
-        .tutorial-card.animate-on-scroll {
-            opacity: 0;
-            transform: scale(0.7);
-            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                        box-shadow 0.3s ease-out, border-color 0.3s ease-out;
-        }
-        .tutorial-card.animate-on-scroll.is-visible {
-            animation: fadeInZoomIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        /* Hover animation for tutorial cards (pure CSS) */
-        .tutorial-card:hover {
-            transform: translateY(-6px) scale(1.02); /* Subtle lift */
-            /* Stronger blue/cyan glow on hover */
-            box-shadow: 0 12px 35px var(--card-hover-shadow), 0 0 0 3px var(--card-hover-border);
-            border-color: transparent; /* Pure blue/cyan border on hover */
-            cursor: none;
-        }
-
-        /* Tutorial Card Image */
-        .tutorial-card-image {
-            width: 100%;
-            height: 12rem; /* Consistent image height */
-            object-fit: cover;
-            transition: opacity 0.3s;
-            border-bottom: 1px solid var(--border-main); /* Separator */
-        }
-        /* Mobile adjustment for image height */
-        @media (max-width: 767px) {
-            .tutorial-card-image {
-                height: 10rem; /* Slightly shorter on mobile */
-            }
-        }
-
-        /* Tutorial Card Content Area */
-        .tutorial-card-content {
-            padding: 1.5rem;
-            flex-grow: 1; /* Allows content to expand */
-            display: flex;
-            flex-direction: column;
-        }
-        /* Mobile adjustment for content padding */
-        @media (max-width: 767px) {
-            .tutorial-card-content {
-                padding: 1rem;
-            }
-        }
-
-        /* Tutorial Title - Now uses Blue/Cyan accent */
-        .tutorial-title {
-            font-family: 'Inter'; /* Heading font */
-            font-size: 1.7rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--card-title); /* Uses new blue/cyan accent */
-        }
-        /* Mobile adjustment for title font size */
-        @media (max-width: 767px) {
-            .tutorial-title {
-                font-size: 1.2rem;
-            }
-        }
-
-        /* Tutorial Description */
-        .tutorial-description {
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            color: var(--text-sub);
-            flex-grow: 1; /* Allows description to take available space */
-        }
-        /* Mobile adjustment for description font size */
-        @media (max-width: 767px) {
-            .tutorial-description {
-                font-size: 0.8rem;
-            }
-        }
-
-        /* Tutorial Tags Container */
-        .tutorial-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.75rem; /* Space above tags */
-            margin-bottom: 1.25rem;
-        }
-        /* Mobile adjustment for tag gap */
-        @media (max-width: 767px) {
-            .tutorial-tags {
-                gap: 0.4rem;
-                margin-bottom: 1rem;
-            }
-        }
-
-        /* Individual Tag - Now uses Blue/Cyan border and subtle hover */
-        .tutorial-tag {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem; /* Slightly less rounded */
-            background-color: transparent; /* Transparent background */
-            color: var(--text-sub); /* Tags text is secondary text color */
-            border: 1px solid var(--tag-border); /* Blue/cyan border for tags */
-            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-        }
-        .tutorial-tag:hover {
-            background-color: var(--tag-hover-bg); /* Subtle transparent blue/cyan fill on hover */
-            border-color: var(--blue-pure); /* Pure blue/cyan border on hover */
-        }
-        /* Mobile adjustment for tag font size and padding */
-        @media (max-width: 767px) {
-            .tutorial-tag {
-                font-size: 0.7rem;
-                padding: 0.2rem 0.6rem;
-            }
-        }
-
-        /* Start Tutorial Link Container */
-        .start-tutorial-link-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 1rem;
-        }
-        /* Mobile adjustment for link container margin */
-        @media (max-width: 767px) {
-            .start-tutorial-link-container {
-                margin-top: 0.75rem;
-            }
-        }
-
-        /* Start Tutorial Link - Now uses Blue/Cyan accent */
-        .start-tutorial-link {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: var(--link-card); /* Uses new blue/cyan accent for links */
-            transition: color 0.3s, text-shadow 0.3s, border-color 0.3s;
-            text-decoration: none;
-            padding: 0.5rem 0.75rem; /* Added padding for better click area */
-            border-radius: 0.5rem;
-            border: 1px solid transparent; /* Placeholder border for transition */
-        }
-        .start-tutorial-link:hover {
-            color: var(--link-hover-card); /* Pure blue/cyan on link hover for pop */
-            text-shadow: 0 0 6px var(--link-hover-card);
-            border-color: var(--blue-pure); /* Border glow on hover */
-        }
-        /* Mobile adjustment for link padding and font size */
-        @media (max-width: 767px) {
-            .start-tutorial-link {
-                padding: 0.4rem 0.6rem;
-                font-size: 0.9rem;
-            }
-        }
-
-
-        /* Section Heading */
-        .section-heading {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.8rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2.5rem;
-            color: var(--text-light); /* Headings use primary text color */
-            /* Stronger pink/magenta glow for main headings */
-            text-shadow: 0 0 12px var(--pink-int); /* Uses interactive pink for glow */
-        }
-        @media (max-width: 767px) { /* Mobile adjustment */
-            .section-heading {
-                font-size: 2rem; /* Smaller on mobile */
-                margin-bottom: 1.5rem;
-            }
-        }
-        @media (min-width: 768px) {
-            .section-heading {
-                font-size: 4rem;
-            }
-        }
-
-        /* Section Paragraph */
-        .section-paragraph {
-            text-align: center;
-            margin-bottom: 3rem;
-            max-width: 48rem;
-            margin-left: auto;
-            margin-right: auto;
-            font-size: 1.1rem;
-            color: var(--text-med);
-        }
-        /* Mobile adjustment for paragraph */
-        @media (max-width: 767px) {
-            .section-paragraph {
-                font-size: 0.9rem;
-                margin-bottom: 2rem;
-            }
-        }
-
-        /* Search Bar Container */
-        .search-bar-container {
-            max-width: 38rem;
-            margin-left: auto;
-            margin-right: auto;
-            margin-bottom: 3.5rem;
-            position: relative;
-        }
-        /* Mobile adjustment for search bar container */
-        @media (max-width: 767px) {
-            .search-bar-container {
-                margin-bottom: 2.5rem;
-            }
-        }
-
-        /* Search Input */
-        .search-input {
-            width: 100%;
-            padding: 1rem;
-            padding-left: 3rem;
-            border-radius: 0.75rem; /* Consistent rounding */
-            outline: none;
-            border: 0.15em solid var(--border-main);
-            background-color: var(--bg-input);
-            color: var(--text-light);
-            transition: box-shadow 0.3s, border-color 0.3s;
-            font-size: 1rem;
-            box-sizing: border-box; /* Ensures padding doesn't add to the width */
-        }
-        .search-input::placeholder {
-            color: var(--text-placeholder);
-        }
-        .search-input:focus {
-            box-shadow: 0 0 10px var(--focus-accent); /* Pink/Magenta glow on focus */
-            border-color: var(--focus-accent);
-
-        }
-        /* Mobile adjustment for search input */
-        @media (max-width: 767px) {
-            .search-input {
-                padding: 0.8rem;
-                padding-left: 1.8rem; /* Reduced padding on mobile */
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Search Icon */
-        .search-icon {
-            position: absolute;
-            left: 0.9rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-placeholder);
-        }
-
-        /* Mobile adjustment for search icon */
-        @media (max-width: 767px) {
-            .search-icon {
-                left: 0.5rem; /* Adjusted to match new padding */
-            }
-        }
-
-        /* Search Loader */
-        .search-loader {
-            display: none;
-            position: absolute;
-            right: 0.9rem;
-            top: 50%;
-            transform: translateY(-50%);
-            animation: spin 1s linear infinite;
-            color: var(--loader-icon);
-        }
-        /* Mobile adjustment for search loader */
-        @media (max-width: 767px) {
-            .search-loader {
-                right: 0.7rem;
-            }
-        }
-
-        /* Tutorial Grid */
-        .tutorial-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2.5rem;
-            max-width: 80rem;
-            margin-left: auto;
-            margin-right: auto;
-            padding-bottom: 3rem;
-        }
-        /* Mobile adjustment for grid gap and padding */
-        @media (max-width: 767px) {
-            .tutorial-grid {
-                gap: 1.5rem;
-                padding-bottom: 2rem;
-            }
-        }
-        @media (min-width: 768px) {
-            .tutorial-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (min-width: 1024px) {
-            .tutorial-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        /* Initial Loading Message */
-        .initial-loading-message {
-            grid-column: 1 / -1;
-            text-align: center;
-            font-size: 1.3rem;
-            padding-top: 5rem;
-            padding-bottom: 5rem;
-            color: var(--text-sub);
-        }
-        /* Mobile adjustment for loading message */
-        @media (max-width: 767px) {
-            .initial-loading-message {
-                font-size: 1rem;
-                padding-top: 3rem;
-                padding-bottom: 3rem;
-            }
-            .initial-loading-message .loader-icon {
-                width: 1.8rem;
-                height: 1.8rem;
-            }
-        }
-
-        /* No Results Message */
-        .no-results-message {
-            text-align: center;
-            font-size: 1.3rem;
-            padding-top: 5rem;
-            padding-bottom: 5rem;
-            display: none;
-            color: var(--text-sub);
-        }
-        /* Mobile adjustment for no results message */
-        @media (max-width: 767px) {
-            .no-results-message {
-                font-size: 1rem;
-                padding-top: 3rem;
-                padding-bottom: 3rem;
-            }
-        }
-
-        /* Floating Chatbot Button */
-        .chatbot-toggle-button {
-            cursor: none;
-            background-color: var(--btn-bg); /* Uses pink accent */
-            color: var(--text-light); /* Icon color on button */
-            padding: 1rem;
-            border-radius: 50%; /* Circular button */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px var(--pink-int); /* Subtle pink glow */
-            z-index: 50;
-            transform: scale(1);
-            transition: all 0.3s ease-in-out;
-            position: fixed;
-            bottom: 1.8rem;
-            right: 1.8rem;
-            border: none;
-            outline: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px; /* Fixed size for circular button */
-            height: 60px; /* Fixed size for circular button */
-        }
-        .chatbot-toggle-button:hover {
-            background-color: var(--btn-hover-bg); /* Darker pink on hover */
-            transform: scale(1.1);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--pink-pure); /* Stronger pure pink glow on hover */
-        }
-        .chatbot-toggle-button svg {
-            display: block;
-        }
-        .chatbot-toggle-button .hidden-icon {
-            display: none;
-        }
-        /* Mobile adjustment for chatbot toggle button */
-        @media (max-width: 767px) {
-            .chatbot-toggle-button {
-                bottom: 1rem;
-                right: 1rem;
-                width: 50px; /* Slightly smaller on mobile */
-                height: 50px;
-                padding: 0.75rem;
-            }
-            .chatbot-toggle-button svg {
-                width: 24px;
-                height: 24px;
-            }
-        }
-
-        /* Chatbot Widget */
-        .chatbot-container {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            width: 24rem; /* Standard width */
-            border-radius: 0.75rem; /* Consistent rounding */
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--card-hover-shadow); /* Stronger pink glow */
-            display: flex;
-            flex-direction: column;
-            z-index: 50;
-            background-color: var(--bg-bot);
-            border: 0.15em solid var(--border-main);
-        }
-        @media (max-width: 767px) { /* Mobile adjustment for chatbot container */
-            .chatbot-container {
-                width: calc(100% - 2rem); /* Full width minus padding */
-                left: 1rem; /* Centered with padding */
-                right: 1rem;
-                bottom: 1rem;
-                max-height: 70vh; /* Limit height to prevent overflow on small screens */
-            }
-            .messages-container {
-                max-height: calc(70vh - 100px); /* Adjust max-height based on header/input */
-            }
-        }
-        @media (min-width: 768px) {
-            .chatbot-container {
-                width: 28rem;
-            }
-        }
-
-        /* Chatbot Header */
-        .chatbot-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.9rem;
-            border-top-left-radius: 0.65rem; /* Match container radius */
-            border-top-right-radius: 0.65rem; /* Match container radius */
-            border-bottom: 1.5px solid var(--border-main);
-            background-color: var(--bot-header);
-        }
-
-        .chatbot-close-button{
-            background-color: transparent;
-            border: none;
-        }
-
-        .chatbot-close-button svg{
-            color: var(--text-light);
-        }
-
-        /* Mobile adjustment for chatbot header */
-        @media (max-width: 767px) {
-            .chatbot-header {
-                padding: 0.7rem;
-            }
-            .chatbot-header-title {
-                font-size: 1rem;
-            }
-
-        }
-
-        /* Chatbot Messages Container */
-        .messages-container {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            max-height: 20rem;
-        }
-        /* Mobile adjustment for messages container */
-        @media (max-width: 767px) {
-            .messages-container {
-                padding: 0.75rem;
-            }
-        }
-
-        /* Initial Chatbot Message */
-        .initial-chatbot-message {
-            text-align: center;
-            font-size: 0.85rem;
-            font-style: italic;
-            color: var(--text-sub);
-            padding: 0.4rem;
-            border-radius: 0.4rem;
-            background-color: var(--chat-bot-bg); /* Use bot message background */
-        }
-        /* Mobile adjustment for initial chatbot message */
-        @media (max-width: 767px) {
-            .initial-chatbot-message {
-                font-size: 0.75rem;
-                padding: 0.3rem;
-            }
-        }
-
-        /* Chat Message */
-        .chat-message {
-            margin-bottom: 0.75rem;
-        }
-        .chat-message.user-message {
-            text-align: right;
-        }
-        .chat-message.bot-message {
-            text-align: left;
-        }
-        .chat-message span {
-            display: inline-block;
-            padding: 0.6rem 0.9rem;
-            border-radius: 0.6rem;
-            max-width: 80%;
-            word-wrap: break-word;
-            font-size: 0.9rem;
-            color: var(--text-light); /* Ensure message text is readable */
-        }
-        .chat-message.user-message span {
-            background-color: var(--chat-user-bg);
-        }
-        .chat-message.bot-message span {
-            background-color: var(--chat-bot-bg);
-        }
-        /* Mobile adjustment for chat message bubbles */
-        @media (max-width: 767px) {
-            .chat-message span {
-                padding: 0.5rem 0.7rem;
-                font-size: 0.8rem;
-                max-width: 90%; /* Allow bubbles to be slightly wider */
-            }
-        }
-
-        /* Chat Input Area */
-        .chat-input-area {
-            padding: 0.8rem;
-            border-top: 1px solid var(--border-main);
-            display: flex;
-            align-items: center;
-            border-bottom-left-radius: 0.65rem;
-            border-bottom-right-radius: 0.65rem;
-        }
-        /* Mobile adjustment for chat input area */
-        @media (max-width: 767px) {
-            .chat-input-area {
-                padding: 0.6rem;
-            }
-        }
-
-        /* Chat Input */
-        .chat-input {
-            flex: 1;
-            padding: 0.6rem;
-            border-radius: 0.6rem;
-            outline: none;
-            border: 1px solid var(--border-main);
-            background-color: var(--bg-input); /* Consistent with chatbot header */
-            color: var(--text-light);
-            transition: box-shadow 0.2s, border-color 0.2s;
-            font-size: 0.9rem;
-        }
-        .chat-input::placeholder {
-            color: var(--text-placeholder);
-        }
-        .chat-input:focus {
-            box-shadow: 0 0 8px var(--focus-accent);
-            border-color: var(--focus-accent);
-        }
-        /* Mobile adjustment for chat input */
-        @media (max-width: 767px) {
-            .chat-input {
-                padding: 0.5rem;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Send Message Button */
-        .send-message-button {
-            cursor: none;
-            margin-left: 0.6rem;
-            padding: 0.6rem;
-            background-color: var(--btn-bg); /* Uses pink accent */
-            color: var(--text-light); /* Icon color */
-            border-radius: 0.6rem;
-            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-            border: none;
-            outline: none;
-        }
-        .send-message-button:hover {
-            background-color: var(--btn-hover-bg); /* Darker pink on hover */
-            transform: scale(1.05);
-            box-shadow: 0 0 8px var(--pink-pure); /* Pure pink glow */
-        }
-        .send-message-button:focus {
-            outline: 2px solid var(--focus-accent);
-            outline-offset: 2px;
-            background-color: var(--btn-hover-bg); /* Keep hover color on focus */
-        }
-        /* Mobile adjustment for send button */
-        @media (max-width: 767px) {
-            .send-message-button {
-                margin-left: 0.4rem;
-                padding: 0.5rem;
-            }
-            .send-message-button svg {
-                width: 18px;
-                height: 18px;
-            }
-        }
-
-        /* Footer */
-        .main-footer {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            text-align: center;
-            font-size: 0.85rem;
-            border-top-left-radius: 0.75rem;
-            border-top-right-radius: 0.75rem;
-            margin-top: 3.5rem;
-            background-image: var(--bg-card); /* Uses card background gradient */
-            color: var(--text-footer);
-            box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.3);
-        }
-        /* Mobile adjustment for footer */
-        @media (max-width: 767px) {
-            .main-footer {
-                padding-top: 1.5rem;
-                padding-bottom: 1.5rem;
-                font-size: 0.75rem;
-                margin-top: 2.5rem;
-            }
-        }
-
-        /* Custom mouse pointer styles */
-        #custom-cursor-dot, #custom-cursor-circle {
-            position: fixed;
-            top: 0;
-            left: 0;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transition: transform 0.1s ease-out, opacity 0.2s ease-out;
-        }
-
-        #custom-cursor-dot {
-            width: 6px;
-            height: 6px;
-            background-color: var(--cursor-dot);
-            opacity: 1;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 4px var(--cursor-dot);
-        }
-
-        #custom-cursor-circle {
-            width: 30px;
-            height: 30px;
-            border: 2px solid var(--cursor-circle); /* Pink border for general interactive */
-            background-color: rgba(221, 0, 221, 0.1); /* Semi-transparent pink */
-            transition: transform 0.1s ease-out, opacity 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out;
-            opacity: 1;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px var(--cursor-circle);
-        }
-
-        /* Hide custom cursor on mobile */
-        @media(max-width: 767px) {
-            #custom-cursor-circle,
-            #custom-cursor-dot {
-                display: none;
-            }
-        }
-
-        /* General interactive element hover effects for custom cursor */
-        .interactive-element-hover #custom-cursor-dot {
-            opacity: 0;
-        }
-
-        .interactive-element-hover #custom-cursor-circle {
-            width: 45px;
-            height: 45px;
-            background-color: rgba(255, 0, 255, 0.3); /* More noticeable pure pink tint on hover */
-            border-color: var(--pink-pure);
-            box-shadow: 0 0 12px var(--pink-pure);
-        }
-
-        /* Accent-specific hover effects for custom cursor - Blue/Cyan for cards */
-        .tutorial-card-hover-accent #custom-cursor-dot {
-            opacity: 0;
-        }
-
-        .tutorial-card-hover-accent #custom-cursor-circle {
-            width: 45px;
-            height: 45px;
-            background-color: var(--cursor-card-hover); /* Pure blue/cyan tint for card hover */
-            border-color: var(--blue-pure); /* Pure blue/cyan border */
-            box-shadow: 0 0 12px var(--blue-pure); /* Pure blue/cyan glow */
-        }
-
-        .start-tutorial-link-hover-accent #custom-cursor-dot {
-            opacity: 0;
-        }
-
-        .start-tutorial-link-hover-accent #custom-cursor-circle {
-            width: 45px;
-            height: 45px;
-            background-color: var(--cursor-link-hover); /* Interactive blue/cyan tint for link hover */
-            border-color: var(--blue-int); /* Interactive blue/cyan border */
-            box-shadow: 0 0 12px var(--blue-int); /* Interactive blue/cyan glow */
-        }
-
-        /* Custom Ripple Effect */
-        #custom-cursor-ripple {
-            position: fixed;
-            top: 0;
-            left: 0;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            background-color: var(--ripple-effect);
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0);
-            width: 40px;
-            height: 40px;
-        }
-
-        @keyframes ripple-effect {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(4);
-                opacity: 0;
-            }
-        }
-
-        .animate-ripple {
-            animation: ripple-effect 0.5s ease-out forwards;
-        }
-
-        /* Ensure interactive elements still show pointer cursor */
-        button, a, input[type="text"], .tutorial-card {
-            cursor: none;
-        }
-
-    </style>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduVideo - Smart Learning Platform</title>
+    <meta name="description" content="Discover, organize, and learn from educational videos with AI-powered features" />
+    
+    <!-- Fonts -->
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="js/main.js"></script>
+    <script type="module" src="js/script.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/chatbot.css">
 </head>
-<body>
-
-    <!-- Custom Mouse Pointer Elements -->
-    <div id="custom-cursor-dot"></div>
-    <div id="custom-cursor-circle"></div>
-    <div id="custom-cursor-ripple"></div> <!-- New element for click effect -->
-
-    <!-- Tutorials Section -->
-    <section class="tutorials-section">
-        <h1 class="section-heading animate-on-scroll">Our Popular Tutorials</h1>
-        <p class="section-paragraph animate-on-scroll">
-            Explore our curated collection of tutorials. Use the search bar below to find exactly what you're looking for!
-        </p>
-
-        <!-- Search Bar -->
-        <div class="search-bar-container animate-on-scroll">
-            <input
-                type="text"
-                id="searchTermInput"
-                autocomplete="off"
-                placeholder="Search for tutorials (e.g., React, Figma, JavaScript basics)..."
-                class="search-input"
-            />
-            <div class="search-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            <div id="searchLoader" class="search-loader">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            </div>
-            <!-- Search Suggestions Container - REMOVED -->
-        </div>
-
-        <!-- Tutorial Grid -->
-        <div id="tutorialGrid" class="tutorial-grid">
-            <!-- Initial loading message -->
-            <div id="initialLoadingMessage" class="initial-loading-message">
-                Loading tutorials...
-                <div class="loader-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                </div>
-            </div>
-            <!-- Tutorials will be rendered here by JavaScript -->
-        </div>
-        <div id="noResultsMessage" class="no-results-message">
-            No tutorials found matching your search. Try a different query!
-        </div>
-    </section>
-
-    <!-- Floating Chatbot Button -->
-    <button
-        id="chatbotToggleButton"
-        class="chatbot-toggle-button"
-        aria-label="Toggle Chatbot"
-    >
-        <svg id="chatbotOpenIcon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <svg id="chatbotCloseIcon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x hidden-icon"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-    </button>
-
-    <!-- Chatbot Widget -->
-    <div id="chatbotContainer" class="chatbot-container hidden">
-        <div class="chatbot-header">
-            <h3 class="chatbot-header-title">Chat with AI</h3>
-            <button id="chatbotCloseButton" class="chatbot-close-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-        </div>
-        <div id="messagesContainer" class="messages-container custom-scrollbar">
-            <p id="initialChatbotMessage" class="initial-chatbot-message">
-                Hello! How can I assist you with LearnSphere tutorials today?
-            </p>
-            <!-- Messages will be appended here -->
-        </div>
-        <div class="chat-input-area">
-            <input
-                type="text"
-                id="chatInput"
-                autocomplete="off"
-                placeholder="Type your message..."
-                class="chat-input"
-            />
-            <button
-                id="sendMessageButton"
-                class="send-message-button"
-            >
-                <!-- Changed to Lucide Send icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
-            </button>
-        </div>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-text">EduVideo</div>
+        <div class="loading-spinner"></div>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="main-footer animate-on-scroll">
-        <p>&copy; <span id="currentYear"></span> LearnSphere. All rights reserved.</p>
-        <p>Empowering Your Learning Journey</p>
-    </footer>
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand" id="sidebar-brand">
+          <i data-lucide="play-circle" class="brand-icon"></i>
+          <span class="sidebar-brand-text">EduVideo</span>
+        </div>
+        <button id="sidebar-toggle" class="sidebar-toggle">
+          <i data-lucide="panel-left"></i>
+        </button>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-route="home">
+          <i data-lucide="home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-route="search">
+          <i data-lucide="search"></i>
+          <span>Search</span>
+        </a>
+        <a href="#" class="nav-item" data-route="my-videos">
+          <i data-lucide="video"></i>
+          <span>My Videos</span>
+          <span class="nav-badge">12</span>
+        </a>
+        <a href="#" class="nav-item" data-route="saved">
+          <i data-lucide="bookmark"></i>
+          <span>Saved</span>
+          <span id="saved-count" class="nav-badge">0</span>
+        </a>
+        <a href="#" class="nav-item" data-route="trending">
+          <i data-lucide="trending-up"></i>
+          <span>Trending</span>
+        </a>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">AI Features</div>
+          <a href="#" class="nav-item" data-route="recommendations">
+            <i data-lucide="sparkles"></i>
+            <span>Recommendations</span>
+          </a>
+          <a href="#" class="nav-item" data-route="summary">
+            <i data-lucide="brain"></i>
+            <span>Smart Summary</span>
+          </a>
+          <a href="#" class="nav-item" data-route="learning-path">
+            <i data-lucide="target"></i>
+            <span>Learning Path</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section-title">Categories</div>
+          <a href="#" class="nav-item" data-category="Programming">
+            <i data-lucide="code"></i>
+            <span>Programming</span>
+          </a>
+          <a href="#" class="nav-item" data-category="Mathematics">
+            <i data-lucide="calculator"></i>
+            <span>Mathematics</span>
+          </a>
+          <a href="#" class="nav-item" data-category="Science">
+            <i data-lucide="flask-conical"></i>
+            <span>Science</span>
+          </a>
+          <a href="#" class="nav-item" data-category="Languages">
+            <i data-lucide="languages"></i>
+            <span>Languages</span>
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">
+            <i data-lucide="user"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-name">John Doe</div>
+            <div class="user-role">Student</div>
+          </div>
+          <button class="user-menu">
+            <i data-lucide="more-horizontal"></i>
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <script>
-        let allTutorials = []; // This will now be populated dynamically from JSON files
-        let filteredTutorials = [];
-        let isSearching = false;
-        let searchTimeout;
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="mobile-overlay"></div>
 
-        // List of tutorial file names (corresponding to tutorial IDs and .json filenames)
-        // This array will be AUTOMATICALLY UPDATED by the Node.js script.
-        // DO NOT EDIT THIS MANUALLY IF YOU ARE USING THE AUTOMATION SCRIPT.
-        const tutorialFileNames = [
-            'tds',
-            'electronics',
-            'automobile',
-            'survey',
-        ];
+    <!-- Mobile App Header -->
+    <div class="mobile-header">
+      <div class="mobile-header-content">
+        <div class="mobile-header-left">
+          <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="mobile-logo">
+            <i data-lucide="play-circle" class="brand-icon"></i>
+            <span class="mobile-brand-text">EduVideo</span>
+          </div>
+        </div>
+        <div class="mobile-header-right">
+          <button class="mobile-header-btn" title="Search">
+            <i data-lucide="search"></i>
+          </button>
+          <button class="mobile-header-btn" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="notification-dot"></span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-        // --- Utility Functions ---
-        function debounce(func, delay) {
-            let timeout;
-            return function(...args) {
-                const context = this;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), delay);
-            };
-        }
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Desktop Top Bar (hidden on mobile) -->
+      <div class="top-bar desktop-only">
+        <button id="desktop-mobile-menu-toggle" class="mobile-menu-toggle">
+          <i data-lucide="menu"></i>
+        </button>
 
-        // --- Tutorial Data Loading ---
-        async function loadTutorialsFromFiles() {
-            const initialLoadingMessage = document.getElementById('initialLoadingMessage');
-            initialLoadingMessage.classList.remove('hidden'); // Show loading message
+        <div class="top-bar-actions">
+          <button class="top-bar-btn" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="notification-dot"></span>
+          </button>
+          <button class="top-bar-btn" title="Settings">
+            <i data-lucide="settings"></i>
+          </button>
+        </div>
+      </div>
 
-            const fetchedTutorials = [];
-            for (const fileName of tutorialFileNames) {
-                try {
-                    // Fetching .json files from the 'tutorials' subfolder
-                    const response = await fetch(`tutorials/${fileName}.json`);
-                    if (!response.ok) {
-                        console.error(`Failed to fetch tutorials/${fileName}.json: ${response.status} ${response.statusText}`);
-                        continue; // Skip to the next file if one fails
-                    }
-                    const tutorialData = await response.json(); // Parsing as JSON
-                    fetchedTutorials.push(tutorialData);
-                } catch (fetchError) {
-                    console.error(`Error fetching or parsing tutorials/${fileName}.json:`, fetchError);
-                }
-            }
-            allTutorials = fetchedTutorials;
-            filteredTutorials = [...allTutorials]; // Initialize filtered with all loaded tutorials
-            initialLoadingMessage.classList.add('hidden'); // Hide loading message
-            renderTutorials(filteredTutorials); // Render after loading
-        }
+      <div class="content-area">
+        <!-- Hero Section -->
+        <div class="hero-section">
+          <div class="hero-content">
+            <div class="hero-text">
+              <h1 class="hero-title">Smart Video Learning Platform</h1>
+              <p class="hero-description">
+                Discover, organize, and learn from educational videos with AI-powered features
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" id="start-learning-btn">
+                  <i data-lucide="play"></i>
+                  Start Learning
+                </button>
+                <button class="btn btn-outline" id="upload-video-btn">
+                  <i data-lucide="upload"></i>
+                  Upload Video
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i data-lucide="video"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title">Total Videos</div>
+              <div class="stat-value" data-count="1247">0</div>
+              <div class="stat-change positive">+12% this month</div>
+              <div class="stat-description">Active learning content</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title">Active Students</div>
+              <div class="stat-value" data-count="8932">0</div>
+              <div class="stat-change positive">+8% this week</div>
+              <div class="stat-description">Engaged learners</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i data-lucide="clock"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title">Watch Time</div>
+              <div class="stat-value">24,567h</div>
+              <div class="stat-change positive">+15% this month</div>
+              <div class="stat-description">Total learning hours</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i data-lucide="sparkles"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title">AI Insights</div>
+              <div class="stat-value" data-count="156">0</div>
+              <div class="stat-change neutral">New recommendations</div>
+              <div class="stat-description">Generated this week</div>
+            </div>
+          </div>
+        </div>
 
-        // --- Tutorial Rendering ---
-        function renderTutorials(tutorialsToRender) {
-            const tutorialGrid = document.getElementById('tutorialGrid');
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            tutorialGrid.innerHTML = ''; // Clear existing tutorials
-
-            if (tutorialsToRender.length === 0) {
-                noResultsMessage.textContent = 'No tutorials found matching your search. Try a different query!';
-                noResultsMessage.classList.remove('hidden');
-            } else {
-                noResultsMessage.classList.add('hidden');
-            }
-
-            tutorialsToRender.forEach((tutorial, index) => {
-                const cardHtml = `
-                    <div class="tutorial-card group relative animate-on-scroll">
-                        <img
-                            src="${tutorial.imageUrl}"
-                            alt="${tutorial.title}"
-                            class="tutorial-card-image"
-                            onerror="this.onerror=null;this.src='https://placehold.co/600x400/374151/d1d5db?text=Image+Error';"
-                        />
-                        <div class="tutorial-card-content">
-                            <h3 class="tutorial-title">${tutorial.title}</h3>
-                            <p class="tutorial-description">
-                                ${tutorial.description}
-                            </p>
-                            <div class="tutorial-tags">
-                                ${tutorial.tags.map(tag => `<span class="tutorial-tag">${tag}</span>`).join('')}
-                            </div>
-                            <div class="start-tutorial-link-container">
-                                <a
-                                    href="${tutorial.link}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="start-tutorial-link"
-                                >
-                                <span style="display: inline-flex; align-items: center;">
-                                Start Tutorial
-                                <svg style="margin-left: 5px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" baseProfile="tiny" version="1.2" viewBox="0 0 24 24" id="right-arrow" fill="currentColor">
-                                    <path d="M4 19.999a.999.999 0 0 1-1-1v-1a9.98 9.98 0 0 1 8-9.796V6.499c0-.534.208-1.036.585-1.414.756-.757 2.075-.756 2.829-.001l6.288 6.203a.996.996 0 0 1 0 1.424l-6.293 6.207c-.746.746-2.067.751-2.823-.005A1.986 1.986 0 0 1 11 17.499v-1.437c-2.495.201-4.523.985-6.164 3.484a1 1 0 0 1-.836.453zm8-5.989l1-.01v3.499l5.576-5.5L13 6.503V10s-.384-.004-.891.052a7.982 7.982 0 0 0-6.892 6.08C7.338 14.404 9.768 14.066 12 14.01z"></path>
-                                </svg>
-                                </span>
-
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                tutorialGrid.insertAdjacentHTML('beforeend', cardHtml);
-            });
-
-            // After rendering, observe the new tutorial cards
-            // Apply staggered delays dynamically for a smoother effect
-            const tutorialCards = tutorialGrid.querySelectorAll('.tutorial-card');
-            tutorialCards.forEach((card, i) => {
-                card.style.animationDelay = `${i * 0.1}s`; // Staggered delay for each card
-            });
-            observeElementsForAnimation('.tutorial-card', 'is-visible');
-        }
-
-        // --- AI Search Functionality ---
-        async function performAISearch(query) {
-            const searchLoader = document.getElementById('searchLoader');
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            const tutorialGrid = document.getElementById('tutorialGrid');
-
-            // Always hide loader and no results message initially when search starts or input is cleared
-            searchLoader.classList.add('hidden');
-            noResultsMessage.classList.add('hidden');
-
-            if (query.trim() === '') {
-                isSearching = false;
-                filteredTutorials = [...allTutorials]; // Ensure all tutorials are set
-                console.log("Input cleared. Displaying all tutorials:", filteredTutorials.length); // Debugging log
-                renderTutorials(filteredTutorials); // Render all tutorials immediately
-                return;
-            }
-
-            // If query is not empty, start search process
-            isSearching = true;
-            searchLoader.classList.remove('hidden');
-            // Show "Searching..." message while AI is processing
-            tutorialGrid.innerHTML = `
-                <div class="initial-loading-message">
-                    Searching for tutorials...
-                    <div class="loader-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    </div>
+        <!-- Advanced Search Section -->
+        <div class="search-section">
+          <div class="search-header">
+            <h2 class="search-title">Find Your Perfect Learning Content</h2>
+            <p class="search-description">Advanced search with real-time filtering and AI suggestions</p>
+          </div>
+          
+          <!-- Main Search Bar -->
+          <div class="search-container">
+            <div class="search-input-container">
+              <div class="search-input-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input 
+                  type="text" 
+                  id="search-input"
+                  placeholder="Search videos, topics, or ask AI..."
+                  class="search-input"
+                  autocomplete="off"
+                >
+                <div class="search-buttons">
+                  <button class="btn-ai" id="ai-assist-btn">
+                    <i data-lucide="sparkles"></i>
+                    AI Assist
+                  </button>
+                  <button id="search-btn" class="btn-search">
+                    <i data-lucide="search"></i>
+                  </button>
                 </div>
-            `;
-            noResultsMessage.classList.add('hidden'); // Ensure it's hidden
+              </div>
+              
+              <!-- Search Results Dropdown -->
+              <div id="search-results-dropdown" class="search-results-dropdown hidden">
+                <div class="search-results-header">
+                  <span>Search Results</span>
+                  <button id="close-search-results" class="close-btn">
+                    <i data-lucide="x"></i>
+                  </button>
+                </div>
+                <div id="search-results-list" class="search-results-list">
+                  <!-- Results populated by JavaScript -->
+                </div>
+              </div>
 
-            try {
-                // Prompt for search functionality - Enhanced for complex queries
-                const prompt = `You are an intelligent tutorial search assistant for LearnSphere. Your primary goal is to find the most relevant tutorial IDs based on a user's query, making the search experience user-friendly and highly engaging.
+              
+              <!-- AI Suggestions Dropdown -->
+              <div id="suggestions-dropdown" class="suggestions-dropdown hidden">
+                <div class="suggestions-header">
+                  <i data-lucide="sparkles"></i>
+                  <span>AI Suggestions</span>
+                </div>
+                <div class="suggestions-list">
+                  <button class="suggestion-item">How to implement neural networks?</button>
+                  <button class="suggestion-item">Best practices for React development</button>
+                  <button class="suggestion-item">Data structures and algorithms</button>
+                  <button class="suggestion-item">Machine learning fundamentals</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="filters-container">
+              <div class="filters-row">
+                <div class="filters-header">
+                  <i data-lucide="filter"></i>
+                  <span>Filters:</span>
+                </div>
                 
-                Here is the list of available tutorials, including their IDs, titles, descriptions, and tags (which represent categories, subjects, and skill levels):
-                ${allTutorials.map(t => `- ID: ${t.id}, Title: ${t.title}, Description: ${t.description}, Tags: ${t.tags.join(', ')}`).join('\n')}
+                <div class="filters-list">
+                  <span class="filter-badge" data-filter="Programming">Programming</span>
+                  <span class="filter-badge" data-filter="Mathematics">Mathematics</span>
+                  <span class="filter-badge" data-filter="Engineering Technology">Engineering</span>
+                  <span class="filter-badge" data-filter="History">History</span>
+                  <span class="filter-badge" data-filter="Languages">Languages</span>
+                  <span class="filter-badge" data-filter="Art">Art</span>
+                  <span class="filter-badge" data-filter="Music">Music</span>
+                  <span class="filter-badge" data-filter="Business">Business</span>
+                </div>
                 
-                User Query: "${query}"
-                
-                Instructions for Advanced Search:
-                1.  **Interpret and Refine Query:**
-                    * **Spelling Correction:** First, intelligently correct any obvious spelling mistakes or typos in the user's query (e.g., "electnic" should be understood as "electronic", "phython" as "python", "connecctions" as "connections").
-                    * **Summarization/Intent Extraction:** If the query is long, conversational, or vague, distill it down to its core intent, key topics, and relevant keywords. Focus on what the user *really* wants to learn.
-                    * **Synonym and Related Concepts:** Consider synonyms and closely related concepts to broaden the search intelligently (e.g., "coding" for "programming", "visuals" for "design", "wire connections" for "electronics circuits").
-                2.  **Advanced Analysis:**
-                    * **Category/Subject Inference:** Infer relevant categories or subjects from the refined query (e.g., 'wire' -> 'electronics', 'design' -> 'UI/UX', 'ML' -> 'Machine Learning', 'tax' -> 'Finance', "car" -> "automobile", "opinion" -> "survey").
-                    * **Skill Level Detection:** Identify any specified skill levels (e.g., 'advanced', 'beginner', 'basics', 'mastering', 'intro', "for new learners").
-                    * **Logical Combination:** Understand and combine multiple criteria from the query (e.g., "beginner web development" should prioritize tutorials that are both beginner-friendly and cover web development).
-                    * **Prioritization:** If multiple tutorials match, prioritize those with more direct and strong relevance to the core intent.
-                3.  **Relevance Matching:** Find the tutorial IDs that are most relevant based on a combination of:
-                    * Direct keyword matches (from the refined query).
-                    * Inferred categories/subjects.
-                    * Detected skill levels.
-                    * Overall semantic similarity to the tutorial content.
-                    Prioritize results that offer the best match across these criteria.
-                4.  **Output Format:** Respond ONLY with a comma-separated list of the 'id's of the relevant tutorials. Do not include any other text, explanations, or formatting. If no tutorials are relevant after your analysis, respond with "none".
-                
-                Examples of expected output based on various queries:
-                - Query: "electnic advanced" -> Example Output: electronics,advanced-electronics-tutorial-id (assuming such an advanced electronics tutorial exists and is relevant)
-                - Query: "basics of figma" -> Example Output: figma-ui-design
-                - Query: "how to build a website with react" -> Example Output: react-hooks-mastery,nodejs-rest-apis
-                - Query: "learn about wire" -> Example Output: electronics
-                - Query: "I want to get into creating digital art for web interfaces, something for people who are just starting out" -> Example Output: graphic-design-basics,figma-ui-design
-                - Query: "complex grid layouts for responsive pages" -> Example Output: advanced-css-grid
-                - Query: "car repair guide" -> Example Output: automobile
-                - Query: "survey methods" -> Example Output: survey
-                - Query: "I need to find about wire connecctions on circuits" -> Example Output: electronics`;
-
-                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                const payload = { contents: chatHistory };
-                // --- IMPORTANT: Your Gemini API Key for GitHub Pages deployment ---
-                const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`API Error: ${response.status} - ${response.statusText} - ${errorText}`);
-                    throw new Error(`API returned an error: ${response.statusText || 'Unknown Error'}`);
-                }
-
-                const result = await response.json();
-
-                let aiResponse = '';
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    aiResponse = result.candidates[0].content.parts[0].text.trim();
-                }
-
-                console.log("AI Search Response:", aiResponse);
-
-                if (aiResponse.toLowerCase() === 'none' || aiResponse === '') {
-                    filteredTutorials = []; // No relevant IDs from AI, so show nothing
-                } else {
-                    // Attempt to parse AI response as comma-separated IDs
-                    const relevantIds = aiResponse.split(',').map(id => id.trim());
-                    // Filter based on IDs returned by AI
-                    filteredTutorials = allTutorials.filter(tutorial => relevantIds.includes(tutorial.id));
-
-                    // If AI returned IDs but none matched existing tutorials, or if parsing failed to yield valid IDs,
-                    // fallback to client-side search with a warning.
-                    if (filteredTutorials.length === 0 && relevantIds.length > 0) {
-                        console.warn("AI returned IDs, but none matched existing tutorials. Falling back to client-side search.");
-                        fallbackClientSideSearch(query);
-                    }
-                }
-            } catch (error) {
-                console.error('Error during AI search or parsing AI response:', error);
-                // Display a user-friendly error message in the tutorial grid
-                tutorialGrid.innerHTML = `
-                    <div class="initial-loading-message">
-                        <p style="color: var(--error-text);">Error during search. Please try again later.</p>
-                    </div>
-                `;
-                filteredTutorials = []; // Clear results on error
-            } finally {
-                isSearching = false;
-                searchLoader.classList.add('hidden');
-                renderTutorials(filteredTutorials); // Render the results (or no results message)
-            }
-        }
-
-        // Fallback search now only checks title, description, and tags
-        function fallbackClientSideSearch(query) {
-            const lowerCaseQuery = query.toLowerCase();
-            filteredTutorials = allTutorials.filter(tutorial =>
-                tutorial.title.toLowerCase().includes(lowerCaseQuery) ||
-                tutorial.description.toLowerCase().includes(lowerCaseQuery) ||
-                tutorial.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery))
-            );
-        }
-
-        // --- Chatbot Functionality (Rebuilt) ---
-        let chatMessages = []; // Stores the chat history for context, now reset on page load
-        let isChatbotLoading = false; // Prevents multiple simultaneous API calls
-
-        /**
-         * Appends a message to the chatbot's message container.
-         * @param {string} sender - 'user' or 'bot'
-         * @param {string} text - The message text
-         */
-        function appendMessage(sender, text) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            const initialMessage = document.getElementById('initialChatbotMessage');
-
-            // Remove initial message once the first message (user or bot) is appended
-            if (initialMessage) {
-                initialMessage.remove();
-            }
-
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('chat-message');
-            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-
-            const messageSpan = document.createElement('span');
-            messageSpan.innerHTML = text; // Use innerHTML to allow for links and Markdown
-            messageDiv.appendChild(messageSpan);
-            messagesContainer.appendChild(messageDiv);
-
-            // Scroll to the bottom to show the latest message
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        /**
-         * Toggles the visibility of the chatbot loading indicator.
-         * @param {boolean} show - True to show, false to hide.
-         */
-        function showChatbotLoading(show) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            let loadingDiv = document.getElementById('chatbotLoadingDiv');
-
-            if (show) {
-                if (!loadingDiv) {
-                    loadingDiv = document.createElement('div');
-                    loadingDiv.id = 'chatbotLoadingDiv';
-                    loadingDiv.classList.add('chat-message', 'bot-message');
-                    loadingDiv.innerHTML = `<span>Thinking...</span>`;
-                    messagesContainer.appendChild(loadingDiv);
-                }
-                messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to show thinking message
-            } else {
-                if (loadingDiv) {
-                    loadingDiv.remove(); // Remove the loading indicator
-                }
-            }
-        }
-
-        /**
-         * Sends a message to the Gemini API and handles the response for the chatbot.
-         */
-        async function sendChatMessage() {
-            const chatInput = document.getElementById('chatInput');
-            const message = chatInput.value.trim();
-
-            if (message === '') return; // Don't send empty messages
-            if (isChatbotLoading) return; // Prevent multiple sends
-
-            // Append user message to UI and clear input
-            appendMessage('user', message);
-            // Add user message to chat history for context, ensuring correct role
-            chatMessages.push({ role: 'user', parts: [{ text: message }] });
-            chatInput.value = '';
-
-            // Disable input and button, show loading indicator
-            isChatbotLoading = true;
-            chatInput.disabled = true;
-            document.getElementById('sendMessageButton').disabled = false;
-            showChatbotLoading(true);
-
-            try {
-                let botResponseText;
-
-                // Prepare chat history for the API call, including the system instruction
-                // This system instruction is crucial for the AI's persona and capabilities
-                let currentChatHistory = [{
-                    role: "user",
-                    parts: [{ text: `You are a helpful and friendly assistant for LearnSphere, an online tutorial platform.
-                    Your goal is to provide concise, relevant, and engaging answers.
-                    
-                    **Capabilities:**
-                    - Answer questions about web development, UI/UX design, programming (like JavaScript, React, Node.js, Java), CSS, HTML, electronics, automotive, and general learning.
-                    - **Use emojis occasionally** to make responses more engaging and friendly.
-                    - **Generate information in a table format** when appropriate for structured data. Use Markdown table syntax.
-                    - **Simulate real-time information access:** If asked about current events or widely known public information, answer as if you have just looked it up, leveraging your vast training data. Do not explicitly state you are "searching the internet" but rather provide the information directly.
-                    - **Suggest relevant tutorials:** If a user's query is clearly related to a tutorial, suggest it by its title and provide a clickable link.
-                    - **Remember user's name and preferences within the current session.** If the user introduces themselves, remember their name and use it in subsequent interactions.
-                    
-                    **Constraints:**
-                    - Keep your answers concise and directly related to learning or our tutorials.
-                    - Do not engage in topics outside of LearnSphere's educational content. If asked about something unrelated, politely redirect to our tutorials.
-                    - When suggesting tutorials, use the format: "<a href='{tutorial.link}' target='_blank' rel='noopener noreferrer' style='color: var(--link-main); text-decoration: underline;'>{tutorial.title}</a>".
-                    
-                    Here is the list of available tutorials, including their IDs, titles, descriptions, and tags (which represent categories, subjects, and skill levels):
-                    ${allTutorials.map(t => `- ID: ${t.id}, Title: ${t.title}, Description: ${t.description}, Tags: ${t.tags.join(', ')}`).join('\n')}
-                    ` }]
-                }];
-
-                // Add previous messages to history for context
-                // Ensure roles are 'user' or 'model' for the API
-                // Limit history to keep payload size reasonable and focus on recent context
-                // The `chatMessages` array already contains messages in the correct { role: 'user'/'model', parts: [{ text: '...' }] } format.
-                const recentMessagesForContext = chatMessages.slice(Math.max(chatMessages.length - 10, 0)); // Keep last 10 messages for better memory
-                recentMessagesForContext.forEach(msg => {
-                    currentChatHistory.push(msg);
-                });
-
-                const payload = { contents: currentChatHistory };
-                const apiKey = "AIzaSyDY5VgoB8_Rvlmna0xPfiRow3FD2VrheQw";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`API Error: ${response.status} - ${response.statusText} - ${errorText}`);
-                    throw new Error(`API returned an error: ${response.statusText || 'Unknown Error'}`);
-                }
-
-                const result = await response.json();
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    botResponseText = result.candidates[0].content.parts[0].text;
-                } else {
-                    console.warn("Chatbot AI response structure unexpected or empty.");
-                    botResponseText = "Sorry, I couldn't get a clear response. Can you please rephrase?";
-                }
-
-                // Append bot's response to UI and history
-                appendMessage('bot', botResponseText);
-                // Store bot's response for context, ensuring correct role
-                chatMessages.push({ role: 'model', parts: [{ text: botResponseText }] });
-
-            } catch (error) {
-                console.error('Error during chatbot API call:', error);
-                appendMessage('bot', "Oops! Something went wrong on my end. Please try again later.");
-            } finally {
-                // Re-enable input and button, hide loading indicator
-                isChatbotLoading = false;
-                chatInput.disabled = false;
-                document.getElementById('sendMessageButton').disabled = false;
-                showChatbotLoading(false);
-            }
-        }
-
-
-        /**
-         * Toggles the visibility of the chatbot widget.
-         */
-        function toggleChatbot() {
-            const chatbotContainer = document.getElementById('chatbotContainer');
-            const openIcon = document.getElementById('chatbotOpenIcon');
-            const closeIcon = document.getElementById('chatbotCloseIcon');
-
-            if (chatbotContainer.classList.contains('hidden')) {
-                chatbotContainer.classList.remove('hidden');
-                chatbotContainer.classList.add('animate-fade-in-up');
-                openIcon.classList.add('hidden-icon');
-            } else {
-                chatbotContainer.classList.add('hidden');
-                chatbotContainer.classList.remove('animate-fade-in-up');
-                openIcon.classList.remove('hidden-icon');
-            }
-            closeIcon.classList.toggle('hidden-icon'); // Toggle visibility of close icon
-        }
-
-        // --- Intersection Observer for Scroll Animations ---
-        function observeElementsForAnimation(selector, animationClass) {
-            const elements = document.querySelectorAll(selector);
-
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Add the animation class
-                        entry.target.classList.add(animationClass);
-                    } else {
-                        // Remove the animation class when the element is out of view
-                        entry.target.classList.remove(animationClass);
-                        // Reset animation for elements that use keyframe animations
-                        if (entry.target.classList.contains('section-heading') ||
-                            entry.target.classList.contains('section-paragraph') ||
-                            entry.target.classList.contains('search-bar-container') ||
-                            entry.target.classList.contains('tutorial-card') ||
-                            entry.target.classList.contains('main-footer')) {
-                            // To re-trigger keyframe animations, remove and re-add the class
-                            // A small timeout ensures the browser registers the removal before re-adding
-                            setTimeout(() => {
-                                entry.target.style.animation = 'none'; // Temporarily disable animation
-                                entry.target.offsetHeight; // Trigger reflow
-                                entry.target.style.animation = ''; // Re-enable animation
-                            }, 10);
-                        }
-                    }
-                });
-            }, {
-                root: null, // viewport
-                threshold: 0.1 // Trigger when 10% of the element is visible
-            });
-
-            elements.forEach(element => {
-                observer.observe(element);
-            });
-        }
-
-        // Smooth scroll for scroll wheel (for main window)
-        let currentScrollY = window.scrollY;
-        let animationFrameId = null;
-
-        function smoothScrollTo(targetScrollY, duration = 500) {
-            const start = window.scrollY;
-            const change = targetScrollY - start;
-            const startTime = performance.now();
-
-            function animateScroll(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-
-                const easedProgress = progress * (2 - progress);
-
-                window.scrollTo(0, start + change * easedProgress);
-
-                if (progress < 1) {
-                    animationFrameId = requestAnimationFrame(animateScroll);
-                } else {
-                    animationFrameId = null;
-                }
-            }
-
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            animationFrameId = requestAnimationFrame(animateScroll);
-        }
-
-        // Event listener for scroll wheel on main window
-        window.addEventListener('wheel', (e) => {
-            e.preventDefault();
-
-            const scrollAmount = e.deltaY * 0.8;
-            currentScrollY += scrollAmount;
-
-            const maxScrollY = document.documentElement.scrollHeight - window.innerHeight;
-            currentScrollY = Math.max(0, Math.min(currentScrollY, maxScrollY));
-
-            smoothScrollTo(currentScrollY, 500);
-        }, { passive: false });
-
-        // --- Custom Cursor JavaScript ---
-        const customCursorDot = document.getElementById('custom-cursor-dot');
-        const customCursorCircle = document.getElementById('custom-cursor-circle');
-        const customCursorRipple = document.getElementById('custom-cursor-ripple'); // Get ripple element
-
-        let mouseX = 0;
-        let mouseY = 0;
-        let circleX = 0;
-        let circleY = 0;
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            // The dot is now positioned directly at mouseX, mouseY and centered via CSS transform
-            customCursorDot.style.left = `${mouseX}px`;
-            customCursorDot.style.top = `${mouseY}px`;
-
-            // Determine if the hovered element is interactive or a 'start tutorial' link
-            const target = e.target;
-            const isStartTutorialLink = target.closest('.start-tutorial-link');
-            const isTutorialCard = target.closest('.tutorial-card');
-            const isInputOrButton = target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.closest('button') || target.closest('a');
-
-            // Reset all custom cursor classes first
-            document.body.classList.remove('hide-custom-cursor');
-            document.body.classList.remove('interactive-element-hover');
-            document.body.classList.remove('tutorial-card-hover-accent');
-            document.body.classList.remove('start-tutorial-link-hover-accent');
-
-
-            if (isStartTutorialLink) {
-                document.body.classList.add('start-tutorial-link-hover-accent');
-            } else if (isTutorialCard) {
-                document.body.classList.add('tutorial-card-hover-accent');
-            } else if (isInputOrButton) {
-                document.body.classList.add('interactive-element-hover');
-            }
-        });
-
-        // Handle mousedown for ripple effect
-        document.addEventListener('mousedown', (e) => {
-            // Only trigger ripple if the custom cursor is visible (not on 'start tutorial' link)
-            // The `start-tutorial-link-hover-accent` class is applied when hovering over the link,
-            // which also means the custom cursor is hidden. So, if this class is present, don't show ripple.
-            if (!document.body.classList.contains('start-tutorial-link-hover-accent')) {
-                customCursorRipple.style.left = `${e.clientX}px`;
-                customCursorRipple.style.top = `${e.clientY}px`;
-
-                // Reset animation by removing and re-adding class, forcing reflow
-                customCursorRipple.classList.remove('animate-ripple');
-                // A small timeout ensures the browser registers the removal before re-adding
-                setTimeout(() => {
-                    customCursorRipple.classList.add('animate-ripple');
-                }, 10); // Small delay to ensure animation reset
-            }
-        });
-
-
-        function animateCustomCursor() {
-            // Lerp (linear interpolation) for smooth trailing effect
-            // The circle now interpolates towards the dot's position (which is the true mouseX, mouseY)
-            circleX += (mouseX - circleX) * 0.8; /* Adjusted lerp for very tight follow */
-            circleY += (mouseY - circleY) * 0.8; /* Adjusted lerp for very tight follow */
-
-            customCursorCircle.style.left = `${circleX}px`;
-            customCursorCircle.style.top = `${circleY}px`;
-
-            requestAnimationFrame(animateCustomCursor);
-        }
-
-        // Start the custom cursor animation loop
-        animateCustomCursor();
-
-        // --- Event Listeners and Initial Setup ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Reset chat messages on page load to ensure a fresh start
-            chatMessages = [];
-            const messagesContainer = document.getElementById('messagesContainer');
-            messagesContainer.innerHTML = `
-                <p id="initialChatbotMessage" class="initial-chatbot-message">
-                    Hello! How can I assist you with LearnSphere tutorials today?
-                </p>
-            `;
-
-            // Set current year in footer
-            document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-            // Load tutorials from files
-            loadTutorialsFromFiles(); // This function will now fetch from JSON files
-
-            // Observe all relevant elements for animation
-            observeElementsForAnimation('.section-heading', 'is-visible');
-            observeElementsForAnimation('.section-paragraph', 'is-visible');
-            observeElementsForAnimation('.search-bar-container', 'is-visible');
-            observeElementsForAnimation('.main-footer', 'is-visible');
-            // Tutorial cards are observed within renderTutorials to ensure they are present in DOM
-
-
-            // Search input event listener for immediate empty check
-            const searchTermInput = document.getElementById('searchTermInput');
-            searchTermInput.addEventListener('input', (e) => {
-                const query = e.target.value.trim();
-                if (query === '') {
-                    // If input is empty, immediately show all tutorials
-                    isSearching = false;
-                    filteredTutorials = [...allTutorials];
-                    console.log("Immediate empty input check: Displaying all tutorials:", filteredTutorials.length);
-                    renderTutorials(filteredTutorials);
-                    document.getElementById('searchLoader').classList.add('hidden'); // Ensure loader is hidden
-                    document.getElementById('noResultsMessage').classList.add('hidden'); // Ensure no results is hidden
-                } else {
-                    // Otherwise, use the debounced function for actual search
-                    debouncePerformAISearch(query);
-                }
-            });
-
-            // Debounced version of performAISearch for actual search queries
-            const debouncePerformAISearch = debounce(performAISearch, 200);
-
-
-            // Chatbot button listeners
-            document.getElementById('chatbotToggleButton').addEventListener('click', toggleChatbot);
-            document.getElementById('chatbotCloseButton').addEventListener('click', toggleChatbot);
-            document.getElementById('sendMessageButton').addEventListener('click', sendChatMessage);
-            document.getElementById('chatInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendChatMessage();
-                }
-            });
-
-            // --- Chatbot Scroll Wheel Fix ---
-            messagesContainer.addEventListener('wheel', (e) => {
-                // Prevent default scroll behavior on the messages container
-                e.preventDefault();
-                // Stop event propagation to prevent the main page from scrolling
-                e.stopPropagation();
-                // Adjust scrollTop based on deltaY
-                messagesContainer.scrollTop += e.deltaY;
-            });
-        });
-    </script>
-</body>
+                <button id="clear-filters" class="btn-clear hidden">
+                  <i data-lucide="x"></i>
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Sort By -->
+            <div class="sort-container mobile-only">
+              <div class="sort-header">
+                <i data-lucide="arrow-up-down"></i>
+                <span>Sort by :</span>
+              <select id="mobile-sort-select" class="sort-select">
+                <option value="relevance">Relevance</option>
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="most-viewed">Most Viewed</option>
+                <option value="duration-short">Duration (Short)</option>
+                <option value="duration-long">Duration (Long)</option>
+                <option value="alphabetical">A-Z</option>
+              </select>
+              </div>
+            </div>
+
+            <!-- Active Filters Summary -->
+            <div id="active-filters-summary" class="active-filters-summary hidden"></div>
+            
+            <!-- Search Stats -->
+            <div id="search-stats" class="search-stats hidden">
+              <span id="results-count">0 results</span>
+              <span id="search-time">in 0ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Content -->
+        <div class="featured-section">
+          <div class="featured-header">
+            
+            <div class="sort-container">
+              <div class="sort-header">
+                <i data-lucide="arrow-up-down"></i>
+                <span>Sort by :</span>
+              </div>
+              <select id="sort-select" class="sort-select">
+                <option value="relevance">Relevance</option>
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="most-viewed">Most Viewed</option>
+                <option value="duration-short">Duration (Short)</option>
+                <option value="duration-long">Duration (Long)</option>
+                <option value="alphabetical">A-Z</option>
+              </select>
+            </div>
+            <div class="view-controls">
+              <button id="grid-view" class="view-btn active" title="Grid View">
+                <i data-lucide="grid-3x3"></i>
+              </button>
+              <button id="list-view" class="view-btn" title="List View">
+                <i data-lucide="list"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="videos-container" class="videos-container">
+            <div id="videos-grid" class="videos-grid">
+              <!-- Videos will be populated by JavaScript -->
+            </div>
+          </div>
+
+                  </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <h3 class="quick-actions-title">Quick Actions</h3>
+          <div class="quick-actions-grid">
+            <button class="quick-action-item" data-action="start-learning">
+              <div class="quick-action-header">
+                <i data-lucide="play"></i>
+                <span>Start Learning</span>
+              </div>
+              <span class="quick-action-description">Browse recommended videos</span>
+            </button>
+            
+            <button class="quick-action-item" data-action="ai-recommendations">
+              <div class="quick-action-header">
+                <i data-lucide="sparkles"></i>
+                <span>AI Recommendations</span>
+              </div>
+              <span class="quick-action-description">Get personalized suggestions</span>
+            </button>
+            
+            <button class="quick-action-item" data-action="upload-content">
+              <div class="quick-action-header">
+                <i data-lucide="upload"></i>
+                <span>Upload Content</span>
+              </div>
+              <span class="quick-action-description">Add new educational videos</span>
+            </button>
+
+            <button class="quick-action-item" data-action="analytics">
+              <div class="quick-action-header">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Analytics</span>
+              </div>
+              <span class="quick-action-description">View learning progress</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- AI Writer Modal (opens when clicking card three-dots) -->
+    <div id="ai-modal" class="ai-modal hidden" aria-hidden="true">
+      <div class="ai-modal-backdrop"></div>
+      <div class="ai-modal-content" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+        <button class="ai-modal-close" aria-label="Close">✕</button>
+        <h3 id="ai-modal-title">AI Writer</h3>
+        <div id="ai-modal-video-info" class="ai-video-info"></div>
+
+        <div class="ai-controls">
+          <label for="ai-tone-select" class="sr-only">Tone</label>
+          <select id="ai-tone-select" class="ai-tone-select">
+            <option value="brief">Brief Summary</option>
+            <option value="detailed" selected>Detailed Explanation</option>
+            <option value="do">Action Steps (Do)</option>
+          </select>
+          <button id="ai-generate-btn" class="btn btn-primary">Generate</button>
+        </div>
+
+        <div id="ai-modal-output" class="ai-output" contenteditable="true" aria-label="AI generated content"></div>
+
+        <div class="ai-actions">
+          <button id="ai-copy-btn" class="btn btn-outline">Copy</button>
+          <button id="ai-close-done" class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="video-modal hidden">
+      <div class="video-modal-backdrop" id="video-modal-backdrop"></div>
+      <div class="video-modal-content" role="dialog" aria-modal="true">
+        <button id="video-modal-close" class="video-modal-close" aria-label="Close video">
+          <i data-lucide="x"></i>
+        </button>
+        <div id="video-player-container" class="video-player-container">
+          <!-- Video iframe or video element will be injected here -->
+        </div>
+        <br>
+        <div class="video-modal-actions">
+          <button id="modal-save-btn" class="btn" title="Save">
+            <i data-lucide="bookmark"></i>
+            Save
+          </button>
+          <button id="modal-share-btn" class="btn" title="Share">
+            <i data-lucide="share-2"></i>
+            Share
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Search Modal -->
+    <div id="mobile-search-modal" class="mobile-search-modal hidden">
+      <div class="mobile-search-backdrop"></div>
+      <div class="mobile-search-content">
+        <div class="mobile-search-header">
+          <button id="mobile-search-close" class="mobile-search-close">
+            <i data-lucide="x"></i>
+          </button>
+          <h3>Search Videos</h3>
+        </div>
+        <div class="mobile-search-body">
+          <div class="mobile-search-input-container">
+            <i data-lucide="search" class="mobile-search-icon"></i>
+            <input 
+              type="text" 
+              id="mobile-search-input"
+              placeholder="Search videos, topics, or ask AI..."
+              class="mobile-search-input"
+              autocomplete="off"
+            >
+          </div>
+          <div class="mobile-search-actions">
+            <button id="mobile-ai-assist-btn" class="btn btn-primary">
+              <i data-lucide="sparkles"></i>
+              AI Assist
+            </button>
+            <button id="mobile-search-btn" class="btn btn-outline">
+              <i data-lucide="search"></i>
+              Search
+            </button>
+          </div>
+          <div class="mobile-view-controls">
+            <div class="mobile-view-title">View Mode</div>
+            <div class="mobile-view-buttons">
+              <button id="mobile-grid-view" class="mobile-view-btn active" data-view="grid">
+                <i data-lucide="grid-3x3"></i>
+                <span>Grid</span>
+              </button>
+              <button id="mobile-list-view" class="mobile-view-btn" data-view="list">
+                <i data-lucide="list"></i>
+                <span>List</span>
+              </button>
+            </div>
+          </div>
+          <div class="mobile-search-filters">
+            <div class="mobile-filters-title">Quick Filters</div>
+            <div class="mobile-filters-grid">
+              <button class="mobile-filter-btn" data-filter="Programming">Programming</button>
+              <button class="mobile-filter-btn" data-filter="Mathematics">Mathematics</button>
+              <button class="mobile-filter-btn" data-filter="Science">Science</button>
+              <button class="mobile-filter-btn" data-filter="Languages">Languages</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav">
+      <div class="bottom-nav-content">
+        <a href="#" class="bottom-nav-item active" data-route="home">
+          <i data-lucide="home"></i>
+          <span>Home</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-route="search">
+          <i data-lucide="search"></i>
+          <span>Search</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-route="my-videos">
+          <i data-lucide="video"></i>
+          <span>Videos</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-route="saved">
+          <i data-lucide="bookmark"></i>
+          <span>Saved</span>
+        </a>
+        <a href="#" class="bottom-nav-item" data-route="profile">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- SachiDev Chatbot -->
+    <button id="chatbot-toggle" class="chatbot-toggle" title="Open SachiDev">
+      <i data-lucide="message-circle"></i>
+    </button>
+
+    <div id="chatbot-container" class="chatbot-container">
+      <div class="chatbot-header">
+        <div class="chatbot-header-content">
+          <div class="chatbot-avatar">SD</div>
+          <div class="chatbot-info">
+            <h3 class="chatbot-name">SachiDev</h3>
+            <div class="chatbot-status">
+              <div class="chatbot-status-dot"></div>
+              <span>Ready to help!</span>
+            </div>
+          </div>
+        </div>
+        <div class="chatbot-controls">
+          <button id="chatbot-minimize" class="chatbot-btn" title="Minimize">
+            <i data-lucide="minus"></i>
+          </button>
+          <button id="chatbot-close" class="chatbot-btn" title="Close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Welcome Screen -->
+      <div class="chatbot-welcome" id="chatbot-welcome">
+        <!-- <h1 class="chatbot-welcome-title">HI THERE!</h1>
+        <p class="chatbot-welcome-subtitle">What Do You Want To Chat About Today?</p> -->
+        
+        <div class="chatbot-topic-cards">
+          <div class="chatbot-topic-card" data-topic="education">
+            <div class="chatbot-topic-icon">
+              <i data-lucide="graduation-cap"></i>
+            </div>
+            <div class="chatbot-topic-content">
+              <h3 class="chatbot-topic-title">Education</h3>
+              <p class="chatbot-topic-description">How to apply to universities?</p>
+            </div>
+          </div>
+          
+          <div class="chatbot-topic-card" data-topic="productivity">
+            <div class="chatbot-topic-icon">
+              <i data-lucide="zap"></i>
+            </div>
+            <div class="chatbot-topic-content">
+              <h3 class="chatbot-topic-title">Productivity</h3>
+              <p class="chatbot-topic-description">Be 10x more productive with your work</p>
+            </div>
+          </div>
+          
+          <div class="chatbot-topic-card" data-topic="health">
+            <div class="chatbot-topic-icon">
+              <i data-lucide="heart"></i>
+            </div>
+            <div class="chatbot-topic-content">
+              <h3 class="chatbot-topic-title">Health & Wellness</h3>
+              <p class="chatbot-topic-description">Make your health better than ever</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Suggestions on welcome screen -->
+        <div class="chatbot-suggestions" id="chatbot-suggestions">
+          <button class="chatbot-suggestion" data-suggestion="What is artificial intelligence?">AI Questions</button>
+          <button class="chatbot-suggestion" data-suggestion="Show me programming tutorials">Programming</button>
+          <button class="chatbot-suggestion" data-suggestion="How to learn a new language?">Learning</button>
+          <button class="chatbot-suggestion" data-suggestion="Find science videos">Science</button>
+        </div>
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="chatbot-messages" id="chatbot-messages" style="display: none;">
+        <!-- Messages will be added here dynamically -->
+      </div>
+
+      <!-- Input Area -->
+      <div class="chatbot-input-area" id="chatbot-input-area" style="display: none;">
+        <div class="chatbot-input-container">
+          <textarea 
+            id="chatbot-input" 
+            class="chatbot-input" 
+            placeholder="What is on your mind?"
+            rows="1"
+          ></textarea>
+          <button id="chatbot-send" class="chatbot-send-btn" title="Send message">
+            <i data-lucide="send"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </body>
 </html>
