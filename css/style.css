@@ -1304,7 +1304,7 @@ body.sidebar-open {
 .upload-form textarea,
 .upload-form select {
   flex: 1 1 0;
-  background: #22262F;
+  background: #22262f;
   /* box-shadow:  0px 0px 5px 2px rgb(255, 255, 255); */
   padding: 12px 14px;
   border-radius: 10px;
@@ -1481,7 +1481,6 @@ body.sidebar-open {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  flex-wrap: wrap; /* allow title to take full row and push rating below */
 }
 .video-title {
   font-size: 1rem;

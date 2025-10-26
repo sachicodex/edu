@@ -463,7 +463,7 @@ function K(e, i) {
     </div>
     <div class="video-content">
       <div class="video-header">
-        <h3 class="video-title">${e.title}</h3><br>
+        <h3 class="video-title">${e.title}</h3>
         <div class="video-rating">
           <i data-lucide="star"></i>
           <span>${e.rating}</span>
