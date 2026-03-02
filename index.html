@@ -1,24 +1,33 @@
-
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduVideo - Smart Learning Platform</title>
-    <meta name="description" content="Discover, organize, and learn from educational videos with AI-powered features" />
-    
+    <meta
+      name="description"
+      content="Discover, organize, and learn from educational videos"
+    />
+
     <!-- Fonts -->
-     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Lucide Icons -->
     <script src="js/main.js"></script>
+    <script>
+      window.YOUTUBE_API_KEY = "AIzaSyB4GbkD4Zd7PW-P1ym_v6U6-4E8SbVYyz8";
+    </script>
+
     <script type="module" src="js/script.js"></script>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/chatbot.css">
-</head>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/chatbot.css" />
+  </head>
   <body>
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
@@ -39,7 +48,7 @@
           <i data-lucide="panel-left"></i>
         </button>
       </div>
-      
+
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-route="home">
           <i data-lucide="home"></i>
@@ -63,44 +72,8 @@
           <i data-lucide="trending-up"></i>
           <span>Trending</span>
         </a>
-        
-        <div class="nav-section">
-          <div class="nav-section-title">AI Features</div>
-          <a href="#" class="nav-item" data-route="recommendations">
-            <i data-lucide="sparkles"></i>
-            <span>Recommendations</span>
-          </a>
-          <a href="#" class="nav-item" data-route="summary">
-            <i data-lucide="brain"></i>
-            <span>Smart Summary</span>
-          </a>
-          <a href="#" class="nav-item" data-route="learning-path">
-            <i data-lucide="target"></i>
-            <span>Learning Path</span>
-          </a>
-        </div>
-        
-        <div class="nav-section">
-          <div class="nav-section-title">Categories</div>
-          <a href="#" class="nav-item" data-category="Programming">
-            <i data-lucide="code"></i>
-            <span>Programming</span>
-          </a>
-          <a href="#" class="nav-item" data-category="Mathematics">
-            <i data-lucide="calculator"></i>
-            <span>Mathematics</span>
-          </a>
-          <a href="#" class="nav-item" data-category="Science">
-            <i data-lucide="flask-conical"></i>
-            <span>Science</span>
-          </a>
-          <a href="#" class="nav-item" data-category="Languages">
-            <i data-lucide="languages"></i>
-            <span>Languages</span>
-          </a>
-        </div>
-      </nav>
-      
+</nav>
+
       <div class="sidebar-footer">
         <div class="user-profile">
           <div class="user-avatar">
@@ -170,7 +143,7 @@
             <div class="hero-text">
               <h1 class="hero-title">Smart Video Learning Platform</h1>
               <p class="hero-description">
-                Discover, organize, and learn from educational videos with AI-powered features
+                Discover, organize, and learn from educational videos
               </p>
               <div class="hero-actions">
                 <button class="btn btn-primary" id="start-learning-btn">
@@ -199,7 +172,7 @@
               <div class="stat-description">Active learning content</div>
             </div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-icon">
               <i data-lucide="users"></i>
@@ -211,7 +184,7 @@
               <div class="stat-description">Engaged learners</div>
             </div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-icon">
               <i data-lucide="clock"></i>
@@ -223,52 +196,42 @@
               <div class="stat-description">Total learning hours</div>
             </div>
           </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i data-lucide="sparkles"></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-title">AI Insights</div>
-              <div class="stat-value" data-count="156">0</div>
-              <div class="stat-change neutral">New recommendations</div>
-              <div class="stat-description">Generated this week</div>
-            </div>
-          </div>
+</div>
         </div>
 
         <!-- Advanced Search Section -->
         <div class="search-section">
           <div class="search-header">
             <h2 class="search-title">Find Your Perfect Learning Content</h2>
-            <p class="search-description">Advanced search with real-time filtering and AI suggestions</p>
+            <p class="search-description">
+              Advanced search with real-time filtering
+            </p>
           </div>
-          
+
           <!-- Main Search Bar -->
           <div class="search-container">
             <div class="search-input-container">
               <div class="search-input-wrapper">
                 <i data-lucide="search" class="search-icon"></i>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   id="search-input"
-                  placeholder="Search videos, topics, or ask AI..."
+                  placeholder="Search videos and topics..."
                   class="search-input"
                   autocomplete="off"
-                >
+                />
                 <div class="search-buttons">
-                  <button class="btn-ai" id="ai-assist-btn">
-                    <i data-lucide="sparkles"></i>
-                    AI Assist
-                  </button>
-                  <button id="search-btn" class="btn-search">
+<button id="search-btn" class="btn-search">
                     <i data-lucide="search"></i>
                   </button>
                 </div>
               </div>
-              
+
               <!-- Search Results Dropdown -->
-              <div id="search-results-dropdown" class="search-results-dropdown hidden">
+              <div
+                id="search-results-dropdown"
+                class="search-results-dropdown hidden"
+              >
                 <div class="search-results-header">
                   <span>Search Results</span>
                   <button id="close-search-results" class="close-btn">
@@ -279,70 +242,24 @@
                   <!-- Results populated by JavaScript -->
                 </div>
               </div>
-
-              
-              <!-- AI Suggestions Dropdown -->
-              <div id="suggestions-dropdown" class="suggestions-dropdown hidden">
-                <div class="suggestions-header">
-                  <i data-lucide="sparkles"></i>
-                  <span>AI Suggestions</span>
-                </div>
-                <div class="suggestions-list">
-                  <button class="suggestion-item">How to implement neural networks?</button>
-                  <button class="suggestion-item">Best practices for React development</button>
-                  <button class="suggestion-item">Data structures and algorithms</button>
-                  <button class="suggestion-item">Machine learning fundamentals</button>
-                </div>
-              </div>
             </div>
-
-            <!-- Advanced Filters -->
-            <div class="filters-container">
-              <div class="filters-row">
-                <div class="filters-header">
-                  <i data-lucide="filter"></i>
-                  <span>Filters:</span>
-                </div>
-                
-                <div class="filters-list">
-                  <span class="filter-badge" data-filter="Programming">Programming</span>
-                  <span class="filter-badge" data-filter="Mathematics">Mathematics</span>
-                  <span class="filter-badge" data-filter="Engineering Technology">Engineering</span>
-                  <span class="filter-badge" data-filter="History">History</span>
-                  <span class="filter-badge" data-filter="Languages">Languages</span>
-                  <span class="filter-badge" data-filter="Art">Art</span>
-                  <span class="filter-badge" data-filter="Music">Music</span>
-                  <span class="filter-badge" data-filter="Business">Business</span>
-                </div>
-                
-                <button id="clear-filters" class="btn-clear hidden">
-                  <i data-lucide="x"></i>
-                  Clear
-                </button>
-              </div>
-            </div>
-
             <!-- Mobile Sort By -->
             <div class="sort-container mobile-only">
               <div class="sort-header">
                 <i data-lucide="arrow-up-down"></i>
                 <span>Sort by :</span>
-              <select id="mobile-sort-select" class="sort-select">
-                <option value="relevance">Relevance</option>
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="most-viewed">Most Viewed</option>
-                <option value="duration-short">Duration (Short)</option>
-                <option value="duration-long">Duration (Long)</option>
-                <option value="alphabetical">A-Z</option>
-              </select>
+                <select id="mobile-sort-select" class="sort-select">
+                  <option value="relevance">Relevance</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="most-viewed">Most Viewed</option>
+                  <option value="duration-short">Duration (Short)</option>
+                  <option value="duration-long">Duration (Long)</option>
+                  <option value="alphabetical">A-Z</option>
+                </select>
               </div>
             </div>
-
-            <!-- Active Filters Summary -->
-            <div id="active-filters-summary" class="active-filters-summary hidden"></div>
-            
-            <!-- Search Stats -->
+<!-- Search Stats -->
             <div id="search-stats" class="search-stats hidden">
               <span id="results-count">0 results</span>
               <span id="search-time">in 0ms</span>
@@ -353,7 +270,6 @@
         <!-- Featured Content -->
         <div class="featured-section">
           <div class="featured-header">
-            
             <div class="sort-container">
               <div class="sort-header">
                 <i data-lucide="arrow-up-down"></i>
@@ -384,8 +300,39 @@
               <!-- Videos will be populated by JavaScript -->
             </div>
           </div>
+        </div>
 
-                  </div>
+        <!-- Playlists -->
+        <div class="playlists-section">
+          <div class="playlists-header">
+            <h3 class="quick-actions-title">Playlists</h3>
+            <p class="search-description">
+              Click a playlist card to open playlist items
+            </p>
+          </div>
+          <div id="playlist-grid" class="playlist-grid">
+            <!-- Playlist cards will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Playlist Detail Screen -->
+        <div id="playlist-detail-screen" class="playlist-detail-screen hidden">
+          <div class="playlist-detail-header">
+            <button id="playlist-back-btn" class="btn btn-outline">
+              <i data-lucide="arrow-left"></i>
+              Back
+            </button>
+            <div class="playlist-detail-text">
+              <h2 id="playlist-detail-title" class="hero-title">
+                Playlist Items
+              </h2>
+              <p id="playlist-detail-description" class="hero-description"></p>
+            </div>
+          </div>
+          <div id="playlist-items-grid" class="videos-grid playlist-items-grid">
+            <!-- Playlist item cards will be populated by JavaScript -->
+          </div>
+        </div>
 
         <!-- Quick Actions -->
         <div class="quick-actions">
@@ -396,23 +343,18 @@
                 <i data-lucide="play"></i>
                 <span>Start Learning</span>
               </div>
-              <span class="quick-action-description">Browse recommended videos</span>
+              <span class="quick-action-description"
+                >Browse recommended videos</span
+              >
             </button>
-            
-            <button class="quick-action-item" data-action="ai-recommendations">
-              <div class="quick-action-header">
-                <i data-lucide="sparkles"></i>
-                <span>AI Recommendations</span>
-              </div>
-              <span class="quick-action-description">Get personalized suggestions</span>
-            </button>
-            
-            <button class="quick-action-item" data-action="upload-content">
+<button class="quick-action-item" data-action="upload-content">
               <div class="quick-action-header">
                 <i data-lucide="upload"></i>
                 <span>Upload Content</span>
               </div>
-              <span class="quick-action-description">Add new educational videos</span>
+              <span class="quick-action-description"
+                >Add new educational videos</span
+              >
             </button>
 
             <button class="quick-action-item" data-action="analytics">
@@ -420,39 +362,62 @@
                 <i data-lucide="bar-chart-3"></i>
                 <span>Analytics</span>
               </div>
-              <span class="quick-action-description">View learning progress</span>
+              <span class="quick-action-description"
+                >View learning progress</span
+              >
             </button>
           </div>
         </div>
       </div>
-    </div>
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
-    
-    <!-- AI Writer Modal (opens when clicking card three-dots) -->
-    <div id="ai-modal" class="ai-modal hidden" aria-hidden="true">
-      <div class="ai-modal-backdrop"></div>
-      <div class="ai-modal-content" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
-        <button class="ai-modal-close" aria-label="Close">✕</button>
-        <h3 id="ai-modal-title">AI Writer</h3>
-        <div id="ai-modal-video-info" class="ai-video-info"></div>
+    <!-- Edit Card Modal (opens when clicking card three-dots) -->
+    <div id="edit-modal" class="edit-modal hidden" aria-hidden="true">
+      <div class="edit-modal-backdrop"></div>
+      <div
+        class="edit-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-modal-title"
+      >
+        <button class="edit-modal-close" aria-label="Close">âœ•</button>
+        <h3 id="edit-modal-title">Edit Video</h3>
 
-        <div class="ai-controls">
-          <label for="ai-tone-select" class="sr-only">Tone</label>
-          <select id="ai-tone-select" class="ai-tone-select">
-            <option value="brief">Brief Summary</option>
-            <option value="detailed" selected>Detailed Explanation</option>
-            <option value="do">Action Steps (Do)</option>
-          </select>
-          <button id="ai-generate-btn" class="btn btn-primary">Generate</button>
-        </div>
+        <form id="edit-form" class="edit-form">
+          <div class="form-group">
+            <label for="edit-title">Title</label>
+            <input type="text" id="edit-title" name="title" required />
+          </div>
 
-        <div id="ai-modal-output" class="ai-output" contenteditable="true" aria-label="AI generated content"></div>
+          <div class="form-group">
+            <label for="edit-description">Description</label>
+            <textarea
+              id="edit-description"
+              name="description"
+              rows="3"
+            ></textarea>
+          </div>
 
-        <div class="ai-actions">
-          <button id="ai-copy-btn" class="btn btn-outline">Copy</button>
-          <button id="ai-close-done" class="btn btn-primary">Done</button>
+          <div class="form-group">
+            <label for="edit-thumbnail">Thumbnail URL</label>
+            <input type="url" id="edit-thumbnail" name="thumbnail" />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-youtubeLink">YouTube Link</label>
+            <input type="url" id="edit-youtubeLink" name="youtubeLink" />
+          </div>
+        </form>
+
+        <div class="edit-actions">
+          <button id="edit-delete-btn" class="btn btn-destructive">
+            Delete
+          </button>
+          <div class="edit-actions-right">
+            <button id="edit-cancel-btn" class="btn btn-outline">Cancel</button>
+            <button id="edit-save-btn" class="btn btn-primary">Save</button>
+          </div>
         </div>
       </div>
     </div>
@@ -461,13 +426,17 @@
     <div id="video-modal" class="video-modal hidden">
       <div class="video-modal-backdrop" id="video-modal-backdrop"></div>
       <div class="video-modal-content" role="dialog" aria-modal="true">
-        <button id="video-modal-close" class="video-modal-close" aria-label="Close video">
+        <button
+          id="video-modal-close"
+          class="video-modal-close"
+          aria-label="Close video"
+        >
           <i data-lucide="x"></i>
         </button>
         <div id="video-player-container" class="video-player-container">
           <!-- Video iframe or video element will be injected here -->
         </div>
-        <br>
+        <br />
         <div class="video-modal-actions">
           <button id="modal-save-btn" class="btn" title="Save">
             <i data-lucide="bookmark"></i>
@@ -494,20 +463,16 @@
         <div class="mobile-search-body">
           <div class="mobile-search-input-container">
             <i data-lucide="search" class="mobile-search-icon"></i>
-            <input 
-              type="text" 
+            <input
+              type="text"
               id="mobile-search-input"
-              placeholder="Search videos, topics, or ask AI..."
+              placeholder="Search videos and topics..."
               class="mobile-search-input"
               autocomplete="off"
-            >
+            />
           </div>
           <div class="mobile-search-actions">
-            <button id="mobile-ai-assist-btn" class="btn btn-primary">
-              <i data-lucide="sparkles"></i>
-              AI Assist
-            </button>
-            <button id="mobile-search-btn" class="btn btn-outline">
+<button id="mobile-search-btn" class="btn btn-outline">
               <i data-lucide="search"></i>
               Search
             </button>
@@ -515,23 +480,22 @@
           <div class="mobile-view-controls">
             <div class="mobile-view-title">View Mode</div>
             <div class="mobile-view-buttons">
-              <button id="mobile-grid-view" class="mobile-view-btn active" data-view="grid">
+              <button
+                id="mobile-grid-view"
+                class="mobile-view-btn active"
+                data-view="grid"
+              >
                 <i data-lucide="grid-3x3"></i>
                 <span>Grid</span>
               </button>
-              <button id="mobile-list-view" class="mobile-view-btn" data-view="list">
+              <button
+                id="mobile-list-view"
+                class="mobile-view-btn"
+                data-view="list"
+              >
                 <i data-lucide="list"></i>
                 <span>List</span>
               </button>
-            </div>
-          </div>
-          <div class="mobile-search-filters">
-            <div class="mobile-filters-title">Quick Filters</div>
-            <div class="mobile-filters-grid">
-              <button class="mobile-filter-btn" data-filter="Programming">Programming</button>
-              <button class="mobile-filter-btn" data-filter="Mathematics">Mathematics</button>
-              <button class="mobile-filter-btn" data-filter="Science">Science</button>
-              <button class="mobile-filter-btn" data-filter="Languages">Languages</button>
             </div>
           </div>
         </div>
@@ -595,7 +559,7 @@
       <div class="chatbot-welcome" id="chatbot-welcome">
         <!-- <h1 class="chatbot-welcome-title">HI THERE!</h1>
         <p class="chatbot-welcome-subtitle">What Do You Want To Chat About Today?</p> -->
-        
+
         <div class="chatbot-topic-cards">
           <div class="chatbot-topic-card" data-topic="education">
             <div class="chatbot-topic-icon">
@@ -603,60 +567,94 @@
             </div>
             <div class="chatbot-topic-content">
               <h3 class="chatbot-topic-title">Education</h3>
-              <p class="chatbot-topic-description">How to apply to universities?</p>
+              <p class="chatbot-topic-description">
+                How to apply to universities?
+              </p>
             </div>
           </div>
-          
+
           <div class="chatbot-topic-card" data-topic="productivity">
             <div class="chatbot-topic-icon">
               <i data-lucide="zap"></i>
             </div>
             <div class="chatbot-topic-content">
               <h3 class="chatbot-topic-title">Productivity</h3>
-              <p class="chatbot-topic-description">Be 10x more productive with your work</p>
+              <p class="chatbot-topic-description">
+                Be 10x more productive with your work
+              </p>
             </div>
           </div>
-          
+
           <div class="chatbot-topic-card" data-topic="health">
             <div class="chatbot-topic-icon">
               <i data-lucide="heart"></i>
             </div>
             <div class="chatbot-topic-content">
               <h3 class="chatbot-topic-title">Health & Wellness</h3>
-              <p class="chatbot-topic-description">Make your health better than ever</p>
+              <p class="chatbot-topic-description">
+                Make your health better than ever
+              </p>
             </div>
           </div>
         </div>
-        
+
         <!-- Suggestions on welcome screen -->
         <div class="chatbot-suggestions" id="chatbot-suggestions">
-          <button class="chatbot-suggestion" data-suggestion="What is artificial intelligence?">AI Questions</button>
-          <button class="chatbot-suggestion" data-suggestion="Show me programming tutorials">Programming</button>
-          <button class="chatbot-suggestion" data-suggestion="How to learn a new language?">Learning</button>
-          <button class="chatbot-suggestion" data-suggestion="Find science videos">Science</button>
+          <button
+            class="chatbot-suggestion"
+            data-suggestion="What can I learn today?"
+          >
+            General
+          </button>
+          <button
+            class="chatbot-suggestion"
+            data-suggestion="Show me programming tutorials"
+          >
+            Programming
+          </button>
+          <button
+            class="chatbot-suggestion"
+            data-suggestion="How to learn a new language?"
+          >
+            Learning
+          </button>
+          <button
+            class="chatbot-suggestion"
+            data-suggestion="Find science videos"
+          >
+            Science
+          </button>
         </div>
       </div>
 
       <!-- Chat Messages -->
-      <div class="chatbot-messages" id="chatbot-messages" style="display: none;">
+      <div class="chatbot-messages" id="chatbot-messages" style="display: none">
         <!-- Messages will be added here dynamically -->
       </div>
 
       <!-- Input Area -->
-      <div class="chatbot-input-area" id="chatbot-input-area" style="display: none;">
+      <div
+        class="chatbot-input-area"
+        id="chatbot-input-area"
+        style="display: none"
+      >
         <div class="chatbot-input-container">
-          <textarea 
-            id="chatbot-input" 
-            class="chatbot-input" 
+          <textarea
+            id="chatbot-input"
+            class="chatbot-input"
             placeholder="What is on your mind?"
             rows="1"
           ></textarea>
-          <button id="chatbot-send" class="chatbot-send-btn" title="Send message">
+          <button
+            id="chatbot-send"
+            class="chatbot-send-btn"
+            title="Send message"
+          >
             <i data-lucide="send"></i>
           </button>
         </div>
       </div>
     </div>
-
   </body>
 </html>
+

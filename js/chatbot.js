@@ -11,6 +11,8 @@ class ChatbotUI {
     this.isTyping = false;
     this.db = null; // Will be set when database is available
     this.isWelcomeScreen = true;
+    this.inlineSuggestion = '';
+    this.defaultInputPlaceholder = 'What is on your mind?';
 
     this.initializeElements();
     this.attachEventListeners();
@@ -29,6 +31,9 @@ class ChatbotUI {
     this.closeBtn = document.getElementById('chatbot-close');
     this.suggestionsContainer = document.getElementById('chatbot-suggestions');
     this.topicCards = document.querySelectorAll('.chatbot-topic-card');
+    if (this.input) {
+      this.defaultInputPlaceholder = this.input.getAttribute('placeholder') || this.defaultInputPlaceholder;
+    }
   }
 
   attachEventListeners() {
@@ -37,15 +42,14 @@ class ChatbotUI {
 
     // Send message
     this.sendBtn.addEventListener('click', () => this.sendMessage());
-    this.input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        this.sendMessage();
-      }
-    });
+    this.input.addEventListener('keydown', (e) => this.handleInputKeyDown(e));
 
     // Auto-resize textarea
-    this.input.addEventListener('input', () => this.autoResizeTextarea());
+    this.input.addEventListener('input', () => {
+      this.autoResizeTextarea();
+      this.updateInlineSuggestion();
+    });
+    this.input.addEventListener('focus', () => this.updateInlineSuggestion());
 
     // Minimize/close
     this.minimizeBtn.addEventListener('click', () => this.minimizeChatbot());
@@ -78,8 +82,8 @@ class ChatbotUI {
 
   async initializeChatbot() {
     // Initialize database connection when available
-    if (window.supabase) {
-      await this.chatbot.initDatabase(window.supabase);
+    if (window.firestoreDb) {
+      await this.chatbot.initDatabase(window.firestoreDb);
     }
 
     // Update suggestions periodically
@@ -127,6 +131,7 @@ class ChatbotUI {
     this.messagesContainer.style.display = 'flex';
     this.inputArea.style.display = 'flex';
     this.input.focus();
+    this.updateInlineSuggestion(true);
     this.scrollToBottom();
 
     // Hide suggestions when in chat mode
@@ -182,6 +187,8 @@ class ChatbotUI {
     // Add user message to UI
     this.addMessage('user', message);
     this.input.value = '';
+    this.inlineSuggestion = '';
+    this.updateInlineSuggestion(true);
     this.autoResizeTextarea();
     this.scrollToBottom();
 
@@ -285,6 +292,67 @@ class ChatbotUI {
     this.input.style.height = Math.min(this.input.scrollHeight, 100) + 'px';
   }
 
+  handleInputKeyDown(e) {
+    if (e.key === 'Tab') {
+      const suggestion = this.getBestSuggestion(this.input.value);
+      if (suggestion) {
+        e.preventDefault();
+        this.input.value = suggestion;
+        this.input.placeholder = this.defaultInputPlaceholder;
+        this.autoResizeTextarea();
+      }
+      return;
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      this.sendMessage();
+    }
+  }
+
+  getAutofillSuggestions() {
+    const generalSuggestions = this.chatbot.getGeneralSuggestions() || [];
+    const videoSuggestions = this.chatbot.getVideoSuggestions() || [];
+    const merged = [...generalSuggestions, ...videoSuggestions]
+      .map((item) => String(item || '').trim())
+      .filter(Boolean);
+    return [...new Set(merged)];
+  }
+
+  getBestSuggestion(currentValue = '') {
+    const suggestions = this.getAutofillSuggestions();
+    if (!suggestions.length) return '';
+
+    const typed = String(currentValue || '').trim();
+    if (!typed) {
+      if (!this.inlineSuggestion || !suggestions.includes(this.inlineSuggestion)) {
+        this.inlineSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+      }
+      return this.inlineSuggestion;
+    }
+
+    const typedLower = typed.toLowerCase();
+    const match = suggestions.find(
+      (suggestion) => suggestion.toLowerCase().startsWith(typedLower) && suggestion.length > typed.length
+    );
+    return match || '';
+  }
+
+  updateInlineSuggestion(forceNew = false) {
+    if (!this.input) return;
+
+    if (forceNew) this.inlineSuggestion = '';
+
+    const message = String(this.input.value || '').trim();
+    if (message) {
+      this.input.placeholder = this.defaultInputPlaceholder;
+      return;
+    }
+
+    const suggestion = this.getBestSuggestion('');
+    this.input.placeholder = suggestion || this.defaultInputPlaceholder;
+  }
+
   scrollToBottom() {
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
   }
@@ -344,6 +412,7 @@ class ChatbotUI {
   openWithMessage(message) {
     this.openChatbot();
     this.input.value = message;
+    this.input.placeholder = this.defaultInputPlaceholder;
     this.input.focus();
   }
 }
@@ -353,8 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.chatbotUI = new ChatbotUI();
 
   // Set up database connection when available
-  if (window.supabase) {
-    window.chatbotUI.setDatabase(window.supabase);
+  if (window.firestoreDb) {
+    window.chatbotUI.setDatabase(window.firestoreDb);
   }
 });
 

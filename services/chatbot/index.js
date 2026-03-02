@@ -1,5 +1,6 @@
 // SachiDev - General Purpose Chatbot with Video Database Integration
 // Features: Database access, Internet search, General knowledge, Video recommendations
+import { collection, getDocs, limit, query as fsQuery } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 class SachiDevChatbot {
   constructor() {
@@ -7,12 +8,12 @@ class SachiDevChatbot {
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
     this.conversationHistory = [];
     this.isTyping = false;
-    this.db = null; // Will be initialized with database connection
+    this.db = null; // Firestore instance
   }
 
   // Initialize database connection
-  async initDatabase(supabaseClient) {
-    this.db = supabaseClient;
+  async initDatabase(firestoreDb) {
+    this.db = firestoreDb;
   }
 
   // Main chat function
@@ -20,35 +21,29 @@ class SachiDevChatbot {
     try {
       this.isTyping = true;
 
-      // Add user message to history
       this.conversationHistory.push({
         role: 'user',
         content: message,
         timestamp: new Date()
       });
 
-      // Determine if we need to search the database or internet
       const needsDatabaseSearch = this.shouldSearchDatabase(message);
       const needsInternetSearch = this.shouldSearchInternet(message);
 
       let contextData = '';
 
-      // Search database if needed
       if (needsDatabaseSearch && this.db) {
         const dbResults = await this.searchDatabase(message);
         contextData += `\n\nDatabase Context:\n${dbResults}`;
       }
 
-      // Search internet if needed
       if (needsInternetSearch) {
         const internetResults = await this.searchInternet(message);
         contextData += `\n\nInternet Context:\n${internetResults}`;
       }
 
-      // Generate response using Gemini
       const response = await this.generateResponse(message, contextData, context);
 
-      // Add bot response to history
       this.conversationHistory.push({
         role: 'assistant',
         content: response,
@@ -57,7 +52,6 @@ class SachiDevChatbot {
 
       this.isTyping = false;
       return response;
-
     } catch (error) {
       console.error('Chatbot error:', error);
       this.isTyping = false;
@@ -65,7 +59,6 @@ class SachiDevChatbot {
     }
   }
 
-  // Determine if we should search the database
   shouldSearchDatabase(message) {
     const dbKeywords = [
       'video', 'videos', 'course', 'tutorial', 'lesson', 'learn', 'education',
@@ -76,9 +69,7 @@ class SachiDevChatbot {
       'saved', 'bookmark', 'favorite', 'popular', 'trending', 'new'
     ];
 
-    return dbKeywords.some(keyword =>
-      message.toLowerCase().includes(keyword)
-    );
+    return dbKeywords.some((keyword) => message.toLowerCase().includes(keyword));
   }
 
   // Utility: parse duration "HH:MM:SS" or "MM:SS" into seconds
@@ -95,7 +86,28 @@ class SachiDevChatbot {
     }
   }
 
-  // Determine if we should search the internet
+  parseUploadDate(v) {
+    if (!v) return 0;
+    if (typeof v?.toDate === 'function') return v.toDate().getTime();
+    const t = new Date(v).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  }
+
+  normalizeVideo(row) {
+    return {
+      id: row.id || '',
+      title: row.title || 'Untitled',
+      description: row.description || '',
+      category: row.category || 'Unknown',
+      duration: row.duration || row.duration_text || '0:00',
+      views: typeof row.views === 'number' ? row.views : parseInt(row.views, 10) || 0,
+      rating: typeof row.rating === 'number' ? row.rating : parseFloat(row.rating) || null,
+      youtube_link: row.youtube_link || row.youtubeLink || null,
+      video_url: row.video_url || row.videoUrl || null,
+      upload_date: row.upload_date || null,
+    };
+  }
+
   shouldSearchInternet(message) {
     const internetKeywords = [
       'latest', 'recent', 'news', 'update', 'current', 'today', 'now',
@@ -103,32 +115,33 @@ class SachiDevChatbot {
       'formula', 'equation', 'theorem', 'proof', 'example'
     ];
 
-    return internetKeywords.some(keyword =>
-      message.toLowerCase().includes(keyword)
-    );
+    return internetKeywords.some((keyword) => message.toLowerCase().includes(keyword));
   }
 
-  // Search database for relevant or computed results
+  async fetchVideos(limitCount = 500) {
+    const snap = await getDocs(fsQuery(collection(this.db, 'EduVideoDB'), limit(limitCount)));
+    return snap.docs.map((doc) => this.normalizeVideo({ id: doc.id, ...doc.data() }));
+  }
+
   async searchDatabase(query) {
     try {
       if (!this.db) return '';
 
       const q = String(query || '').toLowerCase();
+      const rows = await this.fetchVideos(500);
 
-      // Helper to format a video entry
       const fmt = (video, idx) => {
-        const link = video.youtube_link || video.youtubeLink || video.video_url || video.videoUrl || '#';
+        const link = video.youtube_link || video.video_url || '#';
         const title = video.title || 'Untitled';
         const cat = video.category || 'Unknown';
-        const dur = video.duration || video.duration_text || '0:00';
+        const dur = video.duration || '0:00';
         const views = typeof video.views === 'number' ? video.views : parseInt(video.views, 10) || 0;
         const ratingVal = typeof video.rating === 'number' ? video.rating : parseFloat(video.rating) || null;
         const rating = ratingVal != null ? ratingVal.toFixed(1) : 'N/A';
         const desc = (video.description || '').substring(0, 140);
-        return `**${idx}. [${title}](${link})**\n📚 Category: ${cat}  ⏱️ ${dur}  👀 ${views}  ⭐ ${rating}\n📝 ${desc}...`;
+        return `**${idx}. [${title}](${link})**\nCategory: ${cat}  Duration: ${dur}  Views: ${views}  Rating: ${rating}\n${desc}...`;
       };
 
-      // 1) Handle meta queries that require computation
       const asksLongest = (q.includes('longest') && q.includes('video')) ||
         (q.includes('longest') && q.includes('duration')) ||
         (q.includes('max') && q.includes('duration')) ||
@@ -143,103 +156,67 @@ class SachiDevChatbot {
       const asksNewest = q.includes('newest') || q.includes('latest') || q.includes('recent');
       const asksOldest = q.includes('oldest');
 
-      // Utility to fetch a reasonable set of rows for computation
-      const fetchAllForCompute = async () => {
-        const sel = 'id,title,description,category,views,rating,duration,youtube_link,video_url,thumbnail,upload_date';
-        const { data, error } = await this.db.from('EduVideoDB').select(sel).limit(500);
-        if (error) throw error;
-        return data || [];
-      };
-
       if (asksLongest || asksShortest) {
-        const rows = await fetchAllForCompute();
         if (!rows.length) return 'No videos found in our database.';
         const sorted = rows
-          .map(v => ({ ...v, __dur: this.parseDurationToSeconds(v.duration) }))
+          .map((v) => ({ ...v, __dur: this.parseDurationToSeconds(v.duration) }))
           .sort((a, b) => (asksLongest ? b.__dur - a.__dur : a.__dur - b.__dur));
         const top = sorted.slice(0, 3);
-        const header = asksLongest ? '📏 Longest Videos' : '⏱️ Shortest Videos';
+        const header = asksLongest ? 'Longest Videos' : 'Shortest Videos';
         let out = `${header} (based on duration):\n\n`;
         top.forEach((v, i) => { out += fmt(v, i + 1) + '\n\n'; });
         return out.trim();
       }
 
       if (asksMostViewed) {
-        const { data, error } = await this.db
-          .from('EduVideoDB')
-          .select('*')
-          .order('views', { ascending: false })
-          .limit(5);
-        if (error) throw error;
-        if (!data || !data.length) return 'No videos found in our database.';
-        let out = '🔥 Most Viewed Videos:\n\n';
+        const data = rows.slice().sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+        if (!data.length) return 'No videos found in our database.';
+        let out = 'Most Viewed Videos:\n\n';
         data.forEach((v, i) => { out += fmt(v, i + 1) + '\n\n'; });
         return out.trim();
       }
 
       if (asksHighestRated) {
-        const { data, error } = await this.db
-          .from('EduVideoDB')
-          .select('*')
-          .order('rating', { ascending: false, nullsFirst: false })
-          .limit(5);
-        if (error) throw error;
-        if (!data || !data.length) return 'No videos found in our database.';
-        let out = '⭐ Highest Rated Videos:\n\n';
+        const data = rows.slice().sort((a, b) => (b.rating ?? -Infinity) - (a.rating ?? -Infinity)).slice(0, 5);
+        if (!data.length) return 'No videos found in our database.';
+        let out = 'Highest Rated Videos:\n\n';
         data.forEach((v, i) => { out += fmt(v, i + 1) + '\n\n'; });
         return out.trim();
       }
 
       if (asksNewest || asksOldest) {
-        const { data, error } = await this.db
-          .from('EduVideoDB')
-          .select('*')
-          .order('upload_date', { ascending: asksNewest ? false : true })
-          .limit(5);
-        if (error) throw error;
-        if (!data || !data.length) return 'No videos found in our database.';
-        let out = `${asksNewest ? '🆕 Newest' : '📼 Oldest'} Videos:\n\n`;
+        const data = rows.slice().sort((a, b) => {
+          const delta = this.parseUploadDate(a.upload_date) - this.parseUploadDate(b.upload_date);
+          return asksNewest ? -delta : delta;
+        }).slice(0, 5);
+        if (!data.length) return 'No videos found in our database.';
+        let out = `${asksNewest ? 'Newest' : 'Oldest'} Videos:\n\n`;
         data.forEach((v, i) => { out += fmt(v, i + 1) + '\n\n'; });
         return out.trim();
       }
 
-      // 2) Text search across multiple tokens and columns
       const tokens = q
         .split(/\s+/)
-        .map(t => t.trim())
-        .filter(t => t.length > 1 && !['which', 'what', 'do', 'you', 'have', 'the', 'a', 'an', 'is', 'of', 'for', 'to'].includes(t));
+        .map((t) => t.trim())
+        .filter((t) => t.length > 1 && !['which', 'what', 'do', 'you', 'have', 'the', 'a', 'an', 'is', 'of', 'for', 'to'].includes(t));
 
-      let orExpr = '';
-      if (tokens.length) {
-        const parts = [];
-        tokens.forEach((t) => {
-          parts.push(`title.ilike.%${t}%`);
-          parts.push(`description.ilike.%${t}%`);
-          parts.push(`category.ilike.%${t}%`);
-        });
-        orExpr = parts.join(',');
-      }
+      const data = rows
+        .filter((row) => {
+          if (!tokens.length) return true;
+          const haystack = `${row.title} ${row.description} ${row.category}`.toLowerCase();
+          return tokens.some((t) => haystack.includes(t));
+        })
+        .slice(0, 8);
 
-      let queryBuilder = this.db.from('EduVideoDB').select('*').limit(8);
-      if (orExpr) queryBuilder = queryBuilder.or(orExpr);
-      const { data, error } = await queryBuilder;
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        // Fallback: show top viewed if no text match
-        const { data: top, error: err2 } = await this.db
-          .from('EduVideoDB')
-          .select('*')
-          .order('views', { ascending: false })
-          .limit(5);
-        if (err2) throw err2;
-        if (!top || !top.length) return 'No videos found in our database.';
-        let out = '🎥 No direct matches. Here are popular videos instead:\n\n';
+      if (!data.length) {
+        const top = rows.slice().sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+        if (!top.length) return 'No videos found in our database.';
+        let out = 'No direct matches. Here are popular videos instead:\n\n';
         top.forEach((v, i) => { out += fmt(v, i + 1) + '\n\n'; });
         return out.trim();
       }
 
-      let results = '🎥 Relevant Videos from Our Database:\n\n';
+      let results = 'Relevant Videos from Our Database:\n\n';
       data.forEach((video, index) => {
         results += fmt(video, index + 1) + '\n\n';
       });
@@ -253,8 +230,6 @@ class SachiDevChatbot {
   // Search internet for current information
   async searchInternet(query) {
     try {
-      // For now, we'll simulate internet search with math-related responses
-      // In a real implementation, you would use a search API like Google Custom Search
       const mathTopics = {
         'algebra': 'Algebra is a branch of mathematics dealing with symbols and the rules for manipulating these symbols.',
         'calculus': 'Calculus is the mathematical study of continuous change, in the same way that geometry is the study of shape.',
@@ -359,32 +334,26 @@ ${this.conversationHistory.slice(-6).map(msg => `${msg.role}: ${msg.content}`).j
 
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         return data.candidates[0].content.parts[0].text;
-      } else {
-        throw new Error('Invalid response format from API');
       }
-
+      throw new Error('Invalid response format from API');
     } catch (error) {
       console.error('Gemini API error:', error);
       throw error;
     }
   }
 
-  // Get conversation history
   getHistory() {
     return this.conversationHistory;
   }
 
-  // Clear conversation history
   clearHistory() {
     this.conversationHistory = [];
   }
 
-  // Check if bot is currently typing
   isCurrentlyTyping() {
     return this.isTyping;
   }
 
-  // Get general knowledge suggestions
   getGeneralSuggestions() {
     return [
       "What is artificial intelligence?",
@@ -400,7 +369,6 @@ ${this.conversationHistory.slice(-6).map(msg => `${msg.role}: ${msg.content}`).j
     ];
   }
 
-  // Get video-related suggestions
   getVideoSuggestions() {
     return [
       "Show me programming tutorials",
@@ -417,5 +385,4 @@ ${this.conversationHistory.slice(-6).map(msg => `${msg.role}: ${msg.content}`).j
   }
 }
 
-// Export the chatbot class
 export default SachiDevChatbot;
