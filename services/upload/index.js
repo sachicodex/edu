@@ -233,6 +233,7 @@ async function fetchYouTubePlaylistMetadata(youtubeLink) {
 
 export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   if (document.getElementById("uploadModal")) return;
+  const requiredUploadPassword = String(window.UPLOAD_PASSWORD || "").trim();
 
   const modal = document.createElement("div");
   modal.id = "uploadModal";
@@ -240,25 +241,38 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   modal.innerHTML = `
     <div class="upload-modal-backdrop"></div>
     <div class="upload-modal-content">
-      <button class="upload-modal-close" aria-label="Close">x</button>
-      <h2>Upload Video</h2>
+      <button class="upload-modal-close" aria-label="Close">
+        <i data-lucide="x"></i>
+      </button>
+      <div class="upload-modal-head">
+        <h2>Upload Video</h2>
+        <p class="upload-subhead">Paste a YouTube link, review details, and save.</p>
+      </div>
       <form id="uploadForm" class="upload-form" autocomplete="off" autocorrect="off" spellcheck="false">
-        <div class="row"><input id="u_youtube" placeholder="Paste YouTube link" autocomplete="off"></div>
+        <div class="row">
+          <input id="u_youtube" placeholder="YouTube Link" autocomplete="off">
+        </div>
 
         <div class="row">
-          <div id="u_meta_status" style="font-size: 12px; color: #6b7280;">Paste YouTube link to auto-fetch suggestions. You can type your own details anytime.</div>
+          <input id="u_title" placeholder="Title" autocomplete="off">
         </div>
-
-        <div class="row"><input id="u_title" placeholder="Title" autocomplete="off"></div>
-        <div class="row"><textarea id="u_description" placeholder="Description" style="resize: none"></textarea></div>
-        <div class="row"><input id="u_playlist_name" placeholder="Playlist Name (optional)" autocomplete="off"></div>
-        <div class="row"><textarea id="u_playlist_description" placeholder="Playlist Description (optional)" style="resize: none"></textarea></div>
+        <div class="row">
+          <textarea id="u_description" placeholder="Description (Optional)" style="resize: none"></textarea>
+        </div>
+        <div class="row">
+          <input id="u_playlist_name" placeholder="Playlist Name (Optional)" autocomplete="off">
+        </div>
+        <div class="row">
+          <textarea id="u_playlist_description" placeholder="Playlist Description (Optional)" style="resize: none"></textarea>
+        </div>
 
         <div class="row inline">
-          <input id="u_thumbnail" placeholder="Thumbnail URL (auto-filled)" autocomplete="off">
+          <input id="u_thumbnail" placeholder="Thumbnail URL" autocomplete="off">
         </div>
 
-        <div class="row"><input id="u_tags" placeholder="AI Tags (comma separated)" autocomplete="off"></div>
+        <div class="row">
+          <input id="u_tags" placeholder="AI Tags (Comma Separated)" autocomplete="off">
+        </div>
 
         <div class="row">
           <input id="u_password" type="password" placeholder="Password" autocomplete="new-password">
@@ -273,6 +287,11 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   `;
 
   document.body.appendChild(modal);
+  try {
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
+  }
   requestAnimationFrame(() => modal.classList.add("upload-modal-open"));
 
   const youtubeInput = modal.querySelector("#u_youtube");
@@ -284,10 +303,16 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   const playlistDescInput = modal.querySelector("#u_playlist_description");
   const thumbInput = modal.querySelector("#u_thumbnail");
   const tagsInput = modal.querySelector("#u_tags");
+  const passwordInput = modal.querySelector("#u_password");
   const titleRow = titleInput?.closest(".row");
   const descRow = descInput?.closest(".row");
   const playlistNameRow = playlistNameInput?.closest(".row");
   const playlistDescRow = playlistDescInput?.closest(".row");
+  const passwordRow = passwordInput?.closest(".row");
+
+  if (!requiredUploadPassword && passwordRow) {
+    passwordRow.style.display = "none";
+  }
 
   let fetchedMeta = null;
 
@@ -306,11 +331,15 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   };
   updateFieldMode("");
 
+  const markFieldState = (el) => {
+    const field = el?.closest(".floating-field");
+    if (!field) return;
+    const hasValue = withText(el.value).length > 0;
+    field.classList.toggle("is-active", hasValue);
+  };
+
   const prepareTabAutofillField = (el) => {
     if (!el) return;
-    if (!el.dataset.defaultPlaceholder) {
-      el.dataset.defaultPlaceholder = el.getAttribute("placeholder") || "";
-    }
 
     el.addEventListener("keydown", (ev) => {
       if (ev.key !== "Tab") return;
@@ -324,77 +353,48 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
       if (!currentTrim || (suggestionLower.startsWith(currentLower) && suggestion.length > currentTrim.length)) {
         ev.preventDefault();
         el.value = suggestion;
-        el.placeholder = el.dataset.defaultPlaceholder || "";
+        markFieldState(el);
       }
     });
 
-    el.addEventListener("input", () => {
-      if (String(el.value || "").trim()) {
-        el.placeholder = el.dataset.defaultPlaceholder || "";
-      } else {
-        const suggestion = withText(el.dataset.autofillSuggestion);
-        el.placeholder = suggestion || el.dataset.defaultPlaceholder || "";
-      }
-    });
+    el.addEventListener("input", () => markFieldState(el));
+    el.addEventListener("blur", () => markFieldState(el));
+    markFieldState(el);
   };
 
-  const setAutofillSuggestion = (el, suggestion, fallbackPlaceholder) => {
+  const setAutofillSuggestion = (el, suggestion) => {
     if (!el) return;
     const cleanSuggestion = withText(suggestion);
-    const fallback = withText(fallbackPlaceholder) || el.dataset.defaultPlaceholder || "";
     const hasUserValue = withText(el.value).length > 0;
 
     el.dataset.autofillSuggestion = cleanSuggestion;
     // Never overwrite what user already typed manually.
-    if (hasUserValue) {
-      el.placeholder = el.dataset.defaultPlaceholder || fallback;
-      return;
+    if (!hasUserValue && cleanSuggestion) {
+      el.value = cleanSuggestion;
     }
-    if (cleanSuggestion) {
-      el.value = "";
-      el.placeholder = cleanSuggestion;
-    } else {
-      if (!String(el.value || "").trim()) {
-        el.placeholder = fallback;
-      }
-    }
+    markFieldState(el);
   };
 
   [
+    youtubeInput,
     titleInput,
     descInput,
     playlistNameInput,
     playlistDescInput,
     thumbInput,
     tagsInput,
+    passwordInput,
   ].forEach(prepareTabAutofillField);
 
   const applyMetadata = (meta) => {
     if (!meta) return;
-    setAutofillSuggestion(titleInput, meta.title, "Title (auto-filled)");
-    setAutofillSuggestion(
-      descInput,
-      meta.description,
-      "Description (auto-filled)"
-    );
-
-    setAutofillSuggestion(
-      thumbInput,
-      meta.thumbnail,
-      "Thumbnail URL (auto-filled)"
-    );
+    setAutofillSuggestion(titleInput, meta.title);
+    setAutofillSuggestion(descInput, meta.description);
+    setAutofillSuggestion(thumbInput, meta.thumbnail);
 
     if (meta.type === "playlist") {
-      setAutofillSuggestion(
-        playlistNameInput,
-        meta.playlistTitle,
-        "Playlist Name (optional)"
-      );
-      setAutofillSuggestion(
-        playlistDescInput,
-        meta.playlistDescription,
-        "Playlist Description (optional)"
-      );
+      setAutofillSuggestion(playlistNameInput, meta.playlistTitle);
+      setAutofillSuggestion(playlistDescInput, meta.playlistDescription);
     }
 
     if (tagsInput && !withText(tagsInput.value)) {
@@ -403,11 +403,7 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
         description: meta.description,
         category: meta.category,
       });
-      setAutofillSuggestion(
-        tagsInput,
-        autoTags.join(", "),
-        "AI Tags (comma separated)"
-      );
+      setAutofillSuggestion(tagsInput, autoTags.join(", "));
     }
   };
 
@@ -419,7 +415,7 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
       return null;
     }
 
-    if (statusEl) statusEl.textContent = "Fetching YouTube details...";
+    if (statusEl) statusEl.textContent = "Looking up details from YouTube...";
 
     try {
       const playlistId = extractYouTubePlaylistId(link);
@@ -446,7 +442,7 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
       fetchedMeta = meta;
       applyMetadata(meta);
       updateFieldMode(link);
-      if (statusEl) statusEl.textContent = "Auto suggestions updated. Press Tab in empty fields to apply.";
+      if (statusEl) statusEl.textContent = "Details are ready. Review anything before you save.";
       if (meta.type === "playlist") {
         notify && notify(`Playlist loaded (${meta.items.length} videos)`, "success");
       } else {
@@ -455,7 +451,7 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
       return meta;
     } catch (e) {
       const msg = String(e?.message || "");
-      if (statusEl) statusEl.textContent = "Unable to fetch details from YouTube.";
+      if (statusEl) statusEl.textContent = "Could not auto-load details. You can still fill fields manually.";
       if (msg.includes("YOUTUBE_API_KEY")) {
         notify && notify("Set window.YOUTUBE_API_KEY in index.html", "error");
       } else if (msg.includes("Invalid YouTube link") || msg.includes("Invalid YouTube playlist link")) {
@@ -524,10 +520,12 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   modal.querySelector("#uploadForm")?.addEventListener("submit", async (ev) => {
     ev.preventDefault();
 
-    const pass = modal.querySelector("#u_password")?.value || "";
-    if (pass !== "bD32CCc3") {
-      notify && notify("Are you Developer", "error");
-      return;
+    if (requiredUploadPassword) {
+      const pass = modal.querySelector("#u_password")?.value || "";
+      if (pass !== requiredUploadPassword) {
+        notify && notify("Invalid upload password", "error");
+        return;
+      }
     }
 
     const youtubeLink = modal.querySelector("#u_youtube")?.value || "";

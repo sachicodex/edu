@@ -36,11 +36,6 @@ export function toast(message, type = 'info') {
   Object.assign(el.style, {
     pointerEvents: 'auto',
     position: 'relative',
-    background: 'rgba(0,0,0,0.75)',
-    color: '#fff',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
     transformOrigin: 'center right',
   });
 

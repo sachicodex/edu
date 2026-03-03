@@ -2,659 +2,284 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduVideo - Smart Learning Platform</title>
+    <title>EduFlow Cloud | Learning Operations Suite</title>
     <meta
       name="description"
-      content="Discover, organize, and learn from educational videos"
+      content="Production-ready SaaS platform to discover, organize, and optimize educational video learning."
     />
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Lucide Icons -->
     <script src="js/main.js"></script>
     <script>
       window.YOUTUBE_API_KEY = "AIzaSyB4GbkD4Zd7PW-P1ym_v6U6-4E8SbVYyz8";
+      window.FIREBASE_CONFIG = {
+        apiKey: "AIzaSyB3W9JfnwHshArkdvry784VRdLZMaM8e1Y",
+        authDomain: "sachicodex-edu-test.firebaseapp.com",
+        projectId: "sachicodex-edu-test",
+        storageBucket: "sachicodex-edu-test.firebasestorage.app",
+        messagingSenderId: "990789366745",
+        appId: "1:990789366745:web:a15d456505c5e28db29fc8"
+      };
     </script>
 
-    <script type="module" src="js/script.js"></script>
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/chatbot.css" />
+    <script type="module" src="js/script.js"></script>
   </head>
+
   <body>
-    <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
-      <div class="loading-content">
-        <div class="loading-text">EduVideo</div>
-        <div class="loading-spinner"></div>
-      </div>
+      <div class="loading-brand">EduFlow Cloud</div>
+      <div class="loading-progress"><span></span></div>
+      <p>Syncing workspace...</p>
     </div>
 
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-brand" id="sidebar-brand">
-          <i data-lucide="play-circle" class="brand-icon"></i>
-          <span class="sidebar-brand-text">EduVideo</span>
+    <div class="app-shell">
+      <aside id="sidebar" class="sidebar" aria-label="Workspace navigation">
+        <div class="sidebar-head">
+          <div class="brand-mark" aria-hidden="true">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div>
+            <div class="brand-name">EduFlow</div>
+            <div class="brand-sub">Learning Ops</div>
+          </div>
         </div>
-        <button id="sidebar-toggle" class="sidebar-toggle">
-          <i data-lucide="panel-left"></i>
-        </button>
-      </div>
 
-      <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-route="home">
-          <i data-lucide="home"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="#" class="nav-item" data-route="search">
-          <i data-lucide="search"></i>
-          <span>Search</span>
-        </a>
-        <a href="#" class="nav-item" data-route="my-videos">
-          <i data-lucide="video"></i>
-          <span>My Videos</span>
-          <span class="nav-badge">12</span>
-        </a>
-        <a href="#" class="nav-item" data-route="saved">
-          <i data-lucide="bookmark"></i>
-          <span>Saved</span>
-          <span id="saved-count" class="nav-badge">0</span>
-        </a>
-        <a href="#" class="nav-item" data-route="trending">
-          <i data-lucide="trending-up"></i>
-          <span>Trending</span>
-        </a>
-</nav>
-
-      <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="user-avatar">
-            <i data-lucide="user"></i>
-          </div>
-          <div class="user-info">
-            <div class="user-name">John Doe</div>
-            <div class="user-role">Student</div>
-          </div>
-          <button class="user-menu">
-            <i data-lucide="more-horizontal"></i>
+        <nav class="nav" aria-label="Primary">
+          <button class="nav-link active" data-route="overview">
+            <i data-lucide="layout-dashboard"></i>
+            Overview
           </button>
+          <button class="nav-link" data-route="library">
+            <i data-lucide="library-big"></i>
+            Library
+          </button>
+          <button class="nav-link" data-route="playlists">
+            <i data-lucide="list-video"></i>
+            Playlists
+          </button>
+          <button class="nav-link" data-route="saved">
+            <i data-lucide="bookmark"></i>
+            Saved
+            <span id="saved-count" class="count-pill">0</span>
+          </button>
+          <button class="nav-link" data-route="analytics">
+            <i data-lucide="chart-column"></i>
+            Analytics
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="profile-card">
+            <div class="avatar">SC</div>
+            <div>
+              <div class="name">Sachi Workspace</div>
+              <div class="role">Productive learner mode</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </aside>
 
-    <!-- Mobile Overlay -->
-    <div id="mobile-overlay" class="mobile-overlay"></div>
+      <div id="mobile-overlay" class="mobile-overlay"></div>
 
-    <!-- Mobile App Header -->
-    <div class="mobile-header">
-      <div class="mobile-header-content">
-        <div class="mobile-header-left">
-          <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+      <main class="workspace">
+        <header class="topbar">
+          <button id="sidebar-toggle" class="icon-btn mobile-only" aria-label="Open navigation">
             <i data-lucide="menu"></i>
           </button>
-          <div class="mobile-logo">
-            <i data-lucide="play-circle" class="brand-icon"></i>
-            <span class="mobile-brand-text">EduVideo</span>
-          </div>
-        </div>
-        <div class="mobile-header-right">
-          <button class="mobile-header-btn" title="Search">
+
+          <form id="search-form" class="search-box" role="search">
             <i data-lucide="search"></i>
-          </button>
-          <button class="mobile-header-btn" title="Notifications">
-            <i data-lucide="bell"></i>
-            <span class="notification-dot"></span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Desktop Top Bar (hidden on mobile) -->
-      <div class="top-bar desktop-only">
-        <button id="desktop-mobile-menu-toggle" class="mobile-menu-toggle">
-          <i data-lucide="menu"></i>
-        </button>
-
-        <div class="top-bar-actions">
-          <button class="top-bar-btn" title="Notifications">
-            <i data-lucide="bell"></i>
-            <span class="notification-dot"></span>
-          </button>
-          <button class="top-bar-btn" title="Settings">
-            <i data-lucide="settings"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="content-area">
-        <!-- Hero Section -->
-        <div class="hero-section">
-          <div class="hero-content">
-            <div class="hero-text">
-              <h1 class="hero-title">Smart Video Learning Platform</h1>
-              <p class="hero-description">
-                Discover, organize, and learn from educational videos
-              </p>
-              <div class="hero-actions">
-                <button class="btn btn-primary" id="start-learning-btn">
-                  <i data-lucide="play"></i>
-                  Start Learning
-                </button>
-                <button class="btn btn-outline" id="upload-video-btn">
-                  <i data-lucide="upload"></i>
-                  Upload Video
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i data-lucide="video"></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-title">Total Videos</div>
-              <div class="stat-value" data-count="1247">0</div>
-              <div class="stat-change positive">+12% this month</div>
-              <div class="stat-description">Active learning content</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i data-lucide="users"></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-title">Active Students</div>
-              <div class="stat-value" data-count="8932">0</div>
-              <div class="stat-change positive">+8% this week</div>
-              <div class="stat-description">Engaged learners</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i data-lucide="clock"></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-title">Watch Time</div>
-              <div class="stat-value">24,567h</div>
-              <div class="stat-change positive">+15% this month</div>
-              <div class="stat-description">Total learning hours</div>
-            </div>
-          </div>
-</div>
-        </div>
-
-        <!-- Advanced Search Section -->
-        <div class="search-section">
-          <div class="search-header">
-            <h2 class="search-title">Find Your Perfect Learning Content</h2>
-            <p class="search-description">
-              Advanced search with real-time filtering
-            </p>
-          </div>
-
-          <!-- Main Search Bar -->
-          <div class="search-container">
-            <div class="search-input-container">
-              <div class="search-input-wrapper">
-                <i data-lucide="search" class="search-icon"></i>
-                <input
-                  type="text"
-                  id="search-input"
-                  placeholder="Search videos and topics..."
-                  class="search-input"
-                  autocomplete="off"
-                />
-                <div class="search-buttons">
-<button id="search-btn" class="btn-search">
-                    <i data-lucide="search"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Search Results Dropdown -->
-              <div
-                id="search-results-dropdown"
-                class="search-results-dropdown hidden"
-              >
-                <div class="search-results-header">
-                  <span>Search Results</span>
-                  <button id="close-search-results" class="close-btn">
-                    <i data-lucide="x"></i>
-                  </button>
-                </div>
-                <div id="search-results-list" class="search-results-list">
-                  <!-- Results populated by JavaScript -->
-                </div>
-              </div>
-            </div>
-            <!-- Mobile Sort By -->
-            <div class="sort-container mobile-only">
-              <div class="sort-header">
-                <i data-lucide="arrow-up-down"></i>
-                <span>Sort by :</span>
-                <select id="mobile-sort-select" class="sort-select">
-                  <option value="relevance">Relevance</option>
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="most-viewed">Most Viewed</option>
-                  <option value="duration-short">Duration (Short)</option>
-                  <option value="duration-long">Duration (Long)</option>
-                  <option value="alphabetical">A-Z</option>
-                </select>
-              </div>
-            </div>
-<!-- Search Stats -->
-            <div id="search-stats" class="search-stats hidden">
-              <span id="results-count">0 results</span>
-              <span id="search-time">in 0ms</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Featured Content -->
-        <div class="featured-section">
-          <div class="featured-header">
-            <div class="sort-container">
-              <div class="sort-header">
-                <i data-lucide="arrow-up-down"></i>
-                <span>Sort by :</span>
-              </div>
-              <select id="sort-select" class="sort-select">
-                <option value="relevance">Relevance</option>
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="most-viewed">Most Viewed</option>
-                <option value="duration-short">Duration (Short)</option>
-                <option value="duration-long">Duration (Long)</option>
-                <option value="alphabetical">A-Z</option>
-              </select>
-            </div>
-            <div class="view-controls">
-              <button id="grid-view" class="view-btn active" title="Grid View">
-                <i data-lucide="grid-3x3"></i>
-              </button>
-              <button id="list-view" class="view-btn" title="List View">
-                <i data-lucide="list"></i>
-              </button>
-            </div>
-          </div>
-
-          <div id="videos-container" class="videos-container">
-            <div id="videos-grid" class="videos-grid">
-              <!-- Videos will be populated by JavaScript -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Playlists -->
-        <div class="playlists-section">
-          <div class="playlists-header">
-            <h3 class="quick-actions-title">Playlists</h3>
-            <p class="search-description">
-              Click a playlist card to open playlist items
-            </p>
-          </div>
-          <div id="playlist-grid" class="playlist-grid">
-            <!-- Playlist cards will be populated by JavaScript -->
-          </div>
-        </div>
-
-        <!-- Playlist Detail Screen -->
-        <div id="playlist-detail-screen" class="playlist-detail-screen hidden">
-          <div class="playlist-detail-header">
-            <button id="playlist-back-btn" class="btn btn-outline">
-              <i data-lucide="arrow-left"></i>
-              Back
-            </button>
-            <div class="playlist-detail-text">
-              <h2 id="playlist-detail-title" class="hero-title">
-                Playlist Items
-              </h2>
-              <p id="playlist-detail-description" class="hero-description"></p>
-            </div>
-          </div>
-          <div id="playlist-items-grid" class="videos-grid playlist-items-grid">
-            <!-- Playlist item cards will be populated by JavaScript -->
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <h3 class="quick-actions-title">Quick Actions</h3>
-          <div class="quick-actions-grid">
-            <button class="quick-action-item" data-action="start-learning">
-              <div class="quick-action-header">
-                <i data-lucide="play"></i>
-                <span>Start Learning</span>
-              </div>
-              <span class="quick-action-description"
-                >Browse recommended videos</span
-              >
-            </button>
-<button class="quick-action-item" data-action="upload-content">
-              <div class="quick-action-header">
-                <i data-lucide="upload"></i>
-                <span>Upload Content</span>
-              </div>
-              <span class="quick-action-description"
-                >Add new educational videos</span
-              >
-            </button>
-
-            <button class="quick-action-item" data-action="analytics">
-              <div class="quick-action-header">
-                <i data-lucide="bar-chart-3"></i>
-                <span>Analytics</span>
-              </div>
-              <span class="quick-action-description"
-                >View learning progress</span
-              >
-            </button>
-          </div>
-        </div>
-      </div>
-
-    <!-- Toast Notifications -->
-    <div id="toast-container" class="toast-container"></div>
-    <!-- Edit Card Modal (opens when clicking card three-dots) -->
-    <div id="edit-modal" class="edit-modal hidden" aria-hidden="true">
-      <div class="edit-modal-backdrop"></div>
-      <div
-        class="edit-modal-content"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="edit-modal-title"
-      >
-        <button class="edit-modal-close" aria-label="Close">âœ•</button>
-        <h3 id="edit-modal-title">Edit Video</h3>
-
-        <form id="edit-form" class="edit-form">
-          <div class="form-group">
-            <label for="edit-title">Title</label>
-            <input type="text" id="edit-title" name="title" required />
-          </div>
-
-          <div class="form-group">
-            <label for="edit-description">Description</label>
-            <textarea
-              id="edit-description"
-              name="description"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="edit-thumbnail">Thumbnail URL</label>
-            <input type="url" id="edit-thumbnail" name="thumbnail" />
-          </div>
-
-          <div class="form-group">
-            <label for="edit-youtubeLink">YouTube Link</label>
-            <input type="url" id="edit-youtubeLink" name="youtubeLink" />
-          </div>
-        </form>
-
-        <div class="edit-actions">
-          <button id="edit-delete-btn" class="btn btn-destructive">
-            Delete
-          </button>
-          <div class="edit-actions-right">
-            <button id="edit-cancel-btn" class="btn btn-outline">Cancel</button>
-            <button id="edit-save-btn" class="btn btn-primary">Save</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Video Modal -->
-    <div id="video-modal" class="video-modal hidden">
-      <div class="video-modal-backdrop" id="video-modal-backdrop"></div>
-      <div class="video-modal-content" role="dialog" aria-modal="true">
-        <button
-          id="video-modal-close"
-          class="video-modal-close"
-          aria-label="Close video"
-        >
-          <i data-lucide="x"></i>
-        </button>
-        <div id="video-player-container" class="video-player-container">
-          <!-- Video iframe or video element will be injected here -->
-        </div>
-        <br />
-        <div class="video-modal-actions">
-          <button id="modal-save-btn" class="btn" title="Save">
-            <i data-lucide="bookmark"></i>
-            Save
-          </button>
-          <button id="modal-share-btn" class="btn" title="Share">
-            <i data-lucide="share-2"></i>
-            Share
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mobile Search Modal -->
-    <div id="mobile-search-modal" class="mobile-search-modal hidden">
-      <div class="mobile-search-backdrop"></div>
-      <div class="mobile-search-content">
-        <div class="mobile-search-header">
-          <button id="mobile-search-close" class="mobile-search-close">
-            <i data-lucide="x"></i>
-          </button>
-          <h3>Search Videos</h3>
-        </div>
-        <div class="mobile-search-body">
-          <div class="mobile-search-input-container">
-            <i data-lucide="search" class="mobile-search-icon"></i>
             <input
-              type="text"
-              id="mobile-search-input"
-              placeholder="Search videos and topics..."
-              class="mobile-search-input"
+              id="search-input"
+              type="search"
+              placeholder="Search by title, topic, tags, difficulty..."
               autocomplete="off"
             />
-          </div>
-          <div class="mobile-search-actions">
-<button id="mobile-search-btn" class="btn btn-outline">
-              <i data-lucide="search"></i>
-              Search
+            <button id="search-btn" type="submit" class="soft-btn">Search</button>
+          </form>
+
+          <div class="topbar-actions">
+            <div id="sort-select" class="sort-select" aria-label="Sort videos">
+              <button
+                id="sort-trigger"
+                class="sort-select-trigger soft-select"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span id="sort-trigger-label">Newest</span>
+                <i data-lucide="chevron-down"></i>
+              </button>
+              <div id="sort-menu" class="sort-menu hidden" role="listbox" aria-label="Sort options">
+                <button type="button" class="sort-option" data-sort="newest" role="option">Newest</button>
+                <button type="button" class="sort-option" data-sort="oldest" role="option">Oldest</button>
+                <button type="button" class="sort-option" data-sort="most-viewed" role="option">Most Viewed</button>
+                <button type="button" class="sort-option" data-sort="duration-long" role="option">Duration: Longest</button>
+                <button type="button" class="sort-option" data-sort="duration-short" role="option">Duration: Shortest</button>
+                <button type="button" class="sort-option" data-sort="alphabetical" role="option">A to Z</button>
+              </div>
+            </div>
+            <button id="view-toggle" class="icon-btn" title="Toggle layout">
+              <i data-lucide="layout-grid"></i>
+            </button>
+            <button id="upload-btn" class="primary-btn">
+              <i data-lucide="upload"></i>
+              Add YouTube
             </button>
           </div>
-          <div class="mobile-view-controls">
-            <div class="mobile-view-title">View Mode</div>
-            <div class="mobile-view-buttons">
-              <button
-                id="mobile-grid-view"
-                class="mobile-view-btn active"
-                data-view="grid"
-              >
-                <i data-lucide="grid-3x3"></i>
-                <span>Grid</span>
-              </button>
-              <button
-                id="mobile-list-view"
-                class="mobile-view-btn"
-                data-view="list"
-              >
-                <i data-lucide="list"></i>
-                <span>List</span>
-              </button>
+        </header>
+
+        <section class="hero-panel">
+          <div>
+            <h1 id="route-title">Overview</h1>
+          </div>
+          <div class="hero-kpis">
+            <article>
+              <span>Total Videos</span>
+              <strong id="stat-videos">0</strong>
+            </article>
+            <article>
+              <span>Learning Hours</span>
+              <strong id="stat-hours">0h</strong>
+            </article>
+            <article>
+              <span>Saved Queue</span>
+              <strong id="stat-saved">0</strong>
+            </article>
+            <article>
+              <span>Completion</span>
+              <strong id="stat-completion">0%</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="filters-wrap">
+          <div>
+            <p class="filter-label">Category</p>
+            <div id="category-filters" class="chip-row"></div>
+          </div>
+          <div>
+            <p class="filter-label">Difficulty</p>
+            <div id="difficulty-filters" class="chip-row"></div>
+          </div>
+        </section>
+
+        <section id="content-meta" class="content-meta">
+          <div id="results-text">Loading content...</div>
+          <button id="clear-filters" class="soft-btn">Reset filters</button>
+        </section>
+
+        <section id="content-grid" class="content-grid" aria-live="polite"></section>
+
+        <section id="playlist-detail" class="playlist-detail hidden" aria-live="polite">
+          <div class="playlist-top">
+            <button id="playlist-back" class="soft-btn">
+              <i data-lucide="arrow-left"></i>
+              Back to playlists
+            </button>
+            <div>
+              <h2 id="playlist-title">Playlist</h2>
+              <p id="playlist-description"></p>
             </div>
+          </div>
+          <div id="playlist-grid" class="content-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="video-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal-backdrop" data-close="video"></div>
+      <div class="modal-card video-modal-card">
+        <button class="modal-close" data-close="video" aria-label="Close video modal">
+          <i data-lucide="x"></i>
+        </button>
+        <div id="video-iframe-wrap" class="video-frame-wrap"></div>
+        <div class="video-modal-body">
+          <h3 id="video-modal-title"></h3>
+          <p id="video-modal-desc"></p>
+          <div id="video-modal-meta" class="video-modal-meta"></div>
+          <div class="modal-actions">
+            <button id="modal-open-source" class="soft-btn">
+              <i data-lucide="external-link"></i>
+              Open Source
+            </button>
+            <button id="modal-save" class="soft-btn">
+              <i data-lucide="bookmark"></i>
+              Save
+            </button>
+            <button id="modal-complete" class="soft-btn">
+              <i data-lucide="check-check"></i>
+              Mark Complete
+            </button>
+            <button id="modal-share" class="soft-btn">
+              <i data-lucide="share-2"></i>
+              Share
+            </button>
+            <button id="modal-edit" class="soft-btn">
+              <i data-lucide="square-pen"></i>
+              Edit
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Mobile Bottom Navigation -->
-    <div class="mobile-bottom-nav">
-      <div class="bottom-nav-content">
-        <a href="#" class="bottom-nav-item active" data-route="home">
-          <i data-lucide="home"></i>
-          <span>Home</span>
-        </a>
-        <a href="#" class="bottom-nav-item" data-route="search">
-          <i data-lucide="search"></i>
-          <span>Search</span>
-        </a>
-        <a href="#" class="bottom-nav-item" data-route="my-videos">
-          <i data-lucide="video"></i>
-          <span>Videos</span>
-        </a>
-        <a href="#" class="bottom-nav-item" data-route="saved">
-          <i data-lucide="bookmark"></i>
-          <span>Saved</span>
-        </a>
-        <a href="#" class="bottom-nav-item" data-route="profile">
-          <i data-lucide="user"></i>
-          <span>Profile</span>
-        </a>
+    <div id="edit-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal-backdrop" data-close="edit"></div>
+      <div class="modal-card edit-modal-card">
+        <button class="modal-close" data-close="edit" aria-label="Close edit modal">
+          <i data-lucide="x"></i>
+        </button>
+        <h3>Edit Video</h3>
+        <form id="edit-form" class="edit-form">
+          <label class="floating-field">
+            <input id="edit-title" type="text" placeholder=" " required />
+            <span class="field-label">Title</span>
+          </label>
+          <label class="floating-field">
+            <textarea id="edit-description" rows="7" placeholder=" "></textarea>
+            <span class="field-label">Description</span>
+          </label>
+          <label class="floating-field">
+            <input id="edit-category" type="text" placeholder=" " />
+            <span class="field-label">Category</span>
+          </label>
+          <label class="floating-field select-field is-active">
+            <select id="edit-difficulty">
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Advanced</option>
+            </select>
+            <span class="field-label">Difficulty</span>
+          </label>
+          <label class="floating-field">
+            <input id="edit-thumbnail" type="url" placeholder=" " />
+            <span class="field-label">Thumbnail URL</span>
+          </label>
+          <label class="floating-field">
+            <input id="edit-youtube" type="url" placeholder=" " />
+            <span class="field-label">YouTube URL</span>
+          </label>
+
+          <div class="edit-actions">
+            <button id="edit-delete" type="button" class="btn btn-outline">
+              <i data-lucide="trash-2"></i>
+              Delete
+            </button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- SachiDev Chatbot -->
-    <button id="chatbot-toggle" class="chatbot-toggle" title="Open SachiDev">
-      <i data-lucide="message-circle"></i>
-    </button>
-
-    <div id="chatbot-container" class="chatbot-container">
-      <div class="chatbot-header">
-        <div class="chatbot-header-content">
-          <div class="chatbot-avatar">SD</div>
-          <div class="chatbot-info">
-            <h3 class="chatbot-name">SachiDev</h3>
-            <div class="chatbot-status">
-              <div class="chatbot-status-dot"></div>
-              <span>Ready to help!</span>
-            </div>
-          </div>
-        </div>
-        <div class="chatbot-controls">
-          <button id="chatbot-minimize" class="chatbot-btn" title="Minimize">
-            <i data-lucide="minus"></i>
-          </button>
-          <button id="chatbot-close" class="chatbot-btn" title="Close">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Welcome Screen -->
-      <div class="chatbot-welcome" id="chatbot-welcome">
-        <!-- <h1 class="chatbot-welcome-title">HI THERE!</h1>
-        <p class="chatbot-welcome-subtitle">What Do You Want To Chat About Today?</p> -->
-
-        <div class="chatbot-topic-cards">
-          <div class="chatbot-topic-card" data-topic="education">
-            <div class="chatbot-topic-icon">
-              <i data-lucide="graduation-cap"></i>
-            </div>
-            <div class="chatbot-topic-content">
-              <h3 class="chatbot-topic-title">Education</h3>
-              <p class="chatbot-topic-description">
-                How to apply to universities?
-              </p>
-            </div>
-          </div>
-
-          <div class="chatbot-topic-card" data-topic="productivity">
-            <div class="chatbot-topic-icon">
-              <i data-lucide="zap"></i>
-            </div>
-            <div class="chatbot-topic-content">
-              <h3 class="chatbot-topic-title">Productivity</h3>
-              <p class="chatbot-topic-description">
-                Be 10x more productive with your work
-              </p>
-            </div>
-          </div>
-
-          <div class="chatbot-topic-card" data-topic="health">
-            <div class="chatbot-topic-icon">
-              <i data-lucide="heart"></i>
-            </div>
-            <div class="chatbot-topic-content">
-              <h3 class="chatbot-topic-title">Health & Wellness</h3>
-              <p class="chatbot-topic-description">
-                Make your health better than ever
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Suggestions on welcome screen -->
-        <div class="chatbot-suggestions" id="chatbot-suggestions">
-          <button
-            class="chatbot-suggestion"
-            data-suggestion="What can I learn today?"
-          >
-            General
-          </button>
-          <button
-            class="chatbot-suggestion"
-            data-suggestion="Show me programming tutorials"
-          >
-            Programming
-          </button>
-          <button
-            class="chatbot-suggestion"
-            data-suggestion="How to learn a new language?"
-          >
-            Learning
-          </button>
-          <button
-            class="chatbot-suggestion"
-            data-suggestion="Find science videos"
-          >
-            Science
-          </button>
-        </div>
-      </div>
-
-      <!-- Chat Messages -->
-      <div class="chatbot-messages" id="chatbot-messages" style="display: none">
-        <!-- Messages will be added here dynamically -->
-      </div>
-
-      <!-- Input Area -->
-      <div
-        class="chatbot-input-area"
-        id="chatbot-input-area"
-        style="display: none"
-      >
-        <div class="chatbot-input-container">
-          <textarea
-            id="chatbot-input"
-            class="chatbot-input"
-            placeholder="What is on your mind?"
-            rows="1"
-          ></textarea>
-          <button
-            id="chatbot-send"
-            class="chatbot-send-btn"
-            title="Send message"
-          >
-            <i data-lucide="send"></i>
-          </button>
-        </div>
-      </div>
-    </div>
+    <div id="toast-container" class="toast-container"></div>
   </body>
 </html>
-

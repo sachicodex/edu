@@ -244,7 +244,7 @@ class ChatbotUI {
     content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
     // Format code blocks
-    content = content.replace(/`([^`]+)`/g, '<code style="background: var(--sachi-gray); padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>');
+    content = content.replace(/`([^`]+)`/g, '<code style="background: var(--sachi-gray); padding: 2px 6px; border-radius: 4px; font-family: Montserrat, sans-serif;">$1</code>');
 
     // Format lists
     content = content.replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>');

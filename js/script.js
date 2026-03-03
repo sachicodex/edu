@@ -1,1069 +1,1347 @@
-(function () {
-  const i = document.createElement("link").relList;
-  // ensure counts reflect current data before rendering/animating
-  // (updateStatsCounts is defined below)
-  typeof updateStatsCounts === 'function' && updateStatsCounts(),
-    new MutationObserver((n) => {
-      for (const o of n)
-        if (o.type === "childList")
-          for (const d of o.addedNodes)
-            d.tagName === "LINK" && d.rel === "modulepreload" && r(d);
-    }).observe(document, { childList: !0, subtree: !0 });
-  function s(n) {
-    const o = {};
-    return (
-      n.integrity && (o.integrity = n.integrity),
-      n.referrerPolicy && (o.referrerPolicy = n.referrerPolicy),
-      n.crossOrigin === "use-credentials"
-        ? (o.credentials = "include")
-        : n.crossOrigin === "anonymous"
-          ? (o.credentials = "omit")
-          : (o.credentials = "same-origin"),
-      o
-    );
-  }
-  function r(n) {
-    if (n.ep) return;
-    n.ep = !0;
-    const o = s(n);
-    fetch(n.href, o);
-  }
-})();
+
 import { DB, UPLOAD, SAVED, SEARCH, TOAST } from "../services/index.js";
 
-// connect to Cloud Firestore (set values from Firebase project settings)
 const firebaseConfig = window.FIREBASE_CONFIG || {
-  apiKey: "AIzaSyB3W9JfnwHshArkdvry784VRdLZMaM8e1Y",
-  authDomain: "sachicodex-edu-test.firebaseapp.com",
-  projectId: "sachicodex-edu-test",
-  storageBucket: "sachicodex-edu-test.firebasestorage.app",
-  messagingSenderId: "990789366745",
-  appId: "1:990789366745:web:a15d456505c5e28db29fc8"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
 };
 
 const db = DB.initDB(firebaseConfig);
 window.firestoreDb = db;
 
-// Wrapper to open Upload modal via service
-function openUploadModalService() {
-  UPLOAD.createUploadModal({
-    db,
-    state: a,
-    notify: c,
-    onUploaded: async () => {
-      await loadVideosFromDB();
-    }
-  });
-}
+const COMPLETED_KEY = "eduflow_completed";
+const HISTORY_KEY = "eduflow_history";
 
-lucide.createIcons();
-
-const a = {
-  searchQuery: "",
-  activeFilters: [],
-  sortBy: "relevance",
-  viewMode: "grid",
-  viewContext: "home",
-  previousViewContext: "home",
-  sidebarCollapsed: !1,
-  isSearching: !1,
-  searchResults: [],
-  currentPage: 1,
-  itemsPerPage: 9,
-  totalResults: 0,
-  searchStartTime: 0,
+const state = {
+  route: "overview",
   videos: [],
-  playlists: [],
+  searchQuery: "",
+  activeCategory: "all",
+  activeDifficulty: "all",
+  sortBy: "newest",
+  viewMode: "grid",
   selectedPlaylist: null,
-  isMobile: window.innerWidth <= 768,
-},
-  t = {
-    sidebar: document.getElementById("sidebar"),
-    sidebarBrand: document.getElementById("sidebar-brand"),
-    sidebarToggle: document.getElementById("sidebar-toggle"),
-    mobileMenuToggle: document.getElementById("mobile-menu-toggle"),
-    mobileOverlay: document.getElementById("mobile-overlay"),
-    mainContent: document.querySelector(".main-content"),
-    searchInput: document.getElementById("search-input"),
-    quickSearchInput: document.getElementById("quick-search-input"),
-    searchBtn: document.getElementById("search-btn"),
-    aiAssistBtn: document.getElementById("ai-assist-btn"),
-    suggestionsDropdown: document.getElementById("suggestions-dropdown"),
-    searchResultsDropdown: document.getElementById("search-results-dropdown"),
-    searchResultsList: document.getElementById("search-results-list"),
-    closeSearchResults: document.getElementById("close-search-results"),
-    searchPreviewContainer: document.getElementById("search-preview-container"),
-    filterBadges: document.querySelectorAll(".filter-badge"),
-    clearFiltersBtn: document.getElementById("clear-filters"),
-    activeFiltersSummary: document.getElementById("active-filters-summary"),
-    searchStats: document.getElementById("search-stats"),
-    resultsCount: document.getElementById("results-count"),
-    searchTime: document.getElementById("search-time"),
-    sortSelect: document.getElementById("sort-select"),
-    videosGrid: document.getElementById("videos-grid"),
-    videosContainer: document.getElementById("videos-container"),
-    gridViewBtn: document.getElementById("grid-view"),
-    listViewBtn: document.getElementById("list-view"),
-    loadMoreContainer: document.getElementById("load-more-container"),
-    loadMoreBtn: document.getElementById("load-more-btn"),
-    navItems: document.querySelectorAll(".nav-item[data-route]"),
-    categoryItems: document.querySelectorAll(".nav-item[data-category]"),
-    savedCount: document.getElementById("saved-count"),
-    videoModal: document.getElementById("video-modal"),
-    videoModalClose: document.getElementById("video-modal-close"),
-    videoModalBackdrop: document.getElementById("video-modal-backdrop"),
-    videoPlayerContainer: document.getElementById("video-player-container"),
-    modalSaveBtn: document.getElementById("modal-save-btn"),
-    modalShareBtn: document.getElementById("modal-share-btn"),
-    uploadVideoBtn: document.getElementById("upload-video-btn"),
-    toastContainer: document.getElementById("toast-container"),
-    loadingScreen: document.getElementById("loading-screen"),
-    // sidebar user menu button (bottom of sidebar)
-    userMenu: document.querySelector('.user-menu'),
-    // modal content wrapper
-    videoModalContent: document.querySelector('.video-modal-content'),
-    // Mobile navigation elements
-    bottomNavItems: document.querySelectorAll(".bottom-nav-item[data-route]"),
-    mobileHeaderSearchBtn: document.querySelector(".mobile-header-btn[title='Search']"),
-    // Mobile search modal elements
-    mobileSearchModal: document.getElementById("mobile-search-modal"),
-    mobileSearchClose: document.getElementById("mobile-search-close"),
-    mobileSearchInput: document.getElementById("mobile-search-input"),
-    mobileSearchBtn: document.getElementById("mobile-search-btn"),
-    mobileAiAssistBtn: document.getElementById("mobile-ai-assist-btn"),
-    mobileFilterBtns: document.querySelectorAll(".mobile-filter-btn"),
-    mobileSortSelect: document.getElementById("mobile-sort-select"),
-    playlistGrid: document.getElementById("playlist-grid"),
-    playlistDetailScreen: document.getElementById("playlist-detail-screen"),
-    playlistBackBtn: document.getElementById("playlist-back-btn"),
-    playlistDetailTitle: document.getElementById("playlist-detail-title"),
-    playlistDetailDescription: document.getElementById("playlist-detail-description"),
-    playlistItemsGrid: document.getElementById("playlist-items-grid"),
+  activeVideoId: null,
+  editingVideoId: null,
+  editingPlaylistName: null,
+  completedIds: loadSet(COMPLETED_KEY),
+  watchHistory: loadHistory(),
+  savedIds: new Set(),
+};
+
+const SORT_LABELS = {
+  newest: "Newest",
+  oldest: "Oldest",
+  "most-viewed": "Most Viewed",
+  "duration-long": "Duration: Longest",
+  "duration-short": "Duration: Shortest",
+  alphabetical: "A to Z",
+};
+
+let modalPlayer = null;
+let modalPlayerKind = "";
+let modalPlayerTick = null;
+let ytApiReadyPromise = null;
+let modalVolumeHideTimer = null;
+
+const dom = {
+  loadingScreen: document.getElementById("loading-screen"),
+  sidebar: document.getElementById("sidebar"),
+  mobileOverlay: document.getElementById("mobile-overlay"),
+  sidebarToggle: document.getElementById("sidebar-toggle"),
+  navLinks: Array.from(document.querySelectorAll(".nav-link[data-route]")),
+  searchForm: document.getElementById("search-form"),
+  searchInput: document.getElementById("search-input"),
+  sortSelect: document.getElementById("sort-select"),
+  sortTrigger: document.getElementById("sort-trigger"),
+  sortTriggerLabel: document.getElementById("sort-trigger-label"),
+  sortMenu: document.getElementById("sort-menu"),
+  sortOptions: Array.from(document.querySelectorAll(".sort-option[data-sort]")),
+  viewToggle: document.getElementById("view-toggle"),
+  uploadBtn: document.getElementById("upload-btn"),
+  routeTitle: document.getElementById("route-title"),
+  routeSubtitle: document.getElementById("route-subtitle"),
+  statVideos: document.getElementById("stat-videos"),
+  statHours: document.getElementById("stat-hours"),
+  statSaved: document.getElementById("stat-saved"),
+  statCompletion: document.getElementById("stat-completion"),
+  statVideosLabel: document.querySelector(".hero-kpis article:nth-child(1) span"),
+  statHoursLabel: document.querySelector(".hero-kpis article:nth-child(2) span"),
+  statSavedLabel: document.querySelector(".hero-kpis article:nth-child(3) span"),
+  statCompletionLabel: document.querySelector(".hero-kpis article:nth-child(4) span"),
+  savedCount: document.getElementById("saved-count"),
+  categoryFilters: document.getElementById("category-filters"),
+  difficultyFilters: document.getElementById("difficulty-filters"),
+  filtersWrap: document.querySelector(".filters-wrap"),
+  contentMeta: document.getElementById("results-text"),
+  clearFilters: document.getElementById("clear-filters"),
+  contentGrid: document.getElementById("content-grid"),
+  playlistDetail: document.getElementById("playlist-detail"),
+  playlistTitle: document.getElementById("playlist-title"),
+  playlistDescription: document.getElementById("playlist-description"),
+  playlistGrid: document.getElementById("playlist-grid"),
+  playlistBack: document.getElementById("playlist-back"),
+  videoModal: document.getElementById("video-modal"),
+  videoIframeWrap: document.getElementById("video-iframe-wrap"),
+  videoModalTitle: document.getElementById("video-modal-title"),
+  videoModalDesc: document.getElementById("video-modal-desc"),
+  videoModalMeta: document.getElementById("video-modal-meta"),
+  modalOpenSource: document.getElementById("modal-open-source"),
+  modalSave: document.getElementById("modal-save"),
+  modalComplete: document.getElementById("modal-complete"),
+  modalShare: document.getElementById("modal-share"),
+  modalEdit: document.getElementById("modal-edit"),
+  editModal: document.getElementById("edit-modal"),
+  editModalHeading: document.querySelector("#edit-modal .edit-modal-card h3"),
+  editForm: document.getElementById("edit-form"),
+  editTitle: document.getElementById("edit-title"),
+  editDescription: document.getElementById("edit-description"),
+  editCategory: document.getElementById("edit-category"),
+  editDifficulty: document.getElementById("edit-difficulty"),
+  editThumbnail: document.getElementById("edit-thumbnail"),
+  editYoutube: document.getElementById("edit-youtube"),
+  editDelete: document.getElementById("edit-delete"),
+};
+
+const ROUTE_COPY = {
+  overview: {
+    title: "Overview",
+    subtitle:
+      "Prioritize what matters now: high-impact videos, active backlog, and measurable learning momentum.",
+  },
+  library: {
+    title: "Library",
+    subtitle:
+      "Explore the complete catalog with precise filtering, fast sorting, and structured metadata.",
+  },
+  playlists: {
+    title: "Playlists",
+    subtitle:
+      "Group lessons by learning path and execute topic-by-topic without losing context.",
+  },
+  saved: {
+    title: "Saved",
+    subtitle:
+      "Your priority queue. Keep promising content here and process it intentionally.",
+  },
+  analytics: {
+    title: "Analytics",
+    subtitle:
+      "Track completion, content mix, watch behavior, and operational learning health.",
+  },
+};
+
+function init() {
+  syncSavedState();
+  bindEvents();
+  syncSortUi();
+  renderFilters();
+  renderAll();
+
+  loadVideos()
+    .then(() => {
+      renderAll();
+      notify("Workspace synced", "success");
+    })
+    .catch((error) => {
+      console.error("Load error:", error);
+      notify("Unable to load cloud videos. You can still use local saved items.", "error");
+      renderAll();
+    })
+    .finally(() => {
+      window.setTimeout(() => {
+        dom.loadingScreen?.classList.add("hidden");
+      }, 500);
+    });
+}
+
+function bindEvents() {
+  dom.sidebarToggle?.addEventListener("click", () => {
+    dom.sidebar?.classList.add("open");
+    dom.mobileOverlay?.classList.add("open");
+  });
+
+  dom.mobileOverlay?.addEventListener("click", closeSidebar);
+
+  dom.navLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      const route = String(link.dataset.route || "overview");
+      setRoute(route);
+      closeSidebar();
+    });
+  });
+
+  let searchTimer = null;
+  dom.searchInput?.addEventListener("input", (event) => {
+    const value = String(event.target.value || "");
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(() => {
+      state.searchQuery = value.trim();
+      state.selectedPlaylist = null;
+      renderAll();
+    }, 160);
+  });
+
+  dom.searchForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    state.searchQuery = String(dom.searchInput?.value || "").trim();
+    renderAll();
+  });
+
+  dom.sortTrigger?.addEventListener("click", () => {
+    const nextOpen = !dom.sortMenu?.classList.contains("open");
+    setSortMenuOpen(nextOpen);
+  });
+
+  dom.sortOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      const nextSort = String(option.dataset.sort || "newest");
+      state.sortBy = nextSort in SORT_LABELS ? nextSort : "newest";
+      syncSortUi();
+      setSortMenuOpen(false);
+      renderAll();
+    });
+  });
+
+  dom.viewToggle?.addEventListener("click", () => {
+    state.viewMode = state.viewMode === "grid" ? "list" : "grid";
+    updateViewToggleIcon();
+    renderAll();
+  });
+
+  dom.uploadBtn?.addEventListener("click", () => {
+    UPLOAD.createUploadModal({
+      db,
+      state,
+      notify,
+      onUploaded: async () => {
+        await loadVideos();
+        renderAll();
+      },
+    });
+  });
+
+  dom.clearFilters?.addEventListener("click", () => {
+    state.searchQuery = "";
+    state.activeCategory = "all";
+    state.activeDifficulty = "all";
+    state.selectedPlaylist = null;
+
+    if (dom.searchInput) {
+      dom.searchInput.value = "";
+    }
+    renderAll();
+  });
+
+  dom.categoryFilters?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-category]");
+    if (!button) return;
+    state.activeCategory = String(button.dataset.category || "all");
+    state.selectedPlaylist = null;
+    renderAll();
+  });
+
+  dom.difficultyFilters?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-difficulty]");
+    if (!button) return;
+    state.activeDifficulty = String(button.dataset.difficulty || "all");
+    state.selectedPlaylist = null;
+    renderAll();
+  });
+
+  dom.contentGrid?.addEventListener("click", (event) => {
+    const actionEl = event.target.closest("[data-action]");
+    if (!actionEl) return;
+    void handleCardAction(actionEl);
+  });
+
+  dom.playlistGrid?.addEventListener("click", (event) => {
+    const actionEl = event.target.closest("[data-action]");
+    if (!actionEl) return;
+    void handleCardAction(actionEl);
+  });
+
+  const keyboardActivate = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const tag = String(event.target?.tagName || "").toLowerCase();
+    if (tag === "button" || tag === "a" || tag === "input" || tag === "textarea" || tag === "select") {
+      return;
+    }
+    const actionEl = event.target.closest("[data-action]");
+    if (!actionEl) return;
+    const action = String(actionEl.dataset.action || "");
+    if (action !== "watch" && action !== "open-playlist") return;
+    event.preventDefault();
+    void handleCardAction(actionEl);
   };
-async function N() {
-  V();
-  updateSearchInputPlaceholder(true);
-  // ensure UI reflects current viewContext before rendering
-  applyViewContextUI();
-  // ensure stats and saved counts reflect current data
-  // load videos from database then init UI
-  await loadVideosFromDB();
-  // ensure view buttons reflect the current viewMode (default: grid)
-  if (t.gridViewBtn) t.gridViewBtn.classList.toggle('active', a.viewMode === 'grid');
-  if (t.listViewBtn) t.listViewBtn.classList.toggle('active', a.viewMode === 'list');
+  dom.contentGrid?.addEventListener("keydown", keyboardActivate);
+  dom.playlistGrid?.addEventListener("keydown", keyboardActivate);
 
-  updateStatsCounts();
-  updateSavedCount();
-  g();
-  q();
-  de();
-  setTimeout(() => {
-    t.loadingScreen.style.opacity = "0";
-    setTimeout(() => {
-      t.loadingScreen.style.display = "none";
-    }, 300);
-  }, 1000);
-  // Welcome toast removed per preference (toasts limited to specific events)
-}
-
-// Load videos from Firestore and map to app shape
-async function loadVideosFromDB() {
-  try {
-    const rows = await DB.loadVideosFromDB(db);
-    a.videos = rows;
-    buildPlaylistsFromVideos();
-    renderPlaylists();
-    updateStatsCounts();
-    updateSavedCount();
-    g();
-  } catch (e) {
-    console.error('loadVideosFromDB exception', e);
-    c('Unable to load videos', 'error');
-  }
-}
-function V() {
-  var e, i, s, r, n, o, d, u, h, S, I, E, B, k, T, C, x, M, $, D;
-  (e = t.sidebarToggle) == null || e.addEventListener("click", ae),
-    (i = t.mobileMenuToggle) == null || i.addEventListener("click", ne),
-    (s = t.mobileOverlay) == null || s.addEventListener("click", re),
-    (r = t.searchInput) == null || r.addEventListener("input", j),
-    (n = t.searchInput) == null || n.addEventListener("keydown", O),
-    (o = t.searchInput) == null || o.addEventListener("focus", H),
-    (d = t.searchInput) == null || d.addEventListener("blur", z),
-    (u = t.quickSearchInput) == null || u.addEventListener("input", G),
-    (h = t.quickSearchInput) == null ||
-    h.addEventListener("keydown", (l) => {
-      l.key === "Enter" &&
-        ((t.searchInput.value = t.quickSearchInput.value),
-          (a.searchQuery = t.quickSearchInput.value),
-          p());
-    }),
-    (S = t.searchBtn) == null || S.addEventListener("click", () => {
-      a.searchQuery = t.searchInput.value;
-      p();
-    }),
-    (t.uploadVideoBtn) == null || t.uploadVideoBtn.addEventListener('click', openUploadModalService),
-    (I = t.aiAssistBtn) == null || I.addEventListener("click", oe),
-    (t.sidebarBrand) == null || t.sidebarBrand.addEventListener("click", () => {
-      // clicking the brand should open the sidebar on mobile or ensure it's visible on desktop
-      if (window.innerWidth <= 768) {
-        // open mobile sidebar
-        t.sidebar.classList.add('mobile-open');
-        t.mobileOverlay.classList.add('active');
-        document.body.classList.add('sidebar-open');
-        t.sidebar.style.transform = 'translate(0)';
-      } else {
-        // ensure desktop sidebar is expanded
-        a.sidebarCollapsed = false;
-        t.sidebar.classList.remove('collapsed');
-        Q();
-      }
-    }),
-    (E = t.closeSearchResults) == null || E.addEventListener("click", m),
-    (B = t.filterBadges) == null ||
-    B.forEach((l) => {
-      l.addEventListener("click", () => Z(l.dataset.filter, l));
-    }),
-    (k = t.clearFiltersBtn) == null || k.addEventListener("click", clearAllFilters),
-    (T = t.sortSelect) == null || T.addEventListener("change", Y),
-    (C = t.gridViewBtn) == null || C.addEventListener("click", () => F("grid")),
-    (x = t.listViewBtn) == null || x.addEventListener("click", () => F("list")),
-    (M = t.loadMoreBtn) == null || M.addEventListener("click", _),
-    ($ = t.navItems) == null ||
-    $.forEach((l) => {
-      l.addEventListener("click", (y) => ee(y, l));
-    }),
-    (D = t.categoryItems) == null ||
-    D.forEach((l) => {
-      l.addEventListener("click", (y) => te(y, l));
-    }),
-    // Mobile bottom navigation
-    (t.bottomNavItems) == null ||
-    t.bottomNavItems.forEach((l) => {
-      l.addEventListener("click", (y) => handleBottomNavClick(y, l));
-    }),
-    // Mobile header search button
-    (t.mobileHeaderSearchBtn) == null || t.mobileHeaderSearchBtn.addEventListener("click", openMobileSearchModal),
-    // Mobile search modal handlers
-    (t.mobileSearchClose) == null || t.mobileSearchClose.addEventListener("click", closeMobileSearchModal),
-    (t.mobileSearchBtn) == null || t.mobileSearchBtn.addEventListener("click", performMobileSearch),
-    (t.mobileAiAssistBtn) == null || t.mobileAiAssistBtn.addEventListener("click", performMobileAiAssist),
-    (t.mobileSearchInput) == null || t.mobileSearchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") performMobileSearch();
-    }),
-    // Mobile filter buttons
-    (t.mobileFilterBtns) == null ||
-    t.mobileFilterBtns.forEach((btn) => {
-      btn.addEventListener("click", () => handleMobileFilterClick(btn));
-    }),
-    (t.mobileSortSelect) == null || t.mobileSortSelect.addEventListener("change", Y),
-    (t.playlistBackBtn) == null || t.playlistBackBtn.addEventListener("click", handlePlaylistBack),
-    // Mobile view toggle buttons
-    document.querySelectorAll(".mobile-view-btn").forEach((btn) => {
-      btn.addEventListener("click", () => handleMobileViewClick(btn));
-    }),
-    // Mobile search modal backdrop
-    (t.mobileSearchModal) == null || t.mobileSearchModal.querySelector(".mobile-search-backdrop").addEventListener("click", closeMobileSearchModal),
-    document.querySelectorAll(".quick-action-item").forEach((l) => {
-      l.addEventListener("click", () => ie(l.dataset.action));
-    }),
-    window.addEventListener("resize", q),
-    window.addEventListener("click", ge),
-    // Infinite scroll listener (lightweight; guarded by viewContext)
-    window.addEventListener("scroll", handleInfiniteScroll);
-}
-
-function j(e) {
-  (a.searchQuery = e.target.value),
-    updateSearchInputPlaceholder(),
-    a.searchQuery.length > 2 ? ue(U, 300)() : (m(), g());
-}
-function O(e) {
-  if (e.key === "Tab") {
-    const suggestion = getSearchInputSuggestion(t.searchInput.value);
-    if (suggestion) {
-      e.preventDefault();
-      t.searchInput.value = suggestion;
-      a.searchQuery = suggestion;
-      updateSearchInputPlaceholder();
-    }
-  } else if (e.key === "Enter") {
-    a.searchQuery = t.searchInput.value;
-    const myVideosNav = document.querySelector('.nav-item[data-route="my-videos"]');
-    if (myVideosNav) {
-      ee({ preventDefault: () => { } }, myVideosNav);
-    }
-  } else if (e.key === "Escape") {
-    m();
-    if (t.suggestionsDropdown) t.suggestionsDropdown.classList.add("hidden");
-  }
-}
-function H() {
-  updateSearchInputPlaceholder();
-  a.searchQuery.length > 2 &&
-    t.searchResultsDropdown.classList.remove("hidden");
-}
-function z(e) {
-  setTimeout(() => {
-    t.searchResultsDropdown.contains(e.relatedTarget) || m();
-    updateSearchInputPlaceholder();
-  }, 200);
-}
-function G(e) {
-  const i = e.target.value;
-  if (i.length > 2) {
-    const s = b(i).slice(0, 3);
-    showQuickSearchResults(s);
-  }
-}
-function U() {
-  a.searchStartTime = performance.now();
-  const e = b(a.searchQuery);
-  (a.searchResults = e), J(e.slice(0, 5)), L(e.length);
-}
-
-const searchInputSuggestions = [
-  "Data structures and algorithms",
-  "JavaScript basics for beginners",
-  "React project setup tutorial",
-  "Database design fundamentals",
-];
-let currentSearchInputSuggestion = "";
-const defaultSearchInputPlaceholder = "Search videos and topics...";
-
-function getSearchInputSuggestion(currentValue = "") {
-  const typed = String(currentValue || "").trim().toLowerCase();
-  if (!typed) {
-    if (!currentSearchInputSuggestion) {
-      currentSearchInputSuggestion =
-        searchInputSuggestions[
-        Math.floor(Math.random() * searchInputSuggestions.length)
-        ];
-    }
-    return currentSearchInputSuggestion;
-  }
-
-  return (
-    searchInputSuggestions.find(
-      (suggestion) =>
-        suggestion.toLowerCase().startsWith(typed) &&
-        suggestion.length > typed.length
-    ) || ""
-  );
-}
-
-function updateSearchInputPlaceholder(forceNew = false) {
-  if (!t.searchInput) return;
-
-  if (forceNew) {
-    currentSearchInputSuggestion = "";
-  }
-
-  if (t.searchInput.value.trim()) {
-    t.searchInput.placeholder = defaultSearchInputPlaceholder;
-    return;
-  }
-
-  const suggestion = getSearchInputSuggestion("");
-  t.searchInput.placeholder = suggestion || defaultSearchInputPlaceholder;
-}
-function p() {
-  (a.searchStartTime = performance.now()), (a.currentPage = 1);
-  const e = b(a.searchQuery);
-  (a.searchResults = e),
-    (a.totalResults = e.length),
-    m(),
-    g(),
-    L(e.length),
-    // show search found toast only when there is a query and results
-    a.searchQuery && e.length > 0 && c(`Found ${e.length} videos`, "info");
-}
-function b(e) {
-  try {
-    return SEARCH.filterVideos(a, e);
-  } catch (err) {
-    console.error('SEARCH.filterVideos failed', err);
-    return a.videos.slice();
-  }
-}
-
-// Toggle visibility of primary page sections depending on viewContext
-function applyViewContextUI() {
-  const hero = document.querySelector('.hero-section');
-  const stats = document.querySelector('.stats-grid');
-  const featured = document.querySelector('.featured-section');
-  const playlists = document.querySelector('.playlists-section');
-  const quick = document.querySelector('.quick-actions');
-  const search = document.querySelector('.search-section');
-  const playlistDetailScreen = t.playlistDetailScreen;
-  if (a.viewContext === 'home') {
-    if (hero) hero.style.display = '';
-    if (stats) stats.style.display = '';
-    if (featured) featured.style.display = '';
-    if (playlists) playlists.style.display = '';
-    if (quick) quick.style.display = '';
-    if (search) search.style.display = '';
-    if (playlistDetailScreen) playlistDetailScreen.classList.add('hidden');
-  } else if (a.viewContext === 'videos') {
-    if (hero) hero.style.display = 'none';
-    if (stats) stats.style.display = 'none';
-    // show featured/videos grid when viewing videos
-    if (featured) featured.style.display = '';
-    if (playlists) playlists.style.display = '';
-    if (quick) quick.style.display = 'none';
-    if (search) search.style.display = '';
-    if (playlistDetailScreen) playlistDetailScreen.classList.add('hidden');
-  } else if (a.viewContext === 'saved') {
-    if (hero) hero.style.display = 'none';
-    if (stats) stats.style.display = 'none';
-    // show featured/videos grid for saved view as well
-    if (featured) featured.style.display = '';
-    if (playlists) playlists.style.display = 'none';
-    if (quick) quick.style.display = 'none';
-    if (search) search.style.display = 'none';
-    if (playlistDetailScreen) playlistDetailScreen.classList.add('hidden');
-  } else if (a.viewContext === 'playlist-detail') {
-    if (hero) hero.style.display = 'none';
-    if (stats) stats.style.display = 'none';
-    if (featured) featured.style.display = 'none';
-    if (playlists) playlists.style.display = 'none';
-    if (quick) quick.style.display = 'none';
-    if (search) search.style.display = 'none';
-    if (playlistDetailScreen) playlistDetailScreen.classList.remove('hidden');
-  }
-}
-function J(e) {
-  (t.searchResultsList.innerHTML = ""),
-    e.length === 0
-      ? (t.searchResultsList.innerHTML = `
-      <div class="no-search-results">
-        <i data-lucide="search-x"></i>
-        <span>No results found</span>
-      </div>
-    `)
-      : e.forEach((i) => {
-        const s = W(i);
-        t.searchResultsList.appendChild(s);
-      }),
-    t.searchResultsDropdown.classList.remove("hidden"),
-    lucide.createIcons();
-}
-function W(e) {
-  const i = document.createElement("div");
-  return (
-    (i.className = "search-result-item"),
-    (i.innerHTML = `
-    <div class="search-result-thumbnail">
-      <img src="${e.thumbnail}" alt="${e.title}" loading="lazy">
-      <div class="search-result-duration">${e.duration}</div>
-    </div>
-    <div class="search-result-content">
-      <h4 class="search-result-title">${A(e.title, a.searchQuery)}</h4>
-      <p class="search-result-description">${A(
-      e.description.substring(0, 100) + "...",
-      a.searchQuery
-    )}</p>
-      <div class="search-result-meta">
-        <span class="search-result-views">${f(e.views)} views</span>
-      </div>
-    </div>
-  `),
-    i.addEventListener("click", () => {
-      // Opening video - no toast per preference; keep dropdown closed
-      m();
-    }),
-    i
-  );
-}
-function A(e, i) {
-  try {
-    return SEARCH.highlightText(e, i);
-  } catch (err) {
-    return e;
-  }
-}
-function m() {
-  if (t.searchResultsDropdown) t.searchResultsDropdown.classList.add("hidden");
-  if (t.searchPreviewContainer) t.searchPreviewContainer.classList.add("hidden");
-}
-function g() {
-  const startTime = performance.now();
-  let videos = a.videos;
-
-  // If viewing saved page, use the saved list only
-  if (a.viewContext === 'saved') {
-    const saved = getSaved();
-    const savedIds = new Set(saved.map(s => String(s.id)));
-    videos = a.videos.filter(v => savedIds.has(String(v.id)));
-  } else {
-    // Apply search and filters for other views
-    videos = b(a.searchQuery);
-    // Keep playlist items out of the main feed in My Videos.
-    if (a.viewContext === 'videos') {
-      videos = videos.filter((v) => !isPlaylistVideo(v));
-    }
-  }
-
-  // Sort the videos
-  videos = X(videos, a.sortBy);
-
-  // Dashboard rule: show exactly 3 cards above playlists.
-  // Prefer non-playlist videos; if unavailable, fall back to any videos.
-  let endIndex = (a.currentPage - 1) * a.itemsPerPage + a.itemsPerPage;
-  if (a.viewContext === 'home') {
-    const nonPlaylist = videos.filter((v) => !isPlaylistVideo(v));
-    videos = nonPlaylist.length ? nonPlaylist : videos;
-    endIndex = 3;
-  }
-  const videosToShow = videos.slice(0, endIndex);
-
-  // Clear and set up container
-  t.videosGrid.innerHTML = "";
-  t.videosContainer.className = `videos-container ${a.viewMode}-view`;
-
-  if (videos.length === 0) {
-    le();
-    return;
-  }
-
-  // Render videos
-  videosToShow.forEach((video, index) => {
-    const videoElement = K(video, index);
-    t.videosGrid.appendChild(videoElement);
+  dom.playlistBack?.addEventListener("click", () => {
+    state.selectedPlaylist = null;
+    renderAll();
   });
 
-  // Load More UI removed; guard in case element exists
-  if (t.loadMoreContainer) t.loadMoreContainer.classList.toggle("hidden", endIndex >= videos.length);
+  document.querySelectorAll("[data-close='video']").forEach((el) => {
+    el.addEventListener("click", closeVideoModal);
+  });
 
-  // Show search stats if there's a search query
-  if (a.searchQuery) {
-    const searchTime = Math.round(performance.now() - startTime);
-    L(videos.length, searchTime);
-  } else {
-    t.searchStats.classList.add("hidden");
-  }
+  document.querySelectorAll("[data-close='edit']").forEach((el) => {
+    el.addEventListener("click", closeEditModal);
+  });
 
-  lucide.createIcons();
-}
+  dom.modalSave?.addEventListener("click", () => {
+    if (!state.activeVideoId) return;
+    toggleSave(state.activeVideoId);
+    syncModalButtons();
+  });
 
-function isPlaylistVideo(video) {
-  const playlistName = video?.playlistName || video?.playlist || "";
-  return String(playlistName).trim().length > 0;
-}
+  dom.modalComplete?.addEventListener("click", () => {
+    if (!state.activeVideoId) return;
+    toggleCompleted(state.activeVideoId);
+    syncModalButtons();
+  });
 
-function buildPlaylistsFromVideos() {
-  const groups = new Map();
-  a.videos.forEach((video) => {
-    const rawName = video.playlistName || video.playlist || "";
-    const playlistName = String(rawName || "").trim();
-    if (!playlistName) return;
-    if (!groups.has(playlistName)) {
-      groups.set(playlistName, {
-        id: playlistName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        name: playlistName,
-        description: video.playlistDescription || "",
-        items: [],
-      });
+  dom.modalOpenSource?.addEventListener("click", () => {
+    const video = findVideoById(state.activeVideoId);
+    const url = getSourceUrl(video);
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      notify("No valid source URL found", "warning");
     }
-    groups.get(playlistName).items.push(video);
   });
 
-  a.playlists = Array.from(groups.values()).map((playlist) => ({
-    ...playlist,
-    thumbnail: playlist.items[0]?.thumbnail || "",
-    description:
-      playlist.description ||
-      `${playlist.items.length} video${playlist.items.length === 1 ? "" : "s"} in this playlist`,
-  }));
-}
+  dom.modalShare?.addEventListener("click", async () => {
+    const video = findVideoById(state.activeVideoId);
+    const url = getSourceUrl(video);
+    if (!url) return;
 
-function renderPlaylists() {
-  if (!t.playlistGrid) return;
-  t.playlistGrid.innerHTML = "";
-
-  if (!a.playlists.length) {
-    t.playlistGrid.innerHTML = `
-      <div class="playlist-empty-state">
-        <h4>No playlists yet</h4>
-        <p>Upload videos with playlist fields to see playlist cards.</p>
-      </div>
-    `;
-    return;
-  }
-
-  a.playlists.forEach((playlist, index) => {
-    const card = createPlaylistCard(playlist, index);
-    t.playlistGrid.appendChild(card);
+    const ok = await copyText(url);
+    notify(ok ? "Link copied" : "Unable to copy link", ok ? "success" : "error");
   });
-  lucide.createIcons();
-}
 
-function createPlaylistCard(playlist, index) {
-  const card = document.createElement("div");
-  card.className = "playlist-card video-card animate-fade-in grid-card";
-  card.style.animationDelay = `${index * 0.1}s`;
-  const safeName = escapeHtml(playlist.name || "Playlist");
-  const safeDescription = escapeHtml(
-    playlist.description ||
-    `${playlist.items.length} video${playlist.items.length === 1 ? "" : "s"} in this playlist`
-  );
-  const firstItem = Array.isArray(playlist.items) ? playlist.items[0] : null;
-  const totalViews = (playlist.items || []).reduce(
-    (sum, item) => sum + (parseInt(String(item?.views || 0), 10) || 0),
-    0
-  );
-  const shareUrl = firstItem?.youtubeLink || firstItem?.videoUrl || window.location.href;
-  card.innerHTML = `
-    <div class="video-thumbnail">
-      <img src="${playlist.thumbnail}" alt="${safeName}" loading="lazy">
-      <div class="video-duration">${firstItem?.duration || "0:00"}</div>
-      <div class="video-overlay">
-        <button class="play-btn" aria-label="Open playlist">
-          <i data-lucide="play"></i>
-        </button>
-      </div>
-    </div>
-    <div class="video-content">
-      <div class="video-header">
-        <h3 class="video-title">${safeName}</h3>
-      </div>
-      <p class="video-description">${safeDescription}</p>
-      <div class="video-meta">
-        <div class="video-views">
-          <i data-lucide="eye"></i>
-          <span>${f(totalViews)} views</span>
-        </div>
-        <div class="video-actions">
-          <button class="video-action-btn" title="Save">
-            ${_svgBookmark("bookmark")}
-          </button>
-          <button class="video-action-btn" title="Share">
-            <i data-lucide="share-2"></i>
-          </button>
-          <button class="video-action-btn" title="More">
-            <i data-lucide="more-horizontal"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const playBtn = card.querySelector(".play-btn");
-  const saveBtn = card.querySelector('.video-action-btn[title="Save"]');
-  const shareBtn = card.querySelector('.video-action-btn[title="Share"]');
-  const moreBtn = card.querySelector('.video-action-btn[title="More"]');
-  let playlistSaved = false;
-
-  if (playBtn) {
-    playBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      openPlaylistDetail(playlist);
-    });
-  }
-  if (saveBtn) {
-    saveBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      playlistSaved = !playlistSaved;
-      saveBtn.classList.toggle("active", playlistSaved);
-      saveBtn.innerHTML = _svgBookmark(playlistSaved ? "bookmark-check" : "bookmark");
-    });
-  }
-  if (shareBtn) {
-    shareBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        c("Playlist link copied to clipboard!", "success");
-      });
-    });
-  }
-  if (moreBtn) {
-    moreBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      openPlaylistDetail(playlist);
-    });
-  }
-
-  card.addEventListener("click", () => openPlaylistDetail(playlist));
-  return card;
-}
-
-function openPlaylistDetail(playlist) {
-  if (!playlist) return;
-  a.selectedPlaylist = playlist;
-  a.previousViewContext = a.viewContext === "playlist-detail" ? "home" : a.viewContext;
-  a.viewContext = "playlist-detail";
-  applyViewContextUI();
-  renderPlaylistDetail();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function renderPlaylistDetail() {
-  if (!a.selectedPlaylist || !t.playlistItemsGrid) return;
-  if (t.playlistDetailTitle) t.playlistDetailTitle.textContent = a.selectedPlaylist.name;
-  if (t.playlistDetailDescription) {
-    t.playlistDetailDescription.textContent = a.selectedPlaylist.description;
-  }
-
-  t.playlistItemsGrid.innerHTML = "";
-  a.selectedPlaylist.items.forEach((video, index) => {
-    const card = createPlaylistItemCard(video, index);
-    t.playlistItemsGrid.appendChild(card);
+  dom.modalEdit?.addEventListener("click", () => {
+    if (!state.activeVideoId) return;
+    openEditModal(state.activeVideoId);
   });
-  lucide.createIcons();
-}
 
-function createPlaylistItemCard(video, index) {
-  const card = document.createElement("div");
-  card.className = "video-card animate-fade-in grid-card";
-  card.dataset.id = video.id;
-  card.style.animationDelay = `${index * 0.08}s`;
-  const safeTitle = escapeHtml(video.title || "Untitled Video");
-  const safeDescription = escapeHtml(video.description || "No description available.");
-  card.innerHTML = `
-    <div class="video-thumbnail">
-      <img src="${video.thumbnail}" alt="${safeTitle}" loading="lazy">
-      <div class="video-duration">${video.duration || "0:00"}</div>
-      <div class="video-overlay">
-        <button class="play-btn">
-          <i data-lucide="play"></i>
-        </button>
-      </div>
-    </div>
-    <div class="video-content">
-      <div class="video-header">
-        <h3 class="video-title">${safeTitle}</h3>
-      </div>
-      <p class="video-description">${safeDescription}</p>
-      <div class="video-meta">
-        <div class="video-views">
-          <i data-lucide="eye"></i>
-          <span>${f(video.views || 0)} views</span>
-        </div>
-        <div class="video-actions">
-          <button class="video-action-btn" title="Save">
-            ${_svgBookmark(isSaved(video.id) ? 'bookmark-check' : 'bookmark')}
-          </button>
-          <button class="video-action-btn" title="Share">
-            <i data-lucide="share-2"></i>
-          </button>
-          <button class="video-action-btn" title="More">
-            <i data-lucide="more-horizontal"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
+  dom.editForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await saveEdit();
+  });
 
-  const playBtn = card.querySelector(".play-btn");
-  const saveBtn = card.querySelector('.video-action-btn[title="Save"]');
-  const shareBtn = card.querySelector('.video-action-btn[title="Share"]');
-  const moreBtn = card.querySelector('.video-action-btn[title="More"]');
+  dom.editDelete?.addEventListener("click", async () => {
+    if (state.editingPlaylistName) {
+      await deletePlaylist(state.editingPlaylistName);
+      return;
+    }
+    if (!state.editingVideoId) return;
+    await deleteVideo(state.editingVideoId);
+  });
 
-  if (playBtn) {
-    playBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      openVideoModal(video);
-    });
-  }
-
-  if (saveBtn) {
-    saveBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      toggleSave(video.id);
-      const active = isSaved(video.id);
-      saveBtn.classList.toggle("active", active);
-      saveBtn.innerHTML = _svgBookmark(active ? 'bookmark-check' : 'bookmark');
-    });
-    saveBtn.classList.toggle("active", isSaved(video.id));
-  }
-
-  if (shareBtn) {
-    shareBtn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      const url = video.youtubeLink || video.videoUrl || window.location.href;
-      navigator.clipboard.writeText(url).then(() => {
-        c("Link copied to clipboard!", "success");
-      });
-    });
-  }
-
-  if (moreBtn) {
-    moreBtn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      openEditModal(video);
-    });
-  }
-
-  card.addEventListener("click", () => openVideoModal(video));
-  return card;
-}
-
-function handlePlaylistBack() {
-  a.viewContext = a.previousViewContext || "home";
-  a.selectedPlaylist = null;
-  applyViewContextUI();
-  if (a.viewContext === "saved") {
-    renderSavedSection();
-  } else {
-    g();
-  }
-}
-
-function K(e, i) {
-  const s = document.createElement("div");
-  (s.className = `video-card animate-fade-in ${a.viewMode}-card`),
-    s.dataset.id = e.id;
-  (s.style.animationDelay = `${i * 0.1}s`);
-  s.innerHTML = `
-    <div class="video-thumbnail">
-      <img src="${e.thumbnail}" alt="${e.title}" loading="lazy">
-      <div class="video-duration">${e.duration}</div>
-      <div class="video-overlay">
-        <button class="play-btn">
-          <i data-lucide="play"></i>
-        </button>
-      </div>
-    </div>
-    <div class="video-content">
-      <div class="video-header">
-        <h3 class="video-title">${e.title}</h3>
-      </div>
-      <p class="video-description">${e.description}</p>
-      <div class="video-meta">
-        <div class="video-views">
-          <i data-lucide="eye"></i>
-          <span>${f(e.views)} views</span>
-        </div>
-        <div class="video-actions">
-          <button class="video-action-btn" title="Save">
-            ${_svgBookmark(isSaved(e.id) ? 'bookmark-check' : 'bookmark')}
-          </button>
-          <button class="video-action-btn" title="Share">
-            <i data-lucide="share-2"></i>
-          </button>
-          <button class="video-action-btn" title="More">
-            <i data-lucide="more-horizontal"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-  const n = s.querySelector(".play-btn"),
-    o = s.querySelector('.video-action-btn[title="Save"]'),
-    d = s.querySelector('.video-action-btn[title="Share"]');
-  const moreBtn = s.querySelector('.video-action-btn[title="More"]');
-  // reflect initial saved state
-  if (o) o.classList.toggle("active", isSaved(e.id));
-  return (
-    n.addEventListener("click", (u) => {
-      u.stopPropagation();
-      // Open playable modal if youtube link or video file present
-      openVideoModal(e);
-    }),
-    d && d.addEventListener('click', async (ev) => {
-      ev.stopPropagation();
-      const url = e.youtubeLink || e.videoUrl || window.location.href;
-      try {
-        if (navigator.share) {
-          await navigator.share({ title: e.title || 'Video', url });
-          c('Share dialog opened', 'success');
-        } else if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(url);
-          c('Link copied to clipboard!', 'success');
-        } else {
-          window.open(url, '_blank');
-        }
-      } catch (err) {
-        c("Couldn't share. Link copied instead.", 'warning');
-        try { await navigator.clipboard.writeText(url); } catch { }
-      }
-    }),
-    o.addEventListener("click", (u) => {
-      u.stopPropagation();
-      toggleSave(e.id);
-      const active = isSaved(e.id);
-      o.classList.toggle("active", active);
-      // Rebuild icon with inline SVG (no library dependency)
-      o.innerHTML = _svgBookmark(active ? 'bookmark-check' : 'bookmark');
-    }),
-    d.addEventListener("click", (u) => {
-      u.stopPropagation();
-      const url = e.youtubeLink || e.videoUrl || window.location.href;
-      navigator.clipboard.writeText(url).then(() => {
-        c("Link copied to clipboard!", "success");
-      });
-    }),
-    // open Edit modal when More button clicked
-    moreBtn && moreBtn.addEventListener('click', (u) => {
-      u.stopPropagation();
-      openEditModal(e);
-    }),
-    s.addEventListener("click", () => {
-      // Open in-app video modal on any card click (do not redirect to YouTube)
-      openVideoModal(e);
-    }),
-    s
-  );
-}
-
-// update numeric stats (Total Videos etc) to reflect real data
-function updateStatsCounts() {
-  try {
-    // Map specific stat cards by title to desired values
-    const statCards = document.querySelectorAll('.stat-card');
-    statCards.forEach((card) => {
-      const titleEl = card.querySelector('.stat-title');
-      const valueEl = card.querySelector('.stat-value');
-      if (!titleEl || !valueEl) return;
-      const title = titleEl.textContent.trim().toLowerCase();
-      if (title.includes('total videos')) {
-        valueEl.dataset.count = String(a.videos.length);
-        valueEl.textContent = f(a.videos.length);
-      } else if (title.includes('active students')) {
-        // static override as requested
-        valueEl.dataset.count = String(1428);
-        valueEl.textContent = '1,428';
-      } else if (title.includes('ai insights')) {
-        valueEl.dataset.count = String(273);
-        valueEl.textContent = '273';
-      }
-    });
-
-    // Update the My Videos nav badge to reflect total videos count
-    const myNavBadge = document.querySelector('.nav-item[data-route="my-videos"] .nav-badge');
-    if (myNavBadge) myNavBadge.textContent = String(a.videos.length);
-  } catch (e) {
-    console.error('updateStatsCounts error', e);
-  }
-}
-
-
-// Persist saved videos in localStorage
-function getSaved() {
-  try { return SAVED.getSaved(); } catch (e) { return []; }
-}
-
-function saveList(list) {
-  try { SAVED.saveList(list); } catch (e) { }
-}
-
-function isSaved(id) {
-  try { return SAVED.isSaved(id); } catch (e) { return false; }
-}
-
-function toggleSave(id) {
-  try {
-    SAVED.toggleSave(id, {
-      state: a,
-      notify: c,
-      renderSavedSection: () => renderSavedSection(),
-      updateSavedCount: () => updateSavedCount()
-    });
-  } catch (e) {
-    console.error('toggleSave failed', e);
-  }
-}
-
-function updateSavedCount() {
-  try { return SAVED.updateSavedCount({ savedCountEl: t.savedCount }); } catch (e) { }
-}
-
-function renderSavedSection() {
-  a.viewContext = 'saved';
-  applyViewContextUI();
-  a.currentPage = 1;
-  try {
-    SAVED.renderSavedSection({ state: a, dom: t, renderVideos: g, iconLib: lucide });
-  } catch (e) {
-    console.error('renderSavedSection failed', e);
-  }
-}
-
-// Video modal helpers
-let currentModalVideoId = null;
-function isYouTubeUrl(value) {
-  if (!value || typeof value !== "string") return false;
-  const v = value.trim();
-  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com)/i.test(v);
-}
-
-function extractYouTubeVideoId(value) {
-  if (!value || typeof value !== "string") return null;
-  const input = value.trim();
-  if (!input) return null;
-
-  // Plain ID support (11 chars) for resilience.
-  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
-
-  try {
-    const parsed = new URL(input);
-    const host = parsed.hostname.toLowerCase();
-    const path = parsed.pathname;
-
-    if (host.includes("youtu.be")) {
-      const shortId = path.split("/").filter(Boolean)[0];
-      return shortId || null;
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setSortMenuOpen(false);
+      closeVideoModal();
+      closeEditModal();
+      closeSidebar();
     }
 
     if (
-      host.includes("youtube.com") ||
-      host.includes("youtube-nocookie.com")
+      event.key.toLowerCase() === "f" &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !isTextInput(document.activeElement) &&
+      dom.videoModal &&
+      !dom.videoModal.classList.contains("hidden")
     ) {
-      const watchId = parsed.searchParams.get("v");
-      if (watchId) return watchId;
-
-      const parts = path.split("/").filter(Boolean);
-      const markers = ["embed", "shorts", "live", "v"];
-      const markerIndex = parts.findIndex((p) => markers.includes(p));
-      if (markerIndex >= 0 && parts[markerIndex + 1]) return parts[markerIndex + 1];
+      event.preventDefault();
+      void toggleVideoFullscreen();
+      return;
     }
-  } catch (_) {
-    // fallback regex below
-  }
 
-  const match = input.match(
-    /(?:v=|\/embed\/|\/shorts\/|youtu\.be\/|\/live\/)([a-zA-Z0-9_-]{11})/
-  );
-  return match ? match[1] : null;
+    if (event.key === "/" && !isTextInput(document.activeElement)) {
+      event.preventDefault();
+      dom.searchInput?.focus();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 1024) {
+      closeSidebar();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!dom.sortSelect) return;
+    if (dom.sortSelect.contains(event.target)) return;
+    setSortMenuOpen(false);
+  });
 }
 
-let currentModalYTPlayer = null;
-let currentModalHtml5Player = null;
-let currentModalPlayerTick = null;
-let ytIframeApiPromise = null;
-let currentModalInlineControls = null;
-
-function formatPlayerTime(seconds) {
-  const safe = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
-  const mins = Math.floor(safe / 60);
-  const secs = String(safe % 60).padStart(2, "0");
-  return `${mins}:${secs}`;
+function setSortMenuOpen(isOpen) {
+  if (!dom.sortMenu || !dom.sortTrigger) return;
+  dom.sortMenu.classList.toggle("hidden", !isOpen);
+  dom.sortMenu.classList.toggle("open", Boolean(isOpen));
+  dom.sortTrigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
 
-function clearModalPlayerResources() {
-  if (currentModalPlayerTick) {
-    clearInterval(currentModalPlayerTick);
-    currentModalPlayerTick = null;
+function syncSortUi() {
+  if (dom.sortTriggerLabel) {
+    dom.sortTriggerLabel.textContent = SORT_LABELS[state.sortBy] || SORT_LABELS.newest;
   }
-  if (currentModalYTPlayer && typeof currentModalYTPlayer.destroy === "function") {
-    try { currentModalYTPlayer.destroy(); } catch (_) { }
-  }
-  currentModalYTPlayer = null;
-  currentModalHtml5Player = null;
+
+  dom.sortOptions.forEach((option) => {
+    const active = option.dataset.sort === state.sortBy;
+    option.classList.toggle("active", active);
+    option.setAttribute("aria-selected", active ? "true" : "false");
+  });
 }
 
-function ensureYouTubeIframeAPI() {
-  if (window.YT && typeof window.YT.Player === "function") {
-    return Promise.resolve(window.YT);
-  }
-  if (ytIframeApiPromise) return ytIframeApiPromise;
+async function handleCardAction(actionEl) {
+  const action = String(actionEl.dataset.action || "");
+  const id = String(actionEl.dataset.id || "");
 
-  ytIframeApiPromise = new Promise((resolve) => {
+  if (action === "watch") {
+    openVideoModal(id);
+    return;
+  }
+
+  if (action === "save") {
+    toggleSave(id);
+    return;
+  }
+
+  if (action === "open") {
+    const video = findVideoById(id);
+    const url = getSourceUrl(video);
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (action === "share") {
+    const video = findVideoById(id);
+    const url = getSourceUrl(video);
+    if (!url) {
+      notify("No valid source URL found", "warning");
+      return;
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: video?.title || "Video", url });
+      } else {
+        const ok = await copyText(url);
+        notify(ok ? "Link copied" : "Unable to copy link", ok ? "success" : "error");
+      }
+    } catch {
+      const ok = await copyText(url);
+      notify(ok ? "Link copied" : "Unable to copy link", ok ? "success" : "error");
+    }
+    return;
+  }
+
+  if (action === "edit") {
+    openEditModal(id);
+    return;
+  }
+
+  if (action === "toggle-complete") {
+    toggleCompleted(id);
+    return;
+  }
+
+  if (action === "open-playlist") {
+    state.selectedPlaylist = decodeURIComponent(String(actionEl.dataset.playlist || ""));
+    renderAll();
+    return;
+  }
+
+  if (action === "share-playlist") {
+    const encoded = String(actionEl.dataset.playlist || "");
+    const playlistName = decodeURIComponent(encoded);
+    const playlist = getPlaylists().find((item) => item.name === playlistName);
+    const shareUrl =
+      sanitizeUrl(String(actionEl.dataset.shareUrl || "")) ||
+      getSourceUrl(playlist?.items?.[0]);
+
+    if (!shareUrl) {
+      notify("No playlist link available", "warning");
+      return;
+    }
+
+    const ok = await copyText(shareUrl);
+    notify(ok ? "Playlist link copied" : "Unable to copy link", ok ? "success" : "error");
+    return;
+  }
+
+  if (action === "edit-playlist") {
+    const encoded = String(actionEl.dataset.playlist || "");
+    const playlistName = decodeURIComponent(encoded);
+    openPlaylistEditModal(playlistName);
+    return;
+  }
+}
+
+async function loadVideos() {
+  const rows = await DB.loadVideosFromDB(db);
+  state.videos = rows.map(normalizeVideo).filter((video) => video.title);
+}
+
+function normalizeVideo(video) {
+  const id = String(video.id || "").trim().replace(/\s+/g, "-") || randomId();
+  const youtubeLink = video.youtubeLink || video.youtube_link || "";
+  const ytId = youtubeId(youtubeLink);
+  const fallbackThumb = ytId ? `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg` : "";
+
+  const category = normalizeCategory(video.category);
+  const difficulty = normalizeDifficulty(video.difficulty, video.aiTags, video.description);
+
+  return {
+    id,
+    title: String(video.title || "Untitled"),
+    description: String(video.description || "No description."),
+    duration: String(video.duration || "0:00"),
+    views: Number(video.views || 0),
+    category,
+    difficulty,
+    rating: Number(video.rating || deriveRating(video.views, video.duration)),
+    thumbnail: normalizeThumbnailUrl(video.thumbnail, fallbackThumb),
+    youtubeLink: String(youtubeLink || ""),
+    videoUrl: String(video.videoUrl || video.video_url || ""),
+    playlistName: String(video.playlistName || video.playlist_name || ""),
+    playlistDescription: String(video.playlistDescription || video.playlist_description || ""),
+    aiTags: Array.isArray(video.aiTags) ? video.aiTags : [],
+    uploadDate: parseDate(video.uploadDate || video.upload_date || video.created_at),
+  };
+}
+
+function normalizeThumbnailUrl(rawThumb, fallback = "") {
+  const source = sanitizeUrl(String(rawThumb || "")) || sanitizeUrl(String(fallback || "")) || "";
+  if (!source) return "";
+
+  if (source.includes("i.ytimg.com/vi/") || source.includes("img.youtube.com/vi/")) {
+    return source.replace(/\/(hqdefault|sddefault|default|0)\.jpg(\?.*)?$/i, "/mqdefault.jpg");
+  }
+
+  return source;
+}
+
+function renderAll() {
+  renderRouteHeader();
+  updateFilterVisibility();
+  renderFilters();
+  updateMetrics();
+  updateViewToggleIcon();
+
+  if (state.route === "analytics") {
+    renderAnalytics();
+    dom.playlistDetail?.classList.add("hidden");
+  } else if (state.route === "playlists") {
+    renderPlaylistsRoute();
+  } else {
+    renderVideoRoute();
+    dom.playlistDetail?.classList.add("hidden");
+  }
+
+  try {
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
+  }
+}
+
+function updateFilterVisibility() {
+  const hideFilters = state.route === "playlists";
+  dom.filtersWrap?.classList.toggle("hidden", hideFilters);
+  dom.clearFilters?.classList.toggle("hidden", hideFilters);
+}
+
+function setRoute(route) {
+  state.route = route in ROUTE_COPY ? route : "overview";
+  state.selectedPlaylist = null;
+
+  dom.navLinks.forEach((link) => {
+    link.classList.toggle("active", link.dataset.route === state.route);
+  });
+
+  renderAll();
+}
+
+function renderRouteHeader() {
+  const copy = ROUTE_COPY[state.route] || ROUTE_COPY.overview;
+  if (dom.routeTitle) dom.routeTitle.textContent = copy.title;
+  if (dom.routeSubtitle) dom.routeSubtitle.textContent = copy.subtitle;
+}
+
+function renderFilters() {
+  const categories = ["all", ...uniqueValues(state.videos.map((v) => v.category))];
+  const difficulties = ["all", ...uniqueValues(state.videos.map((v) => v.difficulty))];
+
+  if (dom.categoryFilters) {
+    dom.categoryFilters.innerHTML = categories
+      .map((value) => `<button class="chip ${state.activeCategory === value ? "active" : ""}" data-category="${escapeAttr(value)}">${escapeHtml(capLabel(value))}</button>`)
+      .join("");
+  }
+
+  if (dom.difficultyFilters) {
+    dom.difficultyFilters.innerHTML = difficulties
+      .map((value) => `<button class="chip ${state.activeDifficulty === value ? "active" : ""}" data-difficulty="${escapeAttr(value)}">${escapeHtml(capLabel(value))}</button>`)
+      .join("");
+  }
+}
+
+function getBaseFilteredVideos() {
+  const activeFilters = state.activeCategory === "all" ? [] : [state.activeCategory];
+
+  let filtered = SEARCH.filterVideos({ videos: state.videos, activeFilters }, state.searchQuery);
+
+  if (state.activeDifficulty !== "all") {
+    const selected = state.activeDifficulty.toLowerCase();
+    filtered = filtered.filter((video) => String(video.difficulty || "").toLowerCase() === selected);
+  }
+
+  return SEARCH.sortVideos(filtered, state.sortBy);
+}
+
+function getRouteVideos() {
+  const filtered = getBaseFilteredVideos();
+
+  if (state.route === "saved") {
+    return filtered.filter((video) => state.savedIds.has(String(video.id)));
+  }
+
+  if (state.route === "overview") {
+    const ranked = filtered
+      .map((video) => ({ video, score: overviewScore(video) }))
+      .sort((a, b) => b.score - a.score)
+      .map((row) => row.video);
+    return ranked.slice(0, 9);
+  }
+
+  return filtered;
+}
+
+function renderVideoRoute() {
+  const videos = getRouteVideos();
+  const visibleVideos = state.route === "overview" ? videos.slice(0, 9) : videos;
+  dom.playlistDetail?.classList.add("hidden");
+  dom.contentGrid?.classList.remove("hidden");
+
+  if (dom.contentGrid) {
+    dom.contentGrid.classList.toggle("list-view", state.viewMode === "list");
+  }
+
+  if (!visibleVideos.length) {
+    if (dom.contentGrid) {
+      dom.contentGrid.innerHTML = emptyCard(
+        state.route === "saved"
+          ? "No saved videos yet. Save videos from library or overview to build your queue."
+          : "No videos match the current search and filters."
+      );
+    }
+  } else if (dom.contentGrid) {
+    dom.contentGrid.innerHTML = visibleVideos.map((video) => videoCard(video)).join("");
+  }
+
+  const noun = visibleVideos.length === 1 ? "video" : "videos";
+  if (dom.contentMeta) dom.contentMeta.textContent = `${visibleVideos.length} ${noun} shown`;
+}
+
+function renderPlaylistsRoute() {
+  const playlists = getPlaylists();
+  const hasDetail = Boolean(state.selectedPlaylist);
+
+  if (!hasDetail) {
+    dom.playlistDetail?.classList.add("hidden");
+    dom.contentGrid?.classList.remove("hidden");
+    dom.contentGrid?.classList.toggle("list-view", state.viewMode === "list");
+
+    if (dom.contentGrid) {
+      dom.contentGrid.innerHTML = playlists.length
+        ? playlists.map((playlist) => playlistCard(playlist)).join("")
+        : emptyCard("No playlists available. Upload a YouTube playlist to populate this area.");
+    }
+
+    if (dom.contentMeta) {
+      dom.contentMeta.textContent = `${playlists.length} playlist${playlists.length === 1 ? "" : "s"}`;
+    }
+    return;
+  }
+
+  const selected = playlists.find((playlist) => playlist.name === state.selectedPlaylist);
+  if (!selected) {
+    state.selectedPlaylist = null;
+    renderPlaylistsRoute();
+    return;
+  }
+
+  dom.contentGrid?.classList.add("hidden");
+  dom.playlistDetail?.classList.remove("hidden");
+  if (dom.playlistTitle) dom.playlistTitle.textContent = selected.name;
+  if (dom.playlistDescription) {
+    dom.playlistDescription.textContent = selected.description || "Curated learning path";
+  }
+  dom.playlistGrid?.classList.toggle("list-view", state.viewMode === "list");
+  if (dom.playlistGrid) {
+    dom.playlistGrid.innerHTML = selected.items.map((video) => videoCard(video)).join("");
+  }
+  if (dom.contentMeta) {
+    dom.contentMeta.textContent = `${selected.items.length} video${selected.items.length === 1 ? "" : "s"} in playlist`;
+  }
+}
+
+function renderAnalytics() {
+  const filtered = getBaseFilteredVideos();
+  const total = filtered.length;
+  const completedCount = filtered.filter((video) => state.completedIds.has(String(video.id))).length;
+  const completionRate = total ? Math.round((completedCount / total) * 100) : 0;
+  const totalViews = filtered.reduce((sum, video) => sum + (Number(video.views) || 0), 0);
+  const avgMinutes = total
+    ? Math.round(filtered.reduce((sum, video) => sum + durationToSeconds(video.duration), 0) / total / 60)
+    : 0;
+
+  const categoryCounts = Object.entries(
+    filtered.reduce((map, video) => {
+      const key = video.category || "General";
+      map[key] = (map[key] || 0) + 1;
+      return map;
+    }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+
+  const historyRows = state.watchHistory.slice(0, 5).map((row) => {
+    const video = findVideoById(row.id);
+    return {
+      title: video?.title || "Removed video",
+      watchedAt: row.at,
+    };
+  });
+
+  const maxCategoryCount = Math.max(1, ...categoryCounts.map((entry) => entry[1]));
+
+  dom.contentGrid?.classList.remove("list-view");
+  dom.contentGrid?.classList.remove("hidden");
+
+  if (dom.contentGrid) {
+    dom.contentGrid.innerHTML = `
+      <article class="analytics-card">
+        <h3>Completion Quality</h3>
+        <p>${completedCount} of ${total} filtered videos completed</p>
+        <div class="analytics-line"><span style="width: ${completionRate}%"></span></div>
+        <strong>${completionRate}% completion</strong>
+      </article>
+
+      <article class="analytics-card">
+        <h3>Audience Signal</h3>
+        <p>Total observed views across filtered set</p>
+        <strong>${formatCompact(totalViews)} views</strong>
+        <p>Average duration ${avgMinutes} min</p>
+      </article>
+
+      <article class="analytics-card">
+        <h3>Category Distribution</h3>
+        ${categoryCounts.length
+          ? categoryCounts
+              .map(
+                ([name, count]) => `
+                    <p>${escapeHtml(name)} (${count})</p>
+                    <div class="analytics-line"><span style="width:${Math.round((count / maxCategoryCount) * 100)}%"></span></div>
+                  `
+              )
+              .join("")
+          : "<p>No category data yet.</p>"}
+      </article>
+
+      <article class="analytics-card">
+        <h3>Recent Watch History</h3>
+        ${historyRows.length
+          ? historyRows
+              .map((item) => `<p>${escapeHtml(item.title)} <br /><small>${new Date(item.watchedAt).toLocaleString()}</small></p>`)
+              .join("")
+          : "<p>No watch events yet.</p>"}
+      </article>
+    `;
+  }
+
+  if (dom.contentMeta) {
+    dom.contentMeta.textContent = `Analytics built from ${filtered.length} filtered videos`;
+  }
+  dom.playlistDetail?.classList.add("hidden");
+}
+
+function videoCard(video) {
+  const id = escapeAttr(String(video.id));
+  const thumb = sanitizeUrl(video.thumbnail);
+  const completed = state.completedIds.has(String(video.id));
+  const saved = state.savedIds.has(String(video.id));
+
+  return `
+    <article class="video-card interactive-card" data-action="watch" data-id="${id}" tabindex="0" role="button" aria-label="Watch ${escapeAttr(video.title)}">
+      <div class="card-thumb">
+        <img src="${thumb || "https://placehold.co/1280x720/10283a/e7f0f6?text=EduFlow"}" alt="${escapeAttr(video.title)} thumbnail" loading="lazy" />
+        <span class="card-duration">${escapeHtml(video.duration || "0:00")}</span>
+        ${completed ? '<span class="card-completed">Completed</span>' : ""}
+        <div class="card-overlay">
+          <button class="card-play-btn" data-action="watch" data-id="${id}" aria-label="Play ${escapeAttr(video.title)}">
+            <i data-lucide="play"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3 class="card-title">${escapeHtml(video.title)}</h3>
+        <p class="card-desc">${escapeHtml(trimText(video.description, 130))}</p>
+        <div class="meta-row">
+          <span class="badge">${escapeHtml(video.category)}</span>
+          <span class="badge">${escapeHtml(video.difficulty)}</span>
+          <span class="badge">${formatCompact(video.views)} views</span>
+        </div>
+        <div class="card-actions compact">
+          <button class="card-action-icon ${saved ? "bookmarked" : ""}" data-action="save" data-id="${id}" title="${saved ? "Saved" : "Save"}" aria-label="${saved ? "Saved" : "Save"}">
+            <i data-lucide="bookmark"></i>
+          </button>
+          <button class="card-action-icon" data-action="share" data-id="${id}" title="Share" aria-label="Share">
+            <i data-lucide="share-2"></i>
+          </button>
+          <button class="card-action-icon" data-action="edit" data-id="${id}" title="Edit" aria-label="Edit">
+            <i data-lucide="square-pen"></i>
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function playlistCard(playlist) {
+  const encodedPlaylist = encodeURIComponent(playlist.name);
+  const firstItem = playlist.items[0];
+  const thumbnail = sanitizeUrl(firstItem?.thumbnail);
+  const firstSource = getSourceUrl(firstItem);
+  const totalViews = playlist.items.reduce((sum, item) => sum + (Number(item.views) || 0), 0);
+
+  return `
+    <article class="playlist-card video-card interactive-card" data-action="open-playlist" data-playlist="${encodedPlaylist}" tabindex="0" role="button" aria-label="Open playlist ${escapeAttr(playlist.name)}">
+      <div class="card-thumb">
+        <img src="${thumbnail || "https://placehold.co/1280x720/10283a/e7f0f6?text=Playlist"}" alt="${escapeAttr(playlist.name)} thumbnail" loading="lazy" />
+        <span class="card-duration">${playlist.items.length} videos</span>
+        <div class="card-overlay">
+          <button class="card-play-btn" data-action="open-playlist" data-playlist="${encodedPlaylist}" aria-label="Open playlist ${escapeAttr(playlist.name)}">
+            <i data-lucide="play"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3 class="card-title">${escapeHtml(playlist.name)}</h3>
+        <p class="card-desc">${escapeHtml(trimText(playlist.description || "Curated learning path", 145))}</p>
+        <div class="meta-row">
+          <span class="badge">${playlist.items.length} videos</span>
+          <span class="badge">${totalPlaylistHours(playlist.items)}h total</span>
+          <span class="badge">${formatCompact(totalViews)} views</span>
+        </div>
+        <div class="card-actions compact">
+          <button class="card-action-icon" data-action="open-playlist" data-playlist="${encodedPlaylist}" title="Open playlist" aria-label="Open playlist">
+            <i data-lucide="list-video"></i>
+          </button>
+          <button class="card-action-icon" data-action="share-playlist" data-playlist="${encodedPlaylist}" data-share-url="${escapeAttr(firstSource)}" title="Share playlist" aria-label="Share playlist">
+            <i data-lucide="share-2"></i>
+          </button>
+          <button class="card-action-icon" data-action="edit-playlist" data-playlist="${encodedPlaylist}" title="Edit playlist" aria-label="Edit playlist">
+            <i data-lucide="square-pen"></i>
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function emptyCard(message) {
+  return `<article class="empty-card"><h3>No Data</h3><p>${escapeHtml(message)}</p></article>`;
+}
+
+function getPlaylists() {
+  const byName = new Map();
+
+  state.videos.forEach((video) => {
+    const rawName = String(video.playlistName || "").trim();
+    if (!rawName) return;
+
+    if (!byName.has(rawName)) {
+      byName.set(rawName, {
+        name: rawName,
+        description: String(video.playlistDescription || "").trim(),
+        items: [],
+      });
+    }
+
+    byName.get(rawName).items.push(video);
+  });
+
+  return Array.from(byName.values()).sort((a, b) => b.items.length - a.items.length);
+}
+
+function updateMetrics() {
+  const setCard = (labelEl, valueEl, label, value) => {
+    if (labelEl) labelEl.textContent = label;
+    if (valueEl) valueEl.textContent = value;
+  };
+
+  if (state.route === "playlists") {
+    const playlists = getPlaylists();
+    const selectedPlaylist = state.selectedPlaylist
+      ? playlists.find((item) => item.name === state.selectedPlaylist) || null
+      : null;
+
+    const scopedVideos = selectedPlaylist
+      ? selectedPlaylist.items
+      : playlists.flatMap((playlist) => playlist.items);
+
+    const scopedHours = scopedVideos.reduce((sum, video) => sum + durationToSeconds(video.duration), 0) / 3600;
+    const scopedCompletion = scopedVideos.length
+      ? Math.round(
+          (scopedVideos.filter((video) => state.completedIds.has(String(video.id))).length /
+            scopedVideos.length) *
+            100
+        )
+      : 0;
+
+    if (selectedPlaylist) {
+      const savedInPlaylist = scopedVideos.filter((video) => state.savedIds.has(String(video.id))).length;
+      setCard(dom.statVideosLabel, dom.statVideos, "Playlist Videos", String(scopedVideos.length));
+      setCard(dom.statHoursLabel, dom.statHours, "Playlist Hours", `${scopedHours.toFixed(1)}h`);
+      setCard(dom.statSavedLabel, dom.statSaved, "Saved in Playlist", String(savedInPlaylist));
+      setCard(dom.statCompletionLabel, dom.statCompletion, "Completion", `${scopedCompletion}%`);
+    } else {
+      setCard(dom.statVideosLabel, dom.statVideos, "Total Playlists", String(playlists.length));
+      setCard(dom.statHoursLabel, dom.statHours, "Playlist Videos", String(scopedVideos.length));
+      setCard(dom.statSavedLabel, dom.statSaved, "Playlist Hours", `${scopedHours.toFixed(1)}h`);
+      setCard(dom.statCompletionLabel, dom.statCompletion, "Completion", `${scopedCompletion}%`);
+    }
+  } else if (state.route === "saved") {
+    const savedVideos = state.videos.filter((video) => state.savedIds.has(String(video.id)));
+    const savedHours = savedVideos.reduce((sum, video) => sum + durationToSeconds(video.duration), 0) / 3600;
+    const completedSaved = savedVideos.filter((video) => state.completedIds.has(String(video.id))).length;
+    const savedCompletion = savedVideos.length ? Math.round((completedSaved / savedVideos.length) * 100) : 0;
+
+    setCard(dom.statVideosLabel, dom.statVideos, "Saved Videos", String(savedVideos.length));
+    setCard(dom.statHoursLabel, dom.statHours, "Saved Hours", `${savedHours.toFixed(1)}h`);
+    setCard(dom.statSavedLabel, dom.statSaved, "Completed Saved", String(completedSaved));
+    setCard(dom.statCompletionLabel, dom.statCompletion, "Completion", `${savedCompletion}%`);
+  } else {
+    const total = state.videos.length;
+    const hours = state.videos.reduce((sum, video) => sum + durationToSeconds(video.duration), 0) / 3600;
+    const saved = state.savedIds.size;
+    const completion = total ? Math.round((state.completedIds.size / total) * 100) : 0;
+
+    setCard(dom.statVideosLabel, dom.statVideos, "Total Videos", String(total));
+    setCard(dom.statHoursLabel, dom.statHours, "Learning Hours", `${hours.toFixed(1)}h`);
+    setCard(dom.statSavedLabel, dom.statSaved, "Saved Queue", String(saved));
+    setCard(dom.statCompletionLabel, dom.statCompletion, "Completion", `${completion}%`);
+  }
+
+  SAVED.updateSavedCount({ savedCountEl: dom.savedCount });
+}
+
+function updateViewToggleIcon() {
+  if (!dom.viewToggle) return;
+  dom.viewToggle.innerHTML =
+    state.viewMode === "grid"
+      ? '<i data-lucide="list"></i>'
+      : '<i data-lucide="layout-grid"></i>';
+}
+
+function configureEditModalMode(mode = "video") {
+  const isPlaylist = mode === "playlist";
+  if (dom.editModalHeading) {
+    dom.editModalHeading.textContent = isPlaylist ? "Edit Playlist" : "Edit Video";
+  }
+  if (dom.editDelete) {
+    dom.editDelete.innerHTML = isPlaylist
+      ? '<i data-lucide="trash-2"></i>Delete Playlist'
+      : '<i data-lucide="trash-2"></i>Delete';
+  }
+  const thumbLabel = dom.editThumbnail?.closest("label");
+  const youtubeLabel = dom.editYoutube?.closest("label");
+  thumbLabel?.classList.toggle("hidden", isPlaylist);
+  youtubeLabel?.classList.toggle("hidden", isPlaylist);
+  try {
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
+  }
+}
+
+function openPlaylistEditModal(playlistName) {
+  const playlist = getPlaylists().find((item) => item.name === playlistName);
+  if (!playlist) {
+    notify("Playlist not found", "error");
+    return;
+  }
+
+  state.editingVideoId = null;
+  state.editingPlaylistName = playlist.name;
+  configureEditModalMode("playlist");
+
+  if (dom.editTitle) dom.editTitle.value = playlist.name;
+  if (dom.editDescription) dom.editDescription.value = playlist.description || "";
+
+  const categoryCounts = playlist.items.reduce((map, item) => {
+    const key = String(item.category || "General");
+    map[key] = (map[key] || 0) + 1;
+    return map;
+  }, {});
+  const difficultyCounts = playlist.items.reduce((map, item) => {
+    const key = String(item.difficulty || "Beginner");
+    map[key] = (map[key] || 0) + 1;
+    return map;
+  }, {});
+
+  const dominantCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "General";
+  const dominantDifficulty = Object.entries(difficultyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "Beginner";
+
+  if (dom.editCategory) dom.editCategory.value = dominantCategory;
+  if (dom.editDifficulty) {
+    dom.editDifficulty.value = ["Beginner", "Intermediate", "Advanced"].includes(dominantDifficulty)
+      ? dominantDifficulty
+      : "Beginner";
+  }
+  if (dom.editThumbnail) dom.editThumbnail.value = "";
+  if (dom.editYoutube) dom.editYoutube.value = "";
+
+  dom.editModal?.classList.remove("hidden");
+  dom.editModal?.setAttribute("aria-hidden", "false");
+  try {
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
+  }
+}
+
+function syncSavedState() {
+  const list = SAVED.getSaved();
+  state.savedIds = new Set(list.map((item) => String(item.id)));
+}
+
+function toggleSave(id) {
+  SAVED.toggleSave(id, {
+    state,
+    notify,
+    updateSavedCount: () => {
+      syncSavedState();
+      updateMetrics();
+    },
+  });
+
+  syncSavedState();
+  renderAll();
+}
+
+function toggleCompleted(id) {
+  const sid = String(id);
+  if (state.completedIds.has(sid)) {
+    state.completedIds.delete(sid);
+  } else {
+    state.completedIds.add(sid);
+  }
+
+  persistSet(COMPLETED_KEY, state.completedIds);
+  renderAll();
+}
+
+function openVideoModal(id) {
+  const video = findVideoById(id);
+  if (!video) return;
+
+  state.activeVideoId = String(video.id);
+  cleanupModalPlayer();
+
+  const source = getSourceUrl(video);
+  const ytId = youtubeId(source);
+
+  if (dom.videoIframeWrap) {
+    if (ytId) {
+      dom.videoIframeWrap.innerHTML = customPlayerShell("youtube");
+      setupYouTubeCustomPlayer({
+        videoId: ytId,
+        title: video.title,
+      });
+    } else if (source) {
+      dom.videoIframeWrap.innerHTML = customPlayerShell("video", source);
+      setupHtml5CustomPlayer();
+    } else {
+      dom.videoIframeWrap.innerHTML = `<div class="empty-card"><p>Preview unavailable for this source.</p></div>`;
+    }
+  }
+
+  if (dom.videoModalTitle) dom.videoModalTitle.textContent = video.title;
+  if (dom.videoModalDesc) dom.videoModalDesc.textContent = video.description;
+  if (dom.videoModalMeta) {
+    dom.videoModalMeta.innerHTML = `
+      <span class="badge">${escapeHtml(video.category)}</span>
+      <span class="badge">${escapeHtml(video.difficulty)}</span>
+      <span class="badge">${formatCompact(video.views)} views</span>
+      <span class="badge">Uploaded ${video.uploadDate.toLocaleDateString()}</span>
+    `;
+  }
+
+  logWatch(video.id);
+  syncModalButtons();
+  dom.videoModal?.classList.remove("hidden");
+  dom.videoModal?.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  try {
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
+  }
+}
+
+function syncModalButtons() {
+  if (!state.activeVideoId) return;
+  const saved = state.savedIds.has(state.activeVideoId);
+  const completed = state.completedIds.has(state.activeVideoId);
+
+  if (dom.modalSave) {
+    dom.modalSave.innerHTML = `<i data-lucide="bookmark"></i>${saved ? "Saved" : "Save"}`;
+    dom.modalSave.classList.toggle("bookmarked", saved);
+  }
+
+  if (dom.modalComplete) {
+    dom.modalComplete.innerHTML = `<i data-lucide="check-check"></i>${completed ? "Completed" : "Mark Complete"}`;
+  }
+}
+
+function closeVideoModal() {
+  if (!dom.videoModal || dom.videoModal.classList.contains("hidden")) return;
+  cleanupModalPlayer();
+  dom.videoModal.classList.add("hidden");
+  dom.videoModal.setAttribute("aria-hidden", "true");
+  if (dom.videoIframeWrap) dom.videoIframeWrap.innerHTML = "";
+  document.body.style.overflow = "";
+}
+
+async function toggleVideoFullscreen() {
+  const fullscreenEl = document.fullscreenElement;
+  if (fullscreenEl) {
+    try {
+      await document.exitFullscreen();
+    } catch {
+      // noop
+    }
+    return;
+  }
+
+  const target =
+    dom.videoIframeWrap?.querySelector(".custom-player-shell") ||
+    dom.videoIframeWrap;
+  if (!target || typeof target.requestFullscreen !== "function") return;
+
+  try {
+    await target.requestFullscreen();
+  } catch {
+    // noop
+  }
+}
+
+function customPlayerShell(kind, src = "") {
+  const mediaNode =
+    kind === "youtube"
+      ? '<div id="custom-yt-host" class="custom-yt-host"></div>'
+      : `<video id="custom-html5-player" class="custom-html5-player" playsinline preload="metadata" src="${escapeAttr(src)}"></video>`;
+
+  return `
+    <div class="custom-player-shell" data-player-kind="${escapeAttr(kind)}">
+      <div class="custom-player-stage">
+        ${mediaNode}
+        <button class="custom-player-hit-area" data-player="hit-area" type="button" aria-label="Toggle play or pause"></button>
+        <button class="custom-player-pause-overlay" data-player="pause-overlay" type="button" aria-label="Resume video">
+          <i data-lucide="play"></i>
+        </button>
+      </div>
+      <div class="custom-player-controls">
+        <button class="custom-player-btn" data-player="play" aria-label="Play/Pause"><i data-lucide="play"></i></button>
+        <input class="custom-player-seek" data-player="seek" type="range" min="0" max="1000" value="0" aria-label="Seek" />
+        <span class="custom-player-time" data-player="time">0:00 / 0:00</span>
+        <div class="custom-player-volume-group" data-player="volume-group">
+          <button class="custom-player-btn" data-player="mute" aria-label="Mute/Unmute"><i data-lucide="volume-2"></i></button>
+          <div class="custom-player-volume-wrap" data-player="volume-wrap">
+            <input class="custom-player-volume" data-player="volume" type="range" min="0" max="100" value="100" aria-label="Volume" />
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getCustomControls() {
+  const shell = dom.videoIframeWrap?.querySelector(".custom-player-shell");
+  if (!shell) return null;
+  return {
+    shell,
+    playBtn: shell.querySelector('[data-player="play"]'),
+    seek: shell.querySelector('[data-player="seek"]'),
+    time: shell.querySelector('[data-player="time"]'),
+    hitArea: shell.querySelector('[data-player="hit-area"]'),
+    pauseOverlay: shell.querySelector('[data-player="pause-overlay"]'),
+    volumeGroup: shell.querySelector('[data-player="volume-group"]'),
+    volumeWrap: shell.querySelector('[data-player="volume-wrap"]'),
+    muteBtn: shell.querySelector('[data-player="mute"]'),
+    volume: shell.querySelector('[data-player="volume"]'),
+  };
+}
+
+function formatPlayerTime(raw) {
+  const total = Math.max(0, Math.floor(Number(raw) || 0));
+  const m = Math.floor(total / 60);
+  const s = String(total % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function setCustomTimeText(controls, current, duration) {
+  if (!controls?.time) return;
+  controls.time.textContent = `${formatPlayerTime(current)} / ${formatPlayerTime(duration)}`;
+}
+
+function updateSeekProgressFill(seekEl) {
+  if (!seekEl) return;
+  const min = Number(seekEl.min || 0);
+  const max = Number(seekEl.max || 1000);
+  const value = Number(seekEl.value || 0);
+  const pct = max > min ? Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100)) : 0;
+  seekEl.style.setProperty("--seek-progress", `${pct}%`);
+}
+
+function setPausedOverlayVisible(controls, visible) {
+  if (!controls?.shell) return;
+  controls.shell.classList.toggle("is-paused", Boolean(visible));
+}
+
+function updateCustomButtons({ isPlaying = false, isMuted = false } = {}) {
+  const controls = getCustomControls();
+  if (!controls) return;
+
+  const playState = isPlaying ? "pause" : "play";
+  const muteState = isMuted ? "volume-x" : "volume-2";
+  const playChanged = controls.playBtn?.dataset.icon !== playState;
+  const muteChanged = controls.muteBtn?.dataset.icon !== muteState;
+
+  if (controls.playBtn) {
+    if (playChanged) {
+      controls.playBtn.innerHTML = `<i data-lucide="${playState}"></i>`;
+      controls.playBtn.dataset.icon = playState;
+    }
+  }
+  if (controls.muteBtn) {
+    if (muteChanged) {
+      controls.muteBtn.innerHTML = `<i data-lucide="${muteState}"></i>`;
+      controls.muteBtn.dataset.icon = muteState;
+    }
+  }
+  if (playChanged || muteChanged) {
+    try {
+      window.lucide?.createIcons();
+    } catch {
+      // icon fallback
+    }
+  }
+}
+
+function startCustomPlayerTick(readState, options = {}) {
+  if (modalPlayerTick) window.clearInterval(modalPlayerTick);
+  modalPlayerTick = window.setInterval(() => {
+    const controls = getCustomControls();
+    if (!controls) return;
+    const snapshot = readState();
+    if (!snapshot) return;
+
+    const duration = Math.max(0, Number(snapshot.duration) || 0);
+    const current = Math.max(0, Number(snapshot.current) || 0);
+    const scrubbing = Boolean(options.isScrubbing?.());
+
+    if (!scrubbing && controls.seek && duration > 0) {
+      controls.seek.value = String(Math.round((current / duration) * 1000));
+    }
+    updateSeekProgressFill(controls.seek);
+    setCustomTimeText(controls, current, duration);
+    updateCustomButtons({
+      isPlaying: Boolean(snapshot.isPlaying),
+      isMuted: Boolean(snapshot.isMuted),
+    });
+  }, 250);
+}
+
+function cleanupModalPlayer() {
+  if (modalPlayerTick) {
+    window.clearInterval(modalPlayerTick);
+    modalPlayerTick = null;
+  }
+
+  if (modalPlayerKind === "youtube" && modalPlayer?.destroy) {
+    try {
+      modalPlayer.destroy();
+    } catch {
+      // noop
+    }
+  }
+
+  if (modalPlayerKind === "video" && modalPlayer?.pause) {
+    try {
+      modalPlayer.pause();
+    } catch {
+      // noop
+    }
+  }
+
+  modalPlayer = null;
+  modalPlayerKind = "";
+
+  if (modalVolumeHideTimer) {
+    window.clearTimeout(modalVolumeHideTimer);
+    modalVolumeHideTimer = null;
+  }
+}
+
+function wireVolumeHoverControls(controls) {
+  if (!controls?.volumeGroup || !controls?.volumeWrap) return;
+
+  const expand = () => {
+    if (modalVolumeHideTimer) {
+      window.clearTimeout(modalVolumeHideTimer);
+      modalVolumeHideTimer = null;
+    }
+    controls.volumeGroup.classList.add("expanded");
+  };
+
+  const collapseDelayed = () => {
+    if (modalVolumeHideTimer) window.clearTimeout(modalVolumeHideTimer);
+    modalVolumeHideTimer = window.setTimeout(() => {
+      controls.volumeGroup?.classList.remove("expanded");
+      modalVolumeHideTimer = null;
+    }, 1500);
+  };
+
+  controls.volumeGroup.addEventListener("mouseenter", expand);
+  controls.volumeGroup.addEventListener("mouseleave", collapseDelayed);
+  controls.volumeGroup.addEventListener("focusin", expand);
+  controls.volumeGroup.addEventListener("focusout", collapseDelayed);
+}
+
+function ensureYouTubeApiReady() {
+  if (window.YT?.Player) return Promise.resolve(window.YT);
+  if (ytApiReadyPromise) return ytApiReadyPromise;
+
+  ytApiReadyPromise = new Promise((resolve) => {
     const previousReady = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
       try {
         if (typeof previousReady === "function") previousReady();
-      } catch (_) { }
+      } catch {
+        // noop
+      }
       resolve(window.YT);
     };
 
@@ -1075,1386 +1353,706 @@ function ensureYouTubeIframeAPI() {
     }
   });
 
-  return ytIframeApiPromise;
+  return ytApiReadyPromise;
 }
 
-function _svgControlIcon(name) {
-  const attrs = 'xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-  switch (name) {
-    case "pause":
-      return `<svg ${attrs}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
-    case "mute":
-      return `<svg ${attrs}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line></svg>`;
-    case "volume":
-      return `<svg ${attrs}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg>`;
-    case "share":
-      return `<svg ${attrs}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line></svg>`;
-    case "play":
-    default:
-      return `<svg ${attrs}><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>`;
-  }
-}
+function setupYouTubeCustomPlayer({ videoId, title }) {
+  const host = dom.videoIframeWrap?.querySelector("#custom-yt-host");
+  const controls = getCustomControls();
+  if (!host || !controls) return;
+  let isScrubbing = false;
 
-function createCustomPlayerControls(playerWrap) {
-  const controls = document.createElement("div");
-  controls.className = "custom-video-controls";
-  controls.innerHTML = `
-    <button class="cvc-btn cvc-icon-btn" type="button" data-cvc="play" aria-label="Play" title="Play">${_svgControlIcon("play")}</button>
-    <input class="cvc-seek" type="range" min="0" max="1000" value="0" data-cvc="seek" aria-label="Seek">
-    <span class="cvc-time" data-cvc="time">0:00 / 0:00</span>
-    <div class="cvc-actions-row" data-cvc="actions-row">
-      <div class="cvc-volume-wrap" data-cvc="vol-wrap">
-        <button class="cvc-btn cvc-icon-btn" type="button" data-cvc="mute" aria-label="Mute" title="Mute">${_svgControlIcon("volume")}</button>
-        <input class="cvc-volume" type="range" min="0" max="100" value="100" data-cvc="volume" aria-label="Volume">
-      </div>
-      <button class="cvc-btn cvc-icon-btn" type="button" data-cvc="save" aria-label="Save" title="Save">${_svgBookmark("bookmark")}</button>
-      <button class="cvc-btn cvc-icon-btn" type="button" data-cvc="share" aria-label="Share" title="Share">${_svgControlIcon("share")}</button>
-    </div>
-  `;
-  playerWrap.appendChild(controls);
-  const api = {
-    root: controls,
-    playBtn: controls.querySelector('[data-cvc="play"]'),
-    seek: controls.querySelector('[data-cvc="seek"]'),
-    time: controls.querySelector('[data-cvc="time"]'),
-    volumeWrap: controls.querySelector('[data-cvc="vol-wrap"]'),
-    muteBtn: controls.querySelector('[data-cvc="mute"]'),
-    volume: controls.querySelector('[data-cvc="volume"]'),
-    saveBtn: controls.querySelector('[data-cvc="save"]'),
-    shareBtn: controls.querySelector('[data-cvc="share"]'),
-    setPlayIcon: (isPlaying) => {
-      const on = !!isPlaying;
-      const btn = api.playBtn;
-      if (!btn) return;
-      btn.innerHTML = _svgControlIcon(on ? "pause" : "play");
-      btn.setAttribute("aria-label", on ? "Pause" : "Play");
-      btn.title = on ? "Pause" : "Play";
-    },
-    setMuteIcon: (isMuted) => {
-      const muted = !!isMuted;
-      const btn = api.muteBtn;
-      if (!btn) return;
-      btn.innerHTML = _svgControlIcon(muted ? "mute" : "volume");
-      btn.setAttribute("aria-label", muted ? "Unmute" : "Mute");
-      btn.title = muted ? "Unmute" : "Mute";
-    },
-    setSaveIcon: (saved) => {
-      const active = !!saved;
-      const btn = api.saveBtn;
-      if (!btn) return;
-      btn.innerHTML = _svgBookmark(active ? "bookmark-check" : "bookmark");
-      btn.classList.toggle("active", active);
-      btn.setAttribute("aria-label", active ? "Saved" : "Save");
-      btn.title = active ? "Saved" : "Save";
-    }
-  };
-  // Volume slider UX: small open delay + delayed close after hover exit.
-  if (api.volumeWrap) {
-    let openTimer = null;
-    let closeTimer = null;
-    const openWithDelay = () => {
-      if (closeTimer) clearTimeout(closeTimer);
-      if (openTimer) clearTimeout(openTimer);
-      openTimer = setTimeout(() => {
-        api.volumeWrap.classList.add("vol-open");
-      }, 110);
-    };
-    const closeWithDelay = () => {
-      if (openTimer) clearTimeout(openTimer);
-      if (closeTimer) clearTimeout(closeTimer);
-      closeTimer = setTimeout(() => {
-        if (api.volumeWrap && !api.volumeWrap.matches(":hover")) {
-          api.volumeWrap.classList.remove("vol-open");
-        }
-      }, 2000);
-    };
-    api.volumeWrap.addEventListener("mouseenter", openWithDelay);
-    api.volumeWrap.addEventListener("focusin", openWithDelay);
-    api.volumeWrap.addEventListener("mouseleave", closeWithDelay);
-    api.volumeWrap.addEventListener("focusout", () => {
-      setTimeout(() => {
-        closeWithDelay();
-      }, 0);
-    });
-    // When user finishes drag/touch on slider, start close timer.
-    if (api.volume) {
-      api.volume.addEventListener("pointerup", closeWithDelay);
-      api.volume.addEventListener("touchend", closeWithDelay, { passive: true });
-      api.volume.addEventListener("mouseup", closeWithDelay);
-    }
-  }
-  api.setPlayIcon(false);
-  api.setMuteIcon(false);
-  return api;
-}
+  ensureYouTubeApiReady().then((YT) => {
+    if (!YT?.Player || !document.body.contains(host)) return;
 
-function wireInlineSaveShareControls(controls, video) {
-  if (!controls || !video) return;
-  controls.setSaveIcon(isSaved(video.id));
-  controls.saveBtn && controls.saveBtn.addEventListener("click", () => {
-    toggleSave(video.id);
-    const active = isSaved(video.id);
-    controls.setSaveIcon(active);
-    if (t.modalSaveBtn) setModalSaveButtonUI();
-  });
-  controls.shareBtn && controls.shareBtn.addEventListener("click", async () => {
-    const url = video.youtubeLink || video.videoUrl || window.location.href;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: video.title || "Video", url });
-      } else if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(url);
-        c("Link copied to clipboard!", "success");
-      } else {
-        window.open(url, "_blank");
-      }
-    } catch (_) {
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(url);
-          c("Link copied to clipboard!", "success");
-        }
-      } catch (_) { }
-    }
-  });
-  currentModalInlineControls = controls;
-}
+    modalPlayerKind = "youtube";
+    modalPlayer = new YT.Player(host, {
+      videoId,
+      playerVars: {
+        autoplay: 1,
+        controls: 0,
+        rel: 0,
+        modestbranding: 1,
+        playsinline: 1,
+        fs: 0,
+        iv_load_policy: 3,
+        disablekb: 1,
+      },
+      events: {
+        onReady: () => {
+          try {
+            modalPlayer.unMute();
+            modalPlayer.setVolume(100);
+          } catch {
+            // noop
+          }
 
-function createCustomPauseOverlay(stage, onResume) {
-  const overlay = document.createElement("div");
-  overlay.className = "custom-player-overlay";
-  overlay.innerHTML = `<button class="custom-overlay-play" type="button">Resume</button>`;
-  const btn = overlay.querySelector(".custom-overlay-play");
-  if (btn) {
-    btn.addEventListener("click", () => onResume && onResume());
-  }
-  stage.appendChild(overlay);
-  return {
-    show: () => overlay.classList.add("show"),
-    hide: () => overlay.classList.remove("show")
-  };
-}
-
-function addYouTubeChromeMasks(stage) {
-  const topMask = document.createElement("div");
-  topMask.className = "yt-chrome-mask yt-mask-top";
-  const bottomMask = document.createElement("div");
-  bottomMask.className = "yt-chrome-mask yt-mask-bottom";
-  stage.appendChild(topMask);
-  stage.appendChild(bottomMask);
-  return { topMask, bottomMask };
-}
-
-function openVideoModal(video) {
-  currentModalVideoId = video.id;
-  if (!t.videoModal || !t.videoPlayerContainer) return;
-  clearModalPlayerResources();
-  // lock background scroll
-  document.body.style.overflow = 'hidden';
-
-  // build header and player area
-  t.videoPlayerContainer.innerHTML = "";
-  // inject header
-  const header = document.createElement('div');
-  header.className = 'modal-video-header';
-  header.innerHTML = `<div class="modal-title"><h3>${escapeHtml(video.title)}</h3></div>`;
-  t.videoPlayerContainer.appendChild(header);
-  const playerWrap = document.createElement('div');
-  playerWrap.className = 'modal-video-player';
-  t.videoPlayerContainer.appendChild(playerWrap);
-  // If youtube link present, embed iframe
-  if (isYouTubeUrl(video.youtubeLink)) {
-    const vid = extractYouTubeVideoId(video.youtubeLink);
-    if (vid) {
-      const stage = document.createElement("div");
-      stage.className = "custom-player-stage";
-      playerWrap.appendChild(stage);
-      const frameHost = document.createElement("div");
-      frameHost.id = `yt-player-${Date.now()}`;
-      frameHost.className = "custom-youtube-host";
-      stage.appendChild(frameHost);
-      const masks = addYouTubeChromeMasks(stage);
-      const controls = createCustomPlayerControls(playerWrap);
-      wireInlineSaveShareControls(controls, video);
-      const pauseOverlay = createCustomPauseOverlay(stage, () => {
-        try { currentModalYTPlayer?.playVideo?.(); } catch (_) { }
-      });
-      let lastYTVolumeBeforeMute = 100;
-
-      ensureYouTubeIframeAPI().then((YT) => {
-        if (!YT || !YT.Player) {
-          playerWrap.textContent = "Video cannot be played.";
-          return;
-        }
-
-        const mountYouTubePlayer = ({ startSeconds = 0, autoplay = true } = {}) =>
-          new Promise((resolve) => {
-            if (currentModalYTPlayer && typeof currentModalYTPlayer.destroy === "function") {
-              try { currentModalYTPlayer.destroy(); } catch (_) { }
+          controls.playBtn?.addEventListener("click", () => {
+            const stateCode = modalPlayer.getPlayerState?.();
+            const isPlaying =
+              stateCode === YT.PlayerState.PLAYING || stateCode === YT.PlayerState.BUFFERING;
+            if (isPlaying) {
+              modalPlayer.pauseVideo?.();
+              updateCustomButtons({ isPlaying: false, isMuted: Boolean(modalPlayer.isMuted?.()) });
+              setPausedOverlayVisible(controls, true);
+            } else {
+              modalPlayer.playVideo?.();
+              updateCustomButtons({ isPlaying: true, isMuted: Boolean(modalPlayer.isMuted?.()) });
+              setPausedOverlayVisible(controls, false);
             }
-            currentModalYTPlayer = new YT.Player(frameHost.id, {
-              videoId: vid,
-              playerVars: {
-                autoplay: autoplay ? 1 : 0,
-                controls: 0,
-                rel: 0,
-                modestbranding: 1,
-                iv_load_policy: 3,
-                fs: 0,
-                disablekb: 1,
-                playsinline: 1,
-                origin: window.location.origin,
-                start: Math.max(0, Math.floor(startSeconds))
-              },
-              events: {
-                onReady: () => {
-                  const duration = currentModalYTPlayer.getDuration?.() || 0;
-                  controls.time.textContent = `${formatPlayerTime(0)} / ${formatPlayerTime(duration)}`;
-                  const initialVol = Math.max(0, Math.min(100, Number(currentModalYTPlayer.getVolume?.() ?? 100)));
-                  controls.volume.value = String(initialVol);
-                  if (initialVol > 0) lastYTVolumeBeforeMute = initialVol;
-                  controls.setMuteIcon(currentModalYTPlayer.isMuted?.());
-                  try { currentModalYTPlayer.unMute?.(); } catch (_) { }
-                  if (autoplay) {
-                    try { currentModalYTPlayer.playVideo?.(); } catch (_) { }
-                  } else {
-                    try { currentModalYTPlayer.pauseVideo?.(); } catch (_) { }
-                  }
-                  resolve();
-                },
-                onStateChange: () => {
-                  const state = currentModalYTPlayer.getPlayerState?.();
-                  if (state === YT.PlayerState.ENDED) {
-                    try { currentModalYTPlayer.seekTo(0, true); } catch (_) { }
-                    try { currentModalYTPlayer.pauseVideo(); } catch (_) { }
-                  }
-                  if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) pauseOverlay.hide();
-                  if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED || state === YT.PlayerState.CUED) pauseOverlay.show();
-                  controls.setPlayIcon(state === YT.PlayerState.PLAYING);
-                }
-              }
-            });
           });
 
-        const togglePlayPause = () => {
-          if (!currentModalYTPlayer) return;
-          const state = currentModalYTPlayer.getPlayerState?.();
-          if (state === YT.PlayerState.PLAYING) {
-            currentModalYTPlayer.pauseVideo();
-            pauseOverlay.show();
-          } else {
-            currentModalYTPlayer.playVideo();
-            pauseOverlay.hide();
+          controls.hitArea?.addEventListener("click", () => {
+            controls.playBtn?.click();
+          });
+          controls.pauseOverlay?.addEventListener("click", () => {
+            controls.playBtn?.click();
+          });
+
+          controls.muteBtn?.addEventListener("click", () => {
+            controls.volumeGroup?.classList.add("expanded");
+            const muted = modalPlayer.isMuted?.();
+            if (muted) modalPlayer.unMute?.();
+            else modalPlayer.mute?.();
+            updateCustomButtons({ isMuted: !muted });
+          });
+
+          const commitSeek = () => {
+            const duration = Number(modalPlayer.getDuration?.() || 0);
+            if (!duration) return;
+            const ratio = (Number(controls.seek.value) || 0) / 1000;
+            const target = Math.max(0, Math.min(duration, ratio * duration));
+            modalPlayer.seekTo?.(target, true);
+            // keep scrub lock briefly to avoid "jump back" while buffering
+            window.setTimeout(() => {
+              isScrubbing = false;
+            }, 900);
+          };
+
+          controls.seek?.addEventListener("pointerdown", () => {
+            isScrubbing = true;
+          });
+
+          controls.seek?.addEventListener("input", () => {
+            const duration = Number(modalPlayer.getDuration?.() || 0);
+            updateSeekProgressFill(controls.seek);
+            if (!duration) return;
+            const ratio = (Number(controls.seek.value) || 0) / 1000;
+            const preview = Math.max(0, Math.min(duration, ratio * duration));
+            setCustomTimeText(controls, preview, duration);
+          });
+
+          controls.seek?.addEventListener("change", () => {
+            isScrubbing = true;
+            commitSeek();
+          });
+
+          controls.volume?.addEventListener("input", () => {
+            const vol = Math.max(0, Math.min(100, Number(controls.volume.value) || 0));
+            modalPlayer.setVolume?.(vol);
+            if (vol <= 0) modalPlayer.mute?.();
+            else modalPlayer.unMute?.();
+          });
+
+          startCustomPlayerTick(() => {
+            const duration = Number(modalPlayer.getDuration?.() || 0);
+            const current = Number(modalPlayer.getCurrentTime?.() || 0);
+            const stateCode = modalPlayer.getPlayerState?.();
+            const isPlaying = stateCode === YT.PlayerState.PLAYING;
+            return {
+              duration,
+              current,
+              isPlaying,
+              isMuted: Boolean(modalPlayer.isMuted?.()),
+            };
+          }, {
+            isScrubbing: () => isScrubbing,
+          });
+
+          updateCustomButtons({ isPlaying: true, isMuted: false });
+          setPausedOverlayVisible(controls, false);
+          wireVolumeHoverControls(controls);
+          try {
+            window.lucide?.createIcons();
+          } catch {
+            // icon fallback
           }
-        };
+        },
+        onStateChange: () => {
+          const stateCode = modalPlayer.getPlayerState?.();
+          const isPlaying =
+            stateCode === YT.PlayerState.PLAYING || stateCode === YT.PlayerState.BUFFERING;
+          updateCustomButtons({
+            isPlaying,
+            isMuted: Boolean(modalPlayer.isMuted?.()),
+          });
+          setPausedOverlayVisible(controls, !isPlaying);
+        },
+      },
+    });
+  });
+}
 
-        controls.playBtn.addEventListener("click", () => {
-          togglePlayPause();
-        });
-        masks?.topMask && masks.topMask.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          togglePlayPause();
-        });
+function setupHtml5CustomPlayer() {
+  const player = dom.videoIframeWrap?.querySelector("#custom-html5-player");
+  const controls = getCustomControls();
+  if (!player || !controls) return;
 
-        controls.seek.addEventListener("input", () => {
-          if (!currentModalYTPlayer) return;
-          const duration = currentModalYTPlayer.getDuration?.() || 0;
-          const target = (Number(controls.seek.value) / 1000) * duration;
-          currentModalYTPlayer.seekTo(target, true);
-        });
+  modalPlayerKind = "video";
+  modalPlayer = player;
+  player.controls = false;
+  player.autoplay = true;
+  player.muted = false;
+  player.volume = 1;
+  let isScrubbing = false;
 
-        controls.muteBtn.addEventListener("click", () => {
-          if (!currentModalYTPlayer) return;
-          if (currentModalYTPlayer.isMuted?.()) {
-            const restore = Math.max(1, Math.min(100, Number(lastYTVolumeBeforeMute) || 50));
-            currentModalYTPlayer.unMute();
-            currentModalYTPlayer.setVolume(restore);
-            controls.volume.value = String(restore);
-          } else {
-            const cur = Math.max(0, Math.min(100, Number(currentModalYTPlayer.getVolume?.() ?? controls.volume.value ?? 100)));
-            if (cur > 0) lastYTVolumeBeforeMute = cur;
-            currentModalYTPlayer.mute();
-            currentModalYTPlayer.setVolume(0);
-            controls.volume.value = "0";
-          }
-          controls.setMuteIcon(currentModalYTPlayer.isMuted?.());
-        });
+  const play = () => {
+    const promise = player.play();
+    if (promise && typeof promise.catch === "function") {
+      promise.catch(() => {});
+    }
+  };
+  play();
 
-        controls.volume.addEventListener("input", () => {
-          if (!currentModalYTPlayer) return;
-          const raw = Number(controls.volume.value);
-          const vol = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 100));
-          currentModalYTPlayer.setVolume(vol);
-          if (vol > 0) {
-            lastYTVolumeBeforeMute = vol;
-            if (currentModalYTPlayer.isMuted?.()) currentModalYTPlayer.unMute();
-          }
-          if (vol === 0 && !currentModalYTPlayer.isMuted?.()) currentModalYTPlayer.mute();
-          controls.setMuteIcon(currentModalYTPlayer.isMuted?.());
-        });
-
-        mountYouTubePlayer({
-          startSeconds: 0,
-          autoplay: true
-        });
-
-        currentModalPlayerTick = setInterval(() => {
-          if (!currentModalYTPlayer || !currentModalYTPlayer.getCurrentTime) return;
-          const current = currentModalYTPlayer.getCurrentTime() || 0;
-          const duration = currentModalYTPlayer.getDuration?.() || 0;
-          if (duration > 0) {
-            controls.seek.value = String(Math.min(1000, Math.round((current / duration) * 1000)));
-          }
-          controls.time.textContent = `${formatPlayerTime(current)} / ${formatPlayerTime(duration)}`;
-          controls.setMuteIcon(currentModalYTPlayer.isMuted?.());
-          const effectiveVol = currentModalYTPlayer.isMuted?.() ? 0 : Math.max(0, Math.min(100, Number(currentModalYTPlayer.getVolume?.() ?? 0)));
-          controls.volume.value = String(effectiveVol);
-        }, 250);
-      }).catch(() => {
-        playerWrap.textContent = "Video cannot be played.";
-      });
+  controls.playBtn?.addEventListener("click", () => {
+    if (player.paused) {
+      play();
+      updateCustomButtons({ isPlaying: true, isMuted: Boolean(player.muted || player.volume === 0) });
+      setPausedOverlayVisible(controls, false);
     } else {
-      playerWrap.textContent = "Video cannot be played.";
+      player.pause();
+      updateCustomButtons({ isPlaying: false, isMuted: Boolean(player.muted || player.volume === 0) });
+      setPausedOverlayVisible(controls, true);
     }
-  } else if (video.videoUrl) {
-    const stage = document.createElement("div");
-    stage.className = "custom-player-stage";
-    playerWrap.appendChild(stage);
-    const vid = document.createElement("video");
-    vid.src = video.videoUrl;
-    vid.controls = false;
-    vid.autoplay = true;
-    vid.playsInline = true;
-    vid.style.width = '100%';
-    vid.style.height = 'auto';
-    vid.style.aspectRatio = '16 / 9';
-    vid.style.display = 'block';
-    vid.style.margin = '0 auto';
-    stage.appendChild(vid);
-    currentModalHtml5Player = vid;
+  });
 
-    const controls = createCustomPlayerControls(playerWrap);
-    wireInlineSaveShareControls(controls, video);
-    const pauseOverlay = createCustomPauseOverlay(stage, async () => {
-      try { await currentModalHtml5Player?.play?.(); } catch (_) { }
-    });
-    let lastHtml5VolumeBeforeMute = Math.max(1, Math.round((vid.volume || 1) * 100));
-    controls.playBtn.addEventListener("click", async () => {
-      if (!currentModalHtml5Player) return;
-      if (currentModalHtml5Player.paused) {
-        try { await currentModalHtml5Player.play(); } catch (_) { }
-        pauseOverlay.hide();
-      } else {
-        currentModalHtml5Player.pause();
-        pauseOverlay.show();
-      }
-      controls.setPlayIcon(!currentModalHtml5Player.paused);
-    });
+  controls.hitArea?.addEventListener("click", () => {
+    controls.playBtn?.click();
+  });
+  controls.pauseOverlay?.addEventListener("click", () => {
+    controls.playBtn?.click();
+  });
 
-    controls.seek.addEventListener("input", () => {
-      if (!currentModalHtml5Player || !Number.isFinite(currentModalHtml5Player.duration)) return;
-      currentModalHtml5Player.currentTime = (Number(controls.seek.value) / 1000) * currentModalHtml5Player.duration;
-    });
+  controls.muteBtn?.addEventListener("click", () => {
+    controls.volumeGroup?.classList.add("expanded");
+    player.muted = !player.muted;
+    updateCustomButtons({ isMuted: player.muted, isPlaying: !player.paused });
+  });
 
-    controls.muteBtn.addEventListener("click", () => {
-      if (!currentModalHtml5Player) return;
-      if (currentModalHtml5Player.muted) {
-        currentModalHtml5Player.muted = false;
-        const restore = Math.max(1, Math.min(100, Number(lastHtml5VolumeBeforeMute) || 50));
-        currentModalHtml5Player.volume = restore / 100;
-        controls.volume.value = String(restore);
-      } else {
-        const cur = Math.max(0, Math.min(100, Math.round((currentModalHtml5Player.volume || 0) * 100)));
-        if (cur > 0) lastHtml5VolumeBeforeMute = cur;
-        currentModalHtml5Player.muted = true;
-        controls.volume.value = "0";
-      }
-      controls.setMuteIcon(currentModalHtml5Player.muted);
-    });
+  const commitSeek = () => {
+    const duration = Number(player.duration || 0);
+    if (!duration) return;
+    const ratio = (Number(controls.seek.value) || 0) / 1000;
+    player.currentTime = Math.max(0, Math.min(duration, ratio * duration));
+    isScrubbing = false;
+  };
 
-    controls.volume.addEventListener("input", () => {
-      if (!currentModalHtml5Player) return;
-      const raw = Number(controls.volume.value);
-      const vol = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 100));
-      currentModalHtml5Player.volume = vol / 100;
-      if (vol > 0) {
-        lastHtml5VolumeBeforeMute = vol;
-        currentModalHtml5Player.muted = false;
-      } else {
-        currentModalHtml5Player.muted = true;
-      }
-      controls.setMuteIcon(currentModalHtml5Player.muted);
-    });
+  controls.seek?.addEventListener("pointerdown", () => {
+    isScrubbing = true;
+  });
 
-    vid.addEventListener("loadedmetadata", () => {
-      controls.time.textContent = `${formatPlayerTime(0)} / ${formatPlayerTime(vid.duration || 0)}`;
-    });
-    Promise.resolve()
-      .then(() => vid.play())
-      .catch(() => { });
-    vid.addEventListener("timeupdate", () => {
-      const current = vid.currentTime || 0;
-      const duration = vid.duration || 0;
-      if (duration > 0) controls.seek.value = String(Math.min(1000, Math.round((current / duration) * 1000)));
-      controls.time.textContent = `${formatPlayerTime(current)} / ${formatPlayerTime(duration)}`;
-    });
-    vid.addEventListener("play", () => { controls.setPlayIcon(true); pauseOverlay.hide(); });
-    vid.addEventListener("pause", () => { controls.setPlayIcon(false); pauseOverlay.show(); });
-    vid.addEventListener("volumechange", () => {
-      controls.setMuteIcon(vid.muted);
-      controls.volume.value = String(vid.muted ? 0 : Math.round((vid.volume || 0) * 100));
-    });
-  } else {
-    playerWrap.textContent = "Video cannot be played.";
-  }
-  // Update modal save button state and label
-  if (t.modalSaveBtn) setModalSaveButtonUI();
+  controls.seek?.addEventListener("input", () => {
+    const duration = Number(player.duration || 0);
+    updateSeekProgressFill(controls.seek);
+    if (!duration) return;
+    const ratio = (Number(controls.seek.value) || 0) / 1000;
+    const preview = Math.max(0, Math.min(duration, ratio * duration));
+    setCustomTimeText(controls, preview, duration);
+  });
 
-  // display modal and trap focus
-  t.videoModal.classList.remove("hidden");
-  trapFocusInModal(t.videoModal);
-  lucide.createIcons();
-}
+  controls.seek?.addEventListener("change", () => {
+    commitSeek();
+  });
 
-function closeVideoModal() {
-  if (!t.videoModal) return;
-  clearModalPlayerResources();
-  currentModalInlineControls = null;
-  t.videoModal.classList.add("hidden");
-  if (t.videoPlayerContainer) t.videoPlayerContainer.innerHTML = "";
-  // restore body scroll
-  document.body.style.overflow = '';
-  releaseFocusTrap();
-  currentModalVideoId = null;
-}
+  controls.volume?.addEventListener("input", () => {
+    const vol = Math.max(0, Math.min(100, Number(controls.volume.value) || 0));
+    player.volume = vol / 100;
+    player.muted = vol <= 0;
+  });
 
-// Inline SVG helper for bookmark icons (avoids runtime replacement issues)
-function _svgBookmark(name) {
-  const attrs = 'xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-  if (name === 'bookmark-check') {
-    return `<svg ${attrs}><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"></path><path d="m9 10 2 2 4-4"></path></svg>`;
-  }
-  return `<svg ${attrs}><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>`;
-}
+  startCustomPlayerTick(() => ({
+    duration: Number(player.duration || 0),
+    current: Number(player.currentTime || 0),
+    isPlaying: !player.paused,
+    isMuted: Boolean(player.muted || player.volume === 0),
+  }), {
+    isScrubbing: () => isScrubbing,
+  });
 
-// Ensure modal Save button shows icon + text and reflects saved state
-function setModalSaveButtonUI() {
+  updateCustomButtons({ isPlaying: true, isMuted: false });
+  setPausedOverlayVisible(controls, false);
+  player.addEventListener("play", () => updateCustomButtons({ isPlaying: true, isMuted: Boolean(player.muted || player.volume === 0) }));
+  player.addEventListener("play", () => setPausedOverlayVisible(controls, false));
+  player.addEventListener("pause", () => updateCustomButtons({ isPlaying: false, isMuted: Boolean(player.muted || player.volume === 0) }));
+  player.addEventListener("pause", () => setPausedOverlayVisible(controls, true));
+  player.addEventListener("ended", () => updateCustomButtons({ isPlaying: false, isMuted: Boolean(player.muted || player.volume === 0) }));
+  player.addEventListener("ended", () => setPausedOverlayVisible(controls, true));
+  player.addEventListener("volumechange", () => updateCustomButtons({ isPlaying: !player.paused, isMuted: Boolean(player.muted || player.volume === 0) }));
+  wireVolumeHoverControls(controls);
   try {
-    if (!t.modalSaveBtn) return;
-    const active = currentModalVideoId ? isSaved(currentModalVideoId) : false;
-    // Build consistent content: icon + label
-    const iconName = active ? 'bookmark-check' : 'bookmark';
-    t.modalSaveBtn.innerHTML = `${_svgBookmark(iconName)}<span class="btn-label">${active ? 'Saved' : 'Save'}</span>`;
-    t.modalSaveBtn.classList.toggle('active', active);
-    if (currentModalInlineControls && typeof currentModalInlineControls.setSaveIcon === "function") {
-      currentModalInlineControls.setSaveIcon(active);
-    }
-    // Colorize when active for clearer affordance
-    t.modalSaveBtn.style.color = active ? 'black' : '';
-    if (window.lucide && typeof lucide.createIcons === 'function') {
-      lucide.createIcons();
-    }
-  } catch (err) { /* noop */ }
-}
-
-/* AI Writer Modal - lightweight local generator for 'Do' steps */
-const aiModal = document.getElementById('ai-modal');
-const aiModalBackdrop = aiModal ? aiModal.querySelector('.ai-modal-backdrop') : null;
-const aiModalClose = aiModal ? aiModal.querySelector('.ai-modal-close') : null;
-const aiModalOutput = aiModal ? document.getElementById('ai-modal-output') : null;
-const aiModalVideoInfo = aiModal ? document.getElementById('ai-modal-video-info') : null;
-const aiGenerateBtn = document.getElementById('ai-generate-btn');
-const aiCopyBtn = document.getElementById('ai-copy-btn');
-const aiDoneBtn = document.getElementById('ai-close-done');
-const aiToneSelect = document.getElementById('ai-tone-select');
-
-let currentAIVideo = null;
-
-function openAIModal(video) {
-  currentAIVideo = video;
-  if (!aiModal) return;
-  document.body.classList.add('ai-modal-open');
-  aiModal.classList.remove('hidden');
-  aiModal.setAttribute('aria-hidden', 'false');
-  // populate header info
-  if (aiModalVideoInfo) {
-    aiModalVideoInfo.innerHTML = `<strong>${escapeHtml(video.title)}</strong><div class="muted">${escapeHtml(video.description || '')}</div>`;
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
   }
-  if (aiModalOutput) aiModalOutput.textContent = '';
-  // default to 'detailed' explanation per preference
-  if (aiToneSelect) aiToneSelect.value = 'detailed';
-  trapFocusInModal(aiModal);
 }
 
-function closeAIModal() {
-  if (!aiModal) return;
-  aiModal.classList.add('hidden');
-  aiModal.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('ai-modal-open');
-  releaseFocusTrap();
-  currentAIVideo = null;
-}
-
-function generateAIContent() {
-  if (!currentAIVideo || !aiModalOutput) return;
-  const tone = (aiToneSelect && aiToneSelect.value) || 'do';
-  const title = currentAIVideo.title || '';
-  const desc = currentAIVideo.description || '';
-  const base = `${title}. ${desc}`;
-  const out = simpleAIGenerator(base, tone);
-  aiModalOutput.textContent = out;
-}
-
-function simpleAIGenerator(text, tone) {
-  // Very small heuristic generator for local usage.
-  const sentences = text.split(/[.\n]+/).map(s => s.trim()).filter(Boolean);
-  const title = sentences[0] || text.slice(0, 60);
-  if (tone === 'brief') {
-    return `${title} — This video covers: ${sentences.slice(1, 4).join(', ') || 'key practical steps and measurement techniques.'}`;
+function openEditModal(id) {
+  const video = findVideoById(id);
+  if (!video) {
+    notify("Video not found", "error");
+    return;
   }
-  if (tone === 'detailed') {
-    return `Overview: ${title}\n\nDetails:\n- ${sentences.slice(1, 6).join('\n- ') || 'Practical techniques, setup, and real-world tips.'}\n\nTips:\n- Take notes during demonstrations.\n- Rewatch sections for measurement steps.`;
+
+  state.editingVideoId = String(video.id);
+  state.editingPlaylistName = null;
+  configureEditModalMode("video");
+  if (dom.editTitle) dom.editTitle.value = video.title;
+  if (dom.editDescription) dom.editDescription.value = video.description;
+  if (dom.editCategory) dom.editCategory.value = video.category;
+  if (dom.editDifficulty) {
+    dom.editDifficulty.value = ["Beginner", "Intermediate", "Advanced"].includes(video.difficulty)
+      ? video.difficulty
+      : "Beginner";
   }
-  // default: 'do' action steps
-  const actions = [];
-  actions.push(`Do 1: Prepare the leveling instrument and ensure tripod is stable.`);
-  actions.push(`Do 2: Level the instrument using the foot screws until the bubble is centered.`);
-  actions.push(`Do 3: Take a backsight on a known benchmark to establish height.`);
-  actions.push(`Do 4: Move to next station and take foresight readings; record all values.`);
-  actions.push(`Do 5: Calculate height differences and verify closure to acceptable tolerance.`);
-  if (desc) actions.push(`Do 6: Notes — ${desc.split('.').slice(0, 2).join('. ')}.`);
-  return `Action Steps for ${title}:\n\n${actions.join('\n')}`;
+  if (dom.editThumbnail) dom.editThumbnail.value = video.thumbnail;
+  if (dom.editYoutube) dom.editYoutube.value = video.youtubeLink || video.videoUrl || "";
+
+  dom.editModal?.classList.remove("hidden");
+  dom.editModal?.setAttribute("aria-hidden", "false");
 }
 
-// copy handler
-aiCopyBtn && aiCopyBtn.addEventListener('click', () => {
-  if (!aiModalOutput) return;
-  const txt = aiModalOutput.innerText || aiModalOutput.textContent || '';
-  navigator.clipboard.writeText(txt).then(() => c('Copied to clipboard', 'success'));
-});
-
-// generate button
-aiGenerateBtn && aiGenerateBtn.addEventListener('click', generateAIContent);
-// close handlers
-aiModalBackdrop && aiModalBackdrop.addEventListener('click', closeAIModal);
-aiModalClose && aiModalClose.addEventListener('click', closeAIModal);
-aiDoneBtn && aiDoneBtn.addEventListener('click', closeAIModal);
-
-// keyboard escape to close
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && aiModal && !aiModal.classList.contains('hidden')) closeAIModal();
-});
-
-/* ============================================
-   EDIT MODAL FUNCTIONS
-   ============================================ */
-
-const editModal = document.getElementById('edit-modal');
-const editForm = document.getElementById('edit-form');
-const editModalClose = document.querySelector('.edit-modal-close');
-const editSaveBtn = document.getElementById('edit-save-btn');
-const editCancelBtn = document.getElementById('edit-cancel-btn');
-const editDeleteBtn = document.getElementById('edit-delete-btn');
-const editModalBackdrop = document.querySelector('.edit-modal-backdrop');
-
-let currentEditVideo = null;
-
-// helper functions for edit modal
 function closeEditModal() {
-  if (!editModal) return;
-  editModal.classList.add('hidden');
-  editModal.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('edit-modal-open');
-  releaseFocusTrap(editModal);
-  currentEditVideo = null;
+  if (!dom.editModal || dom.editModal.classList.contains("hidden")) return;
+  dom.editModal.classList.add("hidden");
+  dom.editModal.setAttribute("aria-hidden", "true");
+  state.editingVideoId = null;
+  state.editingPlaylistName = null;
+  configureEditModalMode("video");
 }
 
-async function saveEditForm() {
-  if (!currentEditVideo || !editForm) return;
-
-  try {
-    const formData = new FormData(editForm);
-    const updates = {};
-    for (let [key, value] of formData.entries()) {
-      updates[key] = value;
-    }
-
-    editSaveBtn.disabled = true;
-    editSaveBtn.textContent = 'Saving...';
-
-    await DB.updateVideoInDB(db, currentEditVideo.id, updates);
-    currentEditVideo = { ...currentEditVideo, ...updates };
-    const idx = a.videos.findIndex(v => v.id === currentEditVideo.id);
-    if (idx >= 0) a.videos[idx] = { ...a.videos[idx], ...updates };
-
-    await loadVideosFromDB();
-    // Refresh all icons after update
-    if (window.lucide && typeof lucide.createIcons === 'function') {
-      lucide.createIcons();
-    }
-    c('Video updated successfully!', 'success');
-    closeEditModal();
-  } catch (err) {
-    console.error('Error saving video:', err);
-    c('Failed to save changes: ' + err.message, 'error');
-  } finally {
-    editSaveBtn.disabled = false;
-    editSaveBtn.textContent = 'Save';
-  }
-}
-
-async function deleteEditVideo() {
-  if (!currentEditVideo || !editModal) return;
-  if (!confirm(`Are you sure you want to delete "${currentEditVideo.title}"? This action cannot be undone.`)) return;
-  try {
-    editDeleteBtn.disabled = true;
-    editDeleteBtn.textContent = 'Deleting...';
-    await DB.deleteVideoFromDB(db, currentEditVideo.id);
-    a.videos = a.videos.filter(v => v.id !== currentEditVideo.id);
-    buildPlaylistsFromVideos();
-    renderPlaylists();
-    updateStatsCounts();
-    updateSavedCount();
-    g();
-    // Refresh all icons after deletion
-    if (window.lucide && typeof lucide.createIcons === 'function') {
-      lucide.createIcons();
-    }
-    // Scroll to top to show updated grid
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    c('Video deleted successfully!', 'success');
-    closeEditModal();
-  } catch (err) {
-    console.error('Error deleting video:', err);
-    c('Failed to delete video: ' + err.message, 'error');
-  } finally {
-    editDeleteBtn.disabled = false;
-    editDeleteBtn.textContent = 'Delete';
-  }
-}
-
-// attach event listeners once
-editModalClose && editModalClose.addEventListener('click', closeEditModal);
-editModalBackdrop && editModalBackdrop.addEventListener('click', closeEditModal);
-editCancelBtn && editCancelBtn.addEventListener('click', closeEditModal);
-editSaveBtn && editSaveBtn.addEventListener('click', saveEditForm);
-editDeleteBtn && editDeleteBtn.addEventListener('click', deleteEditVideo);
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && editModal && !editModal.classList.contains('hidden')) closeEditModal();
-});
-
-function openEditModal(video) {
-  if (!video || !editModal) return;
-  currentEditVideo = video;
-
-  // Populate form with video data
-  editForm.elements['title'].value = video.title || '';
-  editForm.elements['description'].value = video.description || '';
-  editForm.elements['thumbnail'].value = video.thumbnail || '';
-  editForm.elements['youtubeLink'].value = video.youtubeLink || '';
-
-  document.body.classList.add('edit-modal-open');
-  editModal.classList.remove('hidden');
-  editModal.setAttribute('aria-hidden', 'false');
-  trapFocusInModal(editModal);
-}
-
-// small util: escape html
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']+/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
-/* Consolidated focus trap helpers used by all modals */
-let __previouslyFocused = null;
-function trapFocusInModal(modal) {
-  try {
-    __previouslyFocused = document.activeElement;
-    const focusable = Array.from(modal.querySelectorAll('a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])')).filter(Boolean);
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    function keyHandler(e) {
-      if (e.key === 'Escape') {
-        // prefer closing any visible modal
-        if (modal.classList.contains('ai-modal')) closeAIModal();
-        if (modal.classList.contains('video-modal')) closeVideoModal();
-        return;
-      }
-      if (e.key !== 'Tab') return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    }
-    modal.__focusHandler = keyHandler;
-    document.addEventListener('keydown', keyHandler);
-    first.focus();
-  } catch (err) { /* ignore */ }
-}
-
-function releaseFocusTrap(modal) {
-  try {
-    if (modal && modal.__focusHandler) {
-      document.removeEventListener('keydown', modal.__focusHandler);
-      modal.__focusHandler = null;
-    }
-    if (__previouslyFocused && typeof __previouslyFocused.focus === 'function') __previouslyFocused.focus();
-    __previouslyFocused = null;
-  } catch (err) { /* ignore */ }
-}
-
-// Wire modal buttons
-if (t.videoModalClose) t.videoModalClose.addEventListener("click", closeVideoModal);
-if (t.videoModalBackdrop) t.videoModalBackdrop.addEventListener("click", closeVideoModal);
-if (t.modalShareBtn) t.modalShareBtn.addEventListener("click", async () => {
-  if (!currentModalVideoId) return;
-  const video = a.videos.find((v) => v.id === currentModalVideoId);
-  if (!video) return;
-  const url = video.youtubeLink || video.videoUrl || window.location.href;
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: video.title || 'Video', url });
-      c("Share dialog opened", "success");
-    } else if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(url);
-      c("Link copied to clipboard!", "success");
-    } else {
-      // Fallback: open new window
-      window.open(url, '_blank');
-    }
-  } catch (err) {
-    c("Couldn't share. Link copied to clipboard instead.", "warning");
-    try { await navigator.clipboard.writeText(url); } catch { }
-  }
-});
-if (t.modalSaveBtn) t.modalSaveBtn.addEventListener("click", () => {
-  if (!currentModalVideoId) return;
-  toggleSave(currentModalVideoId);
-  setModalSaveButtonUI();
-});
-
-// Focus trap utilities for modal
-// ...existing code...
-
-// Hide user menu three-dots when sidebar collapsed (improve UX)
-function updateUserMenuVisibility() {
-  if (!t.userMenu) return;
-  if (a.sidebarCollapsed) {
-    t.userMenu.style.display = 'none';
-  } else {
-    t.userMenu.style.display = '';
-  }
-}
-// call when sidebar toggled
-const originalAe = ae;
-
-ae = function () {
-  originalAe();
-  updateUserMenuVisibility();
-};
-
-// Ensure saved count is initialized
-updateSavedCount();
-// Listen for saved changes to sync UI (cards, modal save button)
-window.addEventListener('eduvideo:saved-changed', (ev) => {
-  // update all card save buttons
-  document.querySelectorAll('.video-action-btn[title="Save"]').forEach(btn => {
-    const card = btn.closest('.video-card');
-    if (!card) return;
-    const cid = card.dataset && card.dataset.id;
-    if (cid) {
-      const active = isSaved(cid);
-      btn.classList.toggle('active', active);
-      btn.innerHTML = _svgBookmark(active ? 'bookmark-check' : 'bookmark');
+async function saveEdit() {
+  if (state.editingPlaylistName) {
+    const oldName = state.editingPlaylistName;
+    const playlist = getPlaylists().find((item) => item.name === oldName);
+    if (!playlist) {
+      notify("Playlist not found", "error");
       return;
     }
-    // fallback: infer by title if no data-id
-    const titleEl = card.querySelector('.video-title');
-    const title = titleEl ? titleEl.textContent.trim() : null;
-    const video = a.videos.find(v => v.title === title);
-    if (video) {
-      const active = isSaved(video.id);
-      btn.classList.toggle('active', active);
-      btn.innerHTML = _svgBookmark(active ? 'bookmark-check' : 'bookmark');
+
+    const nextName = String(dom.editTitle?.value || "").trim();
+    const nextDescription = String(dom.editDescription?.value || "").trim();
+    const nextCategory = normalizeCategory(String(dom.editCategory?.value || "").trim() || "General");
+    const nextDifficulty = normalizeDifficulty(String(dom.editDifficulty?.value || "Beginner"));
+
+    if (!nextName) {
+      notify("Playlist name is required", "error");
+      return;
     }
-  });
-  try { if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons(); } catch { }
-  // update modal save button if open
-  if (currentModalVideoId && t.modalSaveBtn) setModalSaveButtonUI();
-});
-function X(e, i) {
-  try {
-    return SEARCH.sortVideos(e, i);
-  } catch (err) {
-    return e;
-  }
-}
-function v(e) {
-  try { return SEARCH.parseDuration(e); } catch (err) { return 0; }
-}
-function Y(e) {
-  a.sortBy = e.target.value;
-  g();
-  // Sorting toast suppressed
-}
-function Z(e, i) {
-  // normalize filter token to lower-case for reliable matching
-  const token = String(e).toLowerCase();
-  const s = a.activeFilters.map(f => f.toLowerCase()).indexOf(token);
-  if (s === -1) {
-    a.activeFilters.push(e);
-    i.classList.add("active");
-  } else {
-    // remove by index of original array
-    const origIndex = a.activeFilters.findIndex(f => f.toLowerCase() === token);
-    if (origIndex > -1) a.activeFilters.splice(origIndex, 1);
-    i.classList.remove("active");
-  }
-  w();
-  g();
-  // Filter change toast suppressed
-}
 
-function w() {
-  if (t.clearFiltersBtn && t.activeFiltersSummary) {
-    a.activeFilters.length > 0
-      ? (t.clearFiltersBtn.classList.remove("hidden"),
-        t.activeFiltersSummary.classList.remove("hidden"),
-        (t.activeFiltersSummary.textContent = `Filtering by: ${a.activeFilters.join(
-          ", "
-        )}`))
-      : (t.clearFiltersBtn.classList.add("hidden"),
-        t.activeFiltersSummary.classList.add("hidden"));
-  }
+    const duplicate = getPlaylists().some(
+      (item) => item.name.toLowerCase() === nextName.toLowerCase() && item.name !== oldName
+    );
+    if (duplicate) {
+      notify("A playlist with that name already exists", "warning");
+      return;
+    }
 
-  // Sync mobile filter buttons with active filters
-  syncMobileFilters();
-}
+    try {
+      await Promise.all(
+        playlist.items.map((video) =>
+          DB.updateVideoInDB(db, video.id, {
+            playlist_name: nextName,
+            playlist_description: nextDescription,
+            category: nextCategory,
+            difficulty: nextDifficulty,
+          })
+        )
+      );
 
-// Sync mobile filter buttons with desktop filter state
-function syncMobileFilters() {
-  if (t.mobileFilterBtns) {
-    t.mobileFilterBtns.forEach(btn => {
-      const filter = btn.dataset.filter;
-      const isActive = a.activeFilters.some(f => f.toLowerCase() === filter.toLowerCase());
-      btn.classList.toggle("active", isActive);
-    });
-  }
-}
-function F(e) {
-  a.viewMode = e;
+      state.videos = state.videos.map((video) => {
+        if (String(video.playlistName || "") !== oldName) return video;
+        return normalizeVideo({
+          ...video,
+          id: video.id,
+          playlistName: nextName,
+          playlistDescription: nextDescription,
+          playlist_name: nextName,
+          playlist_description: nextDescription,
+          category: nextCategory,
+          difficulty: nextDifficulty,
+        });
+      });
 
-  // Update desktop view buttons
-  if (t.gridViewBtn) t.gridViewBtn.classList.toggle("active", e === "grid");
-  if (t.listViewBtn) t.listViewBtn.classList.toggle("active", e === "list");
-
-  // Update mobile view buttons if they exist
-  const mobileGridViewBtn = document.getElementById("mobile-grid-view");
-  const mobileListViewBtn = document.getElementById("mobile-list-view");
-
-  if (mobileGridViewBtn) mobileGridViewBtn.classList.toggle("active", e === "grid");
-  if (mobileListViewBtn) mobileListViewBtn.classList.toggle("active", e === "list");
-
-  g();
-  // View switch toast suppressed
-}
-function _() {
-  a.currentPage++;
-  g();
-}
-
-// Infinite scroll: only active on My Videos (viewContext === 'videos')
-let __isAutoLoading = false;
-function handleInfiniteScroll() {
-  try {
-    if (a.viewContext !== 'videos') return;
-    const doc = document.documentElement;
-    const scrollPosition = (window.innerHeight || 0) + (window.scrollY || window.pageYOffset || 0);
-    const totalHeight = (doc && doc.scrollHeight) || document.body.scrollHeight || 0;
-    const threshold = 300;
-    if (scrollPosition >= totalHeight - threshold) {
-      // Determine total number of items in current 'videos' context with filters/sort
-      let vids = b(a.searchQuery);
-      vids = X(vids, a.sortBy);
-      const total = vids.length;
-      const loaded = a.currentPage * a.itemsPerPage;
-      if (loaded < total && !__isAutoLoading) {
-        __isAutoLoading = true;
-        a.currentPage++;
-        g();
-        // Prevent rapid repeat triggers while still at bottom
-        setTimeout(() => { __isAutoLoading = false; }, 200);
+      if (state.selectedPlaylist === oldName) {
+        state.selectedPlaylist = nextName;
       }
+
+      closeEditModal();
+      renderAll();
+      notify("Playlist updated", "success");
+    } catch (error) {
+      console.error("Playlist update failed:", error);
+      notify("Playlist update failed", "error");
     }
-  } catch (e) {
-    // fail-safe: never block scrolling due to errors
-    __isAutoLoading = false;
-  }
-}
-// Mobile bottom navigation handler
-function handleBottomNavClick(e, item) {
-  e.preventDefault();
-  const route = item.dataset.route;
-
-  // Update bottom nav active state
-  t.bottomNavItems.forEach((nav) => nav.classList.remove("active"));
-  item.classList.add("active");
-
-  // Update sidebar nav active state
-  t.navItems.forEach((nav) => nav.classList.remove("active"));
-  const sidebarNav = document.querySelector(`.nav-item[data-route="${route}"]`);
-  if (sidebarNav) sidebarNav.classList.add("active");
-
-  // Handle route logic
-  if (route === 'my-videos') a.viewContext = 'videos';
-  else if (route === 'saved') a.viewContext = 'saved';
-  else if (route === 'search') {
-    a.viewContext = 'home';
-    focusSearchInput();
     return;
   }
-  else if (route === 'profile') {
-    // For now, just show a toast - could be expanded to show user profile
-    c("Profile feature coming soon!", "info");
-    return;
-  }
-  else a.viewContext = 'home';
 
-  applyViewContextUI();
-  se(route);
+  if (!state.editingVideoId) return;
 
-  // Close mobile sidebar if open
-  if (a.isMobile) {
-    t.sidebar.classList.remove("mobile-open");
-    t.mobileOverlay.classList.remove("active");
-    document.body.classList.remove("sidebar-open");
-  }
-
-  // ensure home route re-renders the featured/videos list
-  if (route === 'home') {
-    a.viewContext = 'home';
-    a.currentPage = 1; // Dashboard: constrain to first page
-    applyViewContextUI();
-    g();
-  }
-}
-
-// Mobile search modal functions
-function openMobileSearchModal() {
-  if (t.mobileSearchModal) {
-    t.mobileSearchModal.classList.remove("hidden");
-
-    // Sync mobile filter states with current active filters
-    syncMobileFilters();
-
-    // Sync mobile view buttons with current view mode
-    const mobileGridViewBtn = document.getElementById("mobile-grid-view");
-    const mobileListViewBtn = document.getElementById("mobile-list-view");
-    if (mobileGridViewBtn) mobileGridViewBtn.classList.toggle("active", a.viewMode === "grid");
-    if (mobileListViewBtn) mobileListViewBtn.classList.toggle("active", a.viewMode === "list");
-  }
-}
-
-function closeMobileSearchModal() {
-  if (t.mobileSearchModal) {
-    t.mobileSearchModal.classList.add("hidden");
-  }
-}
-
-function performMobileSearch() {
-  if (t.mobileSearchInput) {
-    const query = t.mobileSearchInput.value.trim();
-    if (query) {
-      a.searchQuery = query;
-      if (t.searchInput) {
-        t.searchInput.value = query;
-      }
-      closeMobileSearchModal();
-      const myVideosNav = document.querySelector('.nav-item[data-route="my-videos"]');
-      if (myVideosNav) {
-        ee({ preventDefault: () => { } }, myVideosNav);
-      }
-    }
-  }
-}
-
-function performMobileAiAssist() {
-  performMobileSearch();
-}
-
-function handleMobileFilterClick(btn) {
-  const filter = btn.dataset.filter;
-
-  // Toggle the mobile filter button state
-  btn.classList.toggle("active");
-
-  // Apply filter to main search system
-  const mainFilterBtn = document.querySelector(`[data-filter="${filter}"]`);
-  if (mainFilterBtn) {
-    // Use the same filter logic as desktop
-    Z(filter, mainFilterBtn);
-  }
-
-  // Close modal and show results
-  closeMobileSearchModal();
-  const homeNav = document.querySelector('.bottom-nav-item[data-route="home"]');
-  if (homeNav) {
-    handleBottomNavClick({ preventDefault: () => { } }, homeNav);
-  }
-}
-
-function handleMobileViewClick(btn) {
-  const view = btn.dataset.view;
-
-  // Update all mobile view buttons
-  document.querySelectorAll(".mobile-view-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-
-  // Update desktop view buttons
-  if (t.gridViewBtn) t.gridViewBtn.classList.toggle("active", view === "grid");
-  if (t.listViewBtn) t.listViewBtn.classList.toggle("active", view === "list");
-
-  // Update the view mode and re-render
-  a.viewMode = view;
-  g();
-
-  // Close modal
-  closeMobileSearchModal();
-}
-
-// Focus search input (for mobile header search button)
-function focusSearchInput() {
-  if (a.isMobile) {
-    openMobileSearchModal();
-  } else if (t.searchInput) {
-    t.searchInput.focus();
-  }
-}
-
-function ee(e, i) {
-  e.preventDefault();
-  const s = i.dataset.route;
-  t.navItems.forEach((r) => r.classList.remove("active"));
-  i.classList.add("active");
-
-  // Update bottom nav active state
-  t.bottomNavItems.forEach((nav) => nav.classList.remove("active"));
-  const bottomNav = document.querySelector(`.bottom-nav-item[data-route="${s}"]`);
-  if (bottomNav) bottomNav.classList.add("active");
-
-  // set viewContext
-  if (s === 'my-videos') a.viewContext = 'videos';
-  else if (s === 'saved') a.viewContext = 'saved';
-  else a.viewContext = 'home';
-  applyViewContextUI();
-  se(s);
-  // ensure home route re-renders the featured/videos list (prevents saved list from persisting)
-  if (s === 'home') {
-    a.viewContext = 'home';
-    a.currentPage = 1; // Dashboard: always show only first 9
-    applyViewContextUI();
-    g();
-  }
-}
-function te(e, i) {
-  e.preventDefault();
-  const s = i.dataset.category;
-  R();
-  a.activeFilters = [s];
-  a.viewContext = 'videos';
-  a.currentPage = 1; // Reset pagination when navigating via category
-  const r = document.querySelector(`[data-filter="${s}"]`);
-  r && r.classList.add("active");
-  w();
-  // activate My Videos nav item
-  t.navItems.forEach((n) => n.classList.remove('active'));
-  const myNav = Array.from(t.navItems).find((n) => n.dataset.route === 'my-videos');
-  if (myNav) myNav.classList.add('active');
-  applyViewContextUI();
-  g();
-}
-function se(e) {
-  switch (e) {
-    case "search":
-      t.searchInput.focus();
-      break;
-    case "my-videos":
-      a.currentPage = 1; // Start with first 9 on My Videos
-      applyViewContextUI();
-      g();
-      break;
-    case "saved":
-      a.viewContext = 'saved';
-      a.currentPage = 1;
-      applyViewContextUI();
-      renderSavedSection();
-      break;
-    case "trending":
-      (a.sortBy = "most-viewed"), (t.sortSelect.value = "most-viewed"), g();
-      break;
-    case "home":
-      a.viewContext = 'home';
-      a.currentPage = 1; // Dashboard: only first 9
-      applyViewContextUI();
-      g();
-      break;
-  }
-}
-function ie(e) {
-  switch (e) {
-    case "start-learning":
-      // quick action toast suppressed
-      break;
-    case "ai-recommendations":
-      // keep AI suggestions toast when generated successfully (handled in oe())
-      break;
-    case "upload-content":
-      openUploadModalService();
-      break;
-    case "analytics":
-      // suppressed
-      break;
-  }
-}
-function ae() {
-  (a.sidebarCollapsed = !a.sidebarCollapsed),
-    t.sidebar.classList.toggle("collapsed", a.sidebarCollapsed),
-    Q();
-}
-function ne() {
-  // Toggle mobile sidebar
-  t.sidebar.classList.toggle("mobile-open");
-  t.mobileOverlay.classList.toggle("active");
-  document.body.classList.toggle("sidebar-open");
-
-  // Ensure the sidebar is visible when opened
-  if (t.sidebar.classList.contains("mobile-open")) {
-    t.sidebar.style.transform = "translate(0)";
-  } else {
-    t.sidebar.style.transform = "translate(-100%)";
-  }
-}
-function re() {
-  t.sidebar.classList.remove("mobile-open");
-  t.mobileOverlay.classList.remove("active");
-  document.body.classList.remove("sidebar-open");
-  // Reset transform when closing
-  t.sidebar.style.transform = "translate(-100%)";
-}
-function Q() {
-  window.innerWidth > 768
-    ? (t.mainContent.style.marginLeft = a.sidebarCollapsed ? "80px" : "280px")
-    : (t.mainContent.style.marginLeft = "0");
-}
-async function oe() {
-  p();
-}
-function ce(e) {
-  const i = document.querySelector(".suggestions-list");
-  if (!i || !t.suggestionsDropdown || !t.searchInput) return;
-  (i.innerHTML = ""),
-    e.forEach((s) => {
-      const r = document.createElement("button");
-      (r.className = "suggestion-item"),
-        (r.textContent = s),
-        r.addEventListener("click", () => {
-          (t.searchInput.value = s),
-            (a.searchQuery = s),
-            t.suggestionsDropdown.classList.add("hidden"),
-            p();
-        }),
-        i.appendChild(r);
-    });
-}
-function P() {
-  if (t.searchBtn) {
-    t.searchBtn.innerHTML = a.isSearching
-      ? '<i data-lucide="loader-2" class="animate-spin"></i>'
-      : '<i data-lucide="search"></i>';
-  }
-  if (t.aiAssistBtn) {
-    if (a.isSearching) {
-      t.aiAssistBtn.innerHTML = '<i data-lucide="sparkles"></i> AI Thinking...';
-      t.aiAssistBtn.disabled = !0;
-    } else {
-      t.aiAssistBtn.innerHTML = '<i data-lucide="sparkles"></i> AI Assist';
-      t.aiAssistBtn.disabled = !1;
-    }
-  }
-  lucide.createIcons();
-}
-function L(e, i = 0) {
-  (t.resultsCount.textContent = `${e} result${e !== 1 ? "s" : ""}`),
-    i > 0 && (t.searchTime.textContent = `in ${i}ms`),
-    t.searchStats.classList.remove("hidden");
-}
-function le() {
-  t.videosGrid.innerHTML = `
-    <div class="no-results">
-      <div class="no-results-icon">
-        <i data-lucide="search-x"></i>
-      </div>
-      <h3>No videos found</h3>
-      <p>Try adjusting your search terms</p>
-      <div class="no-results-actions">
-        <button class="btn btn-outline" id="no-results-clear-search-btn">
-          <i data-lucide="x"></i>
-          Clear Search
-        </button>
-      </div>
-    </div>
-  `;
-  if (t.loadMoreContainer) t.loadMoreContainer.classList.add("hidden");
-  lucide.createIcons();
-  const clearSearchBtn = document.getElementById("no-results-clear-search-btn");
-  if (clearSearchBtn) {
-    clearSearchBtn.addEventListener("click", () => {
-      if (t.searchInput)
-        t.searchInput.value = "";
-      a.searchQuery = "";
-      g();
-    });
-  }
-}
-function c(e, i = "info") {
-  // Delegate to service toast implementation
-  try {
-    TOAST(e, i);
-  } catch (err) {
-    console.warn('Toast service failed, message:', e, 'type:', i, err);
-  }
-}
-function de() {
-  document.querySelectorAll("[data-count]").forEach((i) => {
-    const s = parseInt(i.dataset.count),
-      n = s / (2e3 / 16);
-    let o = 0;
-    const d = setInterval(() => {
-      (o += n),
-        o >= s
-          ? ((i.textContent = f(s)), clearInterval(d))
-          : (i.textContent = f(Math.floor(o)));
-    }, 16);
-  });
-}
-function f(e) {
-  return e >= 1e6
-    ? (e / 1e6).toFixed(1) + "M"
-    : e >= 1e3
-      ? (e / 1e3).toFixed(1) + "K"
-      : e.toString();
-}
-function ue(e, i) {
-  let s;
-  return function (...n) {
-    const o = () => {
-      clearTimeout(s), e(...n);
-    };
-    clearTimeout(s), (s = setTimeout(o, i));
+  const payload = {
+    title: String(dom.editTitle?.value || "").trim(),
+    description: String(dom.editDescription?.value || "").trim(),
+    category: normalizeCategory(String(dom.editCategory?.value || "").trim() || "General"),
+    difficulty: normalizeDifficulty(String(dom.editDifficulty?.value || "Beginner")),
+    thumbnail: String(dom.editThumbnail?.value || "").trim(),
+    youtube_link: String(dom.editYoutube?.value || "").trim(),
   };
-}
-function ge(e) {
-  if (t.searchInput && t.searchResultsDropdown) {
-    !t.searchInput.contains(e.target) &&
-      !t.searchResultsDropdown.contains(e.target) &&
-      m();
-  }
-  if (t.searchInput && t.suggestionsDropdown) {
-    !t.searchInput.contains(e.target) &&
-      !t.suggestionsDropdown.contains(e.target) &&
-      t.suggestionsDropdown.classList.add("hidden");
-  }
-}
-function q() {
-  a.isMobile = window.innerWidth <= 768;
 
-  if (a.isMobile) {
-    t.sidebar.classList.add("mobile");
-    t.mainContent.style.marginLeft = "0";
-    // Ensure mobile menu toggle is visible and functional
-    if (t.mobileMenuToggle) {
-      t.mobileMenuToggle.style.display = "block";
-    }
-  } else {
-    t.sidebar.classList.remove("mobile", "mobile-open");
-    t.mobileOverlay.classList.remove("active");
-    document.body.classList.remove("sidebar-open");
-    // Hide mobile menu toggle on desktop
-    if (t.mobileMenuToggle) {
-      t.mobileMenuToggle.style.display = "none";
-    }
-    Q();
-  }
-}
-function renderVideos() {
-  // Re-render videos with current state
-  g();
-}
-
-function showQuickSearchResults(results) {
-  // This function shows quick search results in the top bar
-  // For now, we'll just log the results to avoid errors
-  console.log('Quick search results:', results);
-}
-
-function clearAllFilters() {
-  // Clear all active filters
-  a.activeFilters = [];
-  a.sortBy = "relevance";
-
-  // Clear filter badges
-  if (t.filterBadges) {
-    t.filterBadges.forEach(badge => {
-      badge.classList.remove("active");
-    });
+  if (!payload.title) {
+    notify("Title is required", "error");
+    return;
   }
 
-  // Reset sort select
-  if (t.sortSelect) {
-    t.sortSelect.value = "relevance";
-  }
-
-  // Hide clear button
-  if (t.clearFiltersBtn) {
-    t.clearFiltersBtn.classList.add("hidden");
-  }
-
-  // Re-render videos
-  g();
-
-  // Show success message
-  c("All filters cleared", "success");
-}
-
-// Initialize chatbot
-async function initializeChatbot() {
   try {
-    // Import chatbot module
-    const { default: ChatbotUI } = await import('./chatbot.js');
+    await DB.updateVideoInDB(db, state.editingVideoId, payload);
 
-    // Initialize chatbot UI
-    window.chatbotUI = new ChatbotUI();
-
-    // Set up database connection
-    if (window.chatbotUI && db) {
-      window.chatbotUI.setDatabase(db);
+    const idx = state.videos.findIndex((video) => String(video.id) === state.editingVideoId);
+    if (idx >= 0) {
+      state.videos[idx] = normalizeVideo({ ...state.videos[idx], ...payload, id: state.editingVideoId });
     }
 
-    console.log('SachiDev chatbot initialized successfully!');
+    closeEditModal();
+    closeVideoModal();
+    renderAll();
+    notify("Video updated", "success");
   } catch (error) {
-    console.error('Failed to initialize chatbot:', error);
+    console.error("Update failed:", error);
+    notify("Update failed. Check Firestore rules and connectivity.", "error");
   }
 }
 
-// Initialize chatbot after main app initialization
-N();
-initializeChatbot();
+async function deleteVideo(id) {
+  const video = findVideoById(id);
+  const ok = window.confirm(`Delete "${video?.title || "this video"}" permanently?`);
+  if (!ok) return;
+
+  try {
+    await DB.deleteVideoFromDB(db, id);
+    state.videos = state.videos.filter((item) => String(item.id) !== String(id));
+
+    if (state.savedIds.has(String(id))) {
+      SAVED.toggleSave(id, { state, notify: () => {}, updateSavedCount: () => {} });
+      syncSavedState();
+    }
+
+    if (state.completedIds.has(String(id))) {
+      state.completedIds.delete(String(id));
+      persistSet(COMPLETED_KEY, state.completedIds);
+    }
+
+    state.watchHistory = state.watchHistory.filter((item) => String(item.id) !== String(id));
+    persistHistory();
+
+    closeEditModal();
+    closeVideoModal();
+    renderAll();
+    notify("Video deleted", "success");
+  } catch (error) {
+    console.error("Delete failed:", error);
+    notify("Delete failed. Check Firestore permissions.", "error");
+  }
+}
+
+async function deletePlaylist(playlistName) {
+  const playlist = getPlaylists().find((item) => item.name === playlistName);
+  if (!playlist) {
+    notify("Playlist not found", "error");
+    return;
+  }
+
+  const ok = window.confirm(`Delete playlist "${playlist.name}" and all ${playlist.items.length} videos permanently?`);
+  if (!ok) return;
+
+  try {
+    await Promise.all(playlist.items.map((video) => DB.deleteVideoFromDB(db, video.id)));
+    const removedIds = new Set(playlist.items.map((video) => String(video.id)));
+
+    state.videos = state.videos.filter((video) => !removedIds.has(String(video.id)));
+    state.watchHistory = state.watchHistory.filter((item) => !removedIds.has(String(item.id)));
+    persistHistory();
+
+    let completedChanged = false;
+    removedIds.forEach((id) => {
+      if (state.completedIds.delete(id)) completedChanged = true;
+      if (state.savedIds.has(id)) {
+        SAVED.toggleSave(id, { state, notify: () => {}, updateSavedCount: () => {} });
+      }
+    });
+    if (completedChanged) {
+      persistSet(COMPLETED_KEY, state.completedIds);
+    }
+    syncSavedState();
+
+    if (state.selectedPlaylist === playlist.name) {
+      state.selectedPlaylist = null;
+    }
+
+    closeEditModal();
+    closeVideoModal();
+    renderAll();
+    notify("Playlist deleted", "success");
+  } catch (error) {
+    console.error("Playlist delete failed:", error);
+    notify("Playlist delete failed", "error");
+  }
+}
+
+function findVideoById(id) {
+  return state.videos.find((video) => String(video.id) === String(id));
+}
+
+function getSourceUrl(video) {
+  if (!video) return "";
+  const youtube = sanitizeUrl(video.youtubeLink);
+  const file = sanitizeUrl(video.videoUrl);
+  if (youtube && youtubeId(youtube)) return youtube;
+  return file || youtube || "";
+}
+
+function logWatch(id) {
+  const sid = String(id);
+  state.watchHistory = [{ id: sid, at: new Date().toISOString() }, ...state.watchHistory.filter((item) => item.id !== sid)].slice(0, 60);
+  persistHistory();
+}
+
+function overviewScore(video) {
+  const viewsScore = Math.min(30, Math.log10(Math.max(1, Number(video.views || 0))) * 10);
+  const ratingScore = Number(video.rating || 0) * 7;
+  const recencyScore = Math.max(0, 25 - daysSince(video.uploadDate));
+  const backlogBoost = state.completedIds.has(String(video.id)) ? 0 : 10;
+  return viewsScore + ratingScore + recencyScore + backlogBoost;
+}
+
+function totalPlaylistHours(items) {
+  const hours = items.reduce((sum, video) => sum + durationToSeconds(video.duration), 0) / 3600;
+  return hours.toFixed(1);
+}
+
+function deriveRating(views, duration) {
+  const v = Number(views || 0);
+  const d = durationToSeconds(duration);
+  const score = 3.4 + Math.min(1.1, Math.log10(Math.max(1, v)) * 0.13) + (d > 600 ? 0.2 : 0.07);
+  return Math.min(5, Number(score.toFixed(1)));
+}
+
+function normalizeCategory(value) {
+  const text = String(value || "").trim();
+  if (!text || /^\d+$/.test(text)) return "General";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function normalizeDifficulty(value, tags = [], description = "") {
+  const text = `${String(value || "")} ${Array.isArray(tags) ? tags.join(" ") : ""} ${String(description || "")}`.toLowerCase();
+
+  if (text.includes("advanced") || text.includes("expert")) return "Advanced";
+  if (text.includes("intermediate")) return "Intermediate";
+  return "Beginner";
+}
+
+function parseDate(value) {
+  if (value && typeof value.toDate === "function") {
+    return value.toDate();
+  }
+
+  const date = new Date(value || Date.now());
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function durationToSeconds(raw) {
+  const parts = String(raw || "0:00")
+    .split(":")
+    .map((item) => Number(item) || 0);
+
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return parts[0] || 0;
+}
+
+function daysSince(date) {
+  const diff = Date.now() - new Date(date).getTime();
+  return Math.max(0, Math.floor(diff / 86400000));
+}
+
+function youtubeId(url) {
+  try {
+    const parsed = new URL(String(url || ""));
+    if (parsed.hostname.includes("youtu.be")) {
+      return parsed.pathname.replace("/", "").trim();
+    }
+
+    if (parsed.hostname.includes("youtube.com")) {
+      const v = parsed.searchParams.get("v");
+      if (v) return v;
+
+      const segments = parsed.pathname.split("/").filter(Boolean);
+      const embedIndex = segments.indexOf("embed");
+      if (embedIndex >= 0 && segments[embedIndex + 1]) return segments[embedIndex + 1];
+      const shortsIndex = segments.indexOf("shorts");
+      if (shortsIndex >= 0 && segments[shortsIndex + 1]) {
+        return segments[shortsIndex + 1];
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function toEmbedUrl(url) {
+  if (!url) return "";
+  const id = youtubeId(url);
+  if (!id) return "";
+  return `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&modestbranding=1`;
+}
+
+function uniqueValues(values) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => String(value || "").trim())
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+function capLabel(value) {
+  if (value === "all") return "All";
+  return value;
+}
+
+function trimText(text, maxLength) {
+  const clean = String(text || "").trim();
+  if (clean.length <= maxLength) return clean;
+  return `${clean.slice(0, maxLength - 1)}...`;
+}
+
+function sanitizeUrl(url) {
+  const candidate = String(url || "").trim();
+  if (!candidate) return "";
+
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replaceAll("`", "");
+}
+
+function formatCompact(value) {
+  return new Intl.NumberFormat(undefined, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(Number(value || 0));
+}
+
+function isTextInput(element) {
+  if (!element) return false;
+  const tag = String(element.tagName || "").toLowerCase();
+  return tag === "input" || tag === "textarea" || element.isContentEditable;
+}
+
+function notify(message, type = "info") {
+  TOAST(message, type);
+  try {
+    window.lucide?.createIcons();
+  } catch {
+    // icon fallback
+  }
+}
+
+function closeSidebar() {
+  dom.sidebar?.classList.remove("open");
+  dom.mobileOverlay?.classList.remove("open");
+}
+
+function loadSet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(parsed) ? parsed.map((item) => String(item)) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function persistSet(key, setValue) {
+  localStorage.setItem(key, JSON.stringify(Array.from(setValue)));
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed)
+      ? parsed
+          .filter((item) => item && item.id && item.at)
+          .map((item) => ({ id: String(item.id), at: String(item.at) }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistHistory() {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(state.watchHistory));
+}
+
+async function copyText(text) {
+  if (!text) return false;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+
+    try {
+      const ok = document.execCommand("copy");
+      document.body.removeChild(area);
+      return ok;
+    } catch {
+      document.body.removeChild(area);
+      return false;
+    }
+  }
+}
+
+function randomId() {
+  return `local-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
+init();
