@@ -3,19 +3,9 @@ export function toast(message, type = 'info') {
   if (!container) {
     container = document.createElement('div');
     container.id = 'toast-container';
+    container.className = 'toast-container';
     document.body.appendChild(container);
   }
-  Object.assign(container.style, {
-    position: 'fixed',
-    top: '20px',
-    right: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    alignItems: 'flex-end',
-    pointerEvents: 'none',
-    zIndex: 2147483647,
-  });
 
   const icon = ({
     success: 'check-circle',
@@ -36,7 +26,7 @@ export function toast(message, type = 'info') {
   Object.assign(el.style, {
     pointerEvents: 'auto',
     position: 'relative',
-    transformOrigin: 'center right',
+    transformOrigin: 'left bottom',
   });
 
   container.appendChild(el);

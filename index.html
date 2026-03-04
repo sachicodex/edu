@@ -34,10 +34,21 @@
   </head>
 
   <body>
-    <div id="loading-screen" class="loading-screen">
-      <div class="loading-brand">EduFlow Cloud</div>
-      <div class="loading-progress"><span></span></div>
-      <p>Syncing workspace...</p>
+    <div id="loading-screen" class="loading-screen" aria-live="polite">
+      <div class="loading-aurora loading-aurora-a" aria-hidden="true"></div>
+      <div class="loading-aurora loading-aurora-b" aria-hidden="true"></div>
+
+      <div class="loading-panel">
+        <div class="loading-badge">
+          <span class="loading-badge-dot" aria-hidden="true"></span>
+          EduFlow Cloud
+        </div>
+        <h1 class="loading-brand">Preparing your workspace</h1>
+        <p class="loading-copy">Syncing videos, playlists, and learning progress</p>
+        <div class="loading-progress" role="progressbar" aria-label="Loading">
+          <span></span>
+        </div>
+      </div>
     </div>
 
     <div class="app-shell">
@@ -255,12 +266,54 @@
               <input id="edit-category" type="text" placeholder="General" />
             </div>
             <div class="row">
-              <label class="upload-label" for="edit-difficulty">Difficulty</label>
-              <select id="edit-difficulty">
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
-              </select>
+              <label class="upload-label" for="edit-difficulty-trigger">Difficulty</label>
+              <input id="edit-difficulty" type="hidden" value="Beginner" />
+              <div id="edit-difficulty-select" class="sort-select edit-difficulty-select" aria-label="Edit difficulty">
+                <button
+                  id="edit-difficulty-trigger"
+                  class="sort-select-trigger soft-select"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                >
+                  <span id="edit-difficulty-trigger-label">Beginner</span>
+                  <i data-lucide="chevron-down"></i>
+                </button>
+                <div
+                  id="edit-difficulty-menu"
+                  class="sort-menu hidden"
+                  role="listbox"
+                  aria-label="Difficulty options"
+                >
+                  <button
+                    type="button"
+                    class="sort-option edit-difficulty-option active"
+                    data-difficulty="Beginner"
+                    role="option"
+                    aria-selected="true"
+                  >
+                    Beginner
+                  </button>
+                  <button
+                    type="button"
+                    class="sort-option edit-difficulty-option"
+                    data-difficulty="Intermediate"
+                    role="option"
+                    aria-selected="false"
+                  >
+                    Intermediate
+                  </button>
+                  <button
+                    type="button"
+                    class="sort-option edit-difficulty-option"
+                    data-difficulty="Advanced"
+                    role="option"
+                    aria-selected="false"
+                  >
+                    Advanced
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="row edit-thumb-row">

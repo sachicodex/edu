@@ -39,6 +39,8 @@ const SORT_LABELS = {
   alphabetical: "A to Z",
 };
 
+const TEXT_INPUT_SELECTOR = "input, textarea, select";
+
 let modalPlayer = null;
 let modalPlayerKind = "";
 let modalPlayerTick = null;
@@ -99,6 +101,11 @@ const dom = {
   editDescription: document.getElementById("edit-description"),
   editCategory: document.getElementById("edit-category"),
   editDifficulty: document.getElementById("edit-difficulty"),
+  editDifficultySelect: document.getElementById("edit-difficulty-select"),
+  editDifficultyTrigger: document.getElementById("edit-difficulty-trigger"),
+  editDifficultyTriggerLabel: document.getElementById("edit-difficulty-trigger-label"),
+  editDifficultyMenu: document.getElementById("edit-difficulty-menu"),
+  editDifficultyOptions: Array.from(document.querySelectorAll(".edit-difficulty-option[data-difficulty]")),
   editThumbnail: document.getElementById("edit-thumbnail"),
   editYoutube: document.getElementById("edit-youtube"),
   editDelete: document.getElementById("edit-delete"),
@@ -133,9 +140,11 @@ const ROUTE_COPY = {
 };
 
 function init() {
+  enforceNoAutofill();
   syncSavedState();
   bindEvents();
   syncSortUi();
+  syncEditDifficultyUi();
   renderFilters();
   renderAll();
 
@@ -154,6 +163,45 @@ function init() {
         dom.loadingScreen?.classList.add("hidden");
       }, 500);
     });
+}
+
+function enforceNoAutofill() {
+  const applyNoAutofill = (root = document) => {
+    root.querySelectorAll?.("form").forEach((form) => {
+      form.setAttribute("autocomplete", "off");
+    });
+
+    root.querySelectorAll?.(TEXT_INPUT_SELECTOR).forEach((field) => {
+      if (field instanceof HTMLInputElement && field.type === "password") {
+        field.setAttribute("autocomplete", "new-password");
+      } else {
+        field.setAttribute("autocomplete", "off");
+      }
+      field.setAttribute("autocorrect", "off");
+      field.setAttribute("autocapitalize", "none");
+      field.setAttribute("spellcheck", "false");
+    });
+  };
+
+  applyNoAutofill(document);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+        if (node.matches("form")) {
+          node.setAttribute("autocomplete", "off");
+        }
+        if (node.matches(TEXT_INPUT_SELECTOR)) {
+          applyNoAutofill(node.parentElement || document);
+          return;
+        }
+        applyNoAutofill(node);
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 function bindEvents() {
@@ -201,6 +249,19 @@ function bindEvents() {
       syncSortUi();
       setSortMenuOpen(false);
       renderAll();
+    });
+  });
+
+  dom.editDifficultyTrigger?.addEventListener("click", () => {
+    const nextOpen = !dom.editDifficultyMenu?.classList.contains("open");
+    setEditDifficultyMenuOpen(nextOpen);
+  });
+
+  dom.editDifficultyOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      const difficulty = String(option.dataset.difficulty || "Beginner");
+      setEditDifficultyValue(difficulty);
+      setEditDifficultyMenuOpen(false);
     });
   });
 
@@ -349,6 +410,7 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       setSortMenuOpen(false);
+      setEditDifficultyMenuOpen(false);
       closeVideoModal();
       closeEditModal();
       closeSidebar();
@@ -381,9 +443,12 @@ function bindEvents() {
   });
 
   document.addEventListener("click", (event) => {
-    if (!dom.sortSelect) return;
-    if (dom.sortSelect.contains(event.target)) return;
-    setSortMenuOpen(false);
+    if (!dom.sortSelect?.contains(event.target)) {
+      setSortMenuOpen(false);
+    }
+    if (!dom.editDifficultySelect?.contains(event.target)) {
+      setEditDifficultyMenuOpen(false);
+    }
   });
 }
 
@@ -401,6 +466,39 @@ function syncSortUi() {
 
   dom.sortOptions.forEach((option) => {
     const active = option.dataset.sort === state.sortBy;
+    option.classList.toggle("active", active);
+    option.setAttribute("aria-selected", active ? "true" : "false");
+  });
+}
+
+function setEditDifficultyMenuOpen(isOpen) {
+  if (!dom.editDifficultyMenu || !dom.editDifficultyTrigger) return;
+  dom.editDifficultyMenu.classList.toggle("hidden", !isOpen);
+  dom.editDifficultyMenu.classList.toggle("open", Boolean(isOpen));
+  dom.editDifficultyTrigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+function setEditDifficultyValue(value) {
+  const normalized = ["Beginner", "Intermediate", "Advanced"].includes(String(value))
+    ? String(value)
+    : "Beginner";
+  if (dom.editDifficulty) {
+    dom.editDifficulty.value = normalized;
+  }
+  syncEditDifficultyUi();
+}
+
+function syncEditDifficultyUi() {
+  const current = ["Beginner", "Intermediate", "Advanced"].includes(String(dom.editDifficulty?.value))
+    ? String(dom.editDifficulty.value)
+    : "Beginner";
+
+  if (dom.editDifficultyTriggerLabel) {
+    dom.editDifficultyTriggerLabel.textContent = current;
+  }
+
+  dom.editDifficultyOptions.forEach((option) => {
+    const active = String(option.dataset.difficulty || "") === current;
     option.classList.toggle("active", active);
     option.setAttribute("aria-selected", active ? "true" : "false");
   });
@@ -1066,11 +1164,7 @@ function openPlaylistEditModal(playlistName) {
   const dominantDifficulty = Object.entries(difficultyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "Beginner";
 
   if (dom.editCategory) dom.editCategory.value = dominantCategory;
-  if (dom.editDifficulty) {
-    dom.editDifficulty.value = ["Beginner", "Intermediate", "Advanced"].includes(dominantDifficulty)
-      ? dominantDifficulty
-      : "Beginner";
-  }
+  setEditDifficultyValue(dominantDifficulty);
   if (dom.editThumbnail) dom.editThumbnail.value = "";
   if (dom.editYoutube) dom.editYoutube.value = "";
 
@@ -1676,11 +1770,7 @@ function openEditModal(id) {
   if (dom.editDescription) dom.editDescription.value = video.description;
   if (dom.editDescription) delete dom.editDescription.dataset.manualResized;
   if (dom.editCategory) dom.editCategory.value = video.category;
-  if (dom.editDifficulty) {
-    dom.editDifficulty.value = ["Beginner", "Intermediate", "Advanced"].includes(video.difficulty)
-      ? video.difficulty
-      : "Beginner";
-  }
+  setEditDifficultyValue(video.difficulty);
   if (dom.editThumbnail) dom.editThumbnail.value = video.thumbnail;
   if (dom.editYoutube) dom.editYoutube.value = video.youtubeLink || video.videoUrl || "";
 
@@ -1695,6 +1785,7 @@ function closeEditModal() {
   if (!dom.editModal || dom.editModal.classList.contains("hidden")) return;
   dom.editModal.classList.add("hidden");
   dom.editModal.setAttribute("aria-hidden", "true");
+  setEditDifficultyMenuOpen(false);
   state.editingVideoId = null;
   state.editingPlaylistName = null;
   configureEditModalMode("video");
