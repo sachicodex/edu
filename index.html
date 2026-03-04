@@ -239,35 +239,38 @@
           <i data-lucide="x"></i>
         </button>
         <h3>Edit Video</h3>
+        <p class="edit-subhead">Update details and save changes.</p>
         <form id="edit-form" class="edit-form">
-          <label class="floating-field">
-            <input id="edit-title" type="text" placeholder=" " required />
-            <span class="field-label">Title</span>
-          </label>
-          <label class="floating-field">
-            <textarea id="edit-description" rows="7" placeholder=" "></textarea>
-            <span class="field-label">Description</span>
-          </label>
-          <label class="floating-field">
-            <input id="edit-category" type="text" placeholder=" " />
-            <span class="field-label">Category</span>
-          </label>
-          <label class="floating-field select-field is-active">
-            <select id="edit-difficulty">
-              <option>Beginner</option>
-              <option>Intermediate</option>
-              <option>Advanced</option>
-            </select>
-            <span class="field-label">Difficulty</span>
-          </label>
-          <label class="floating-field">
-            <input id="edit-thumbnail" type="url" placeholder=" " />
-            <span class="field-label">Thumbnail URL</span>
-          </label>
-          <label class="floating-field">
-            <input id="edit-youtube" type="url" placeholder=" " />
-            <span class="field-label">YouTube URL</span>
-          </label>
+          <div class="row">
+            <label class="upload-label" for="edit-title">Title</label>
+            <input id="edit-title" type="text" placeholder="Enter video title" required />
+          </div>
+          <div class="row">
+            <label class="upload-label" for="edit-description">Description</label>
+            <textarea id="edit-description" rows="1" placeholder="Short summary of the video"></textarea>
+          </div>
+          <div class="row row-split">
+            <div class="row">
+              <label class="upload-label" for="edit-category">Category</label>
+              <input id="edit-category" type="text" placeholder="General" />
+            </div>
+            <div class="row">
+              <label class="upload-label" for="edit-difficulty">Difficulty</label>
+              <select id="edit-difficulty">
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+          </div>
+          <div class="row edit-thumb-row">
+            <label class="upload-label" for="edit-thumbnail">Thumbnail URL</label>
+            <input id="edit-thumbnail" type="url" placeholder="https://..." />
+          </div>
+          <div class="row edit-youtube-row">
+            <label class="upload-label" for="edit-youtube">YouTube URL</label>
+            <input id="edit-youtube" type="url" placeholder="https://youtube.com/watch?v=..." />
+          </div>
 
           <div class="edit-actions">
             <button id="edit-delete" type="button" class="btn btn-outline">

@@ -250,32 +250,40 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
       </div>
       <form id="uploadForm" class="upload-form" autocomplete="off" autocorrect="off" spellcheck="false">
         <div class="row">
-          <input id="u_youtube" placeholder="YouTube Link" autocomplete="off">
+          <label class="upload-label" for="u_youtube">YouTube Link</label>
+          <input id="u_youtube" placeholder="https://youtube.com/watch?v=..." autocomplete="off">
         </div>
 
         <div class="row">
-          <input id="u_title" placeholder="Title" autocomplete="off">
+          <label class="upload-label" for="u_title">Title</label>
+          <input id="u_title" placeholder="Enter video title" autocomplete="off">
         </div>
         <div class="row">
-          <textarea id="u_description" placeholder="Description (Optional)" style="resize: none"></textarea>
+          <label class="upload-label" for="u_description">Description (Optional)</label>
+          <textarea id="u_description" rows="1" placeholder="Short summary of the video"></textarea>
         </div>
         <div class="row">
-          <input id="u_playlist_name" placeholder="Playlist Name (Optional)" autocomplete="off">
+          <label class="upload-label" for="u_playlist_name">Playlist Name (Optional)</label>
+          <input id="u_playlist_name" placeholder="Example: JavaScript Basics" autocomplete="off">
         </div>
         <div class="row">
-          <textarea id="u_playlist_description" placeholder="Playlist Description (Optional)" style="resize: none"></textarea>
+          <label class="upload-label" for="u_playlist_description">Playlist Description (Optional)</label>
+          <textarea id="u_playlist_description" rows="1" placeholder="Optional playlist details"></textarea>
         </div>
 
         <div class="row inline">
-          <input id="u_thumbnail" placeholder="Thumbnail URL" autocomplete="off">
+          <label class="upload-label" for="u_thumbnail">Thumbnail URL</label>
+          <input id="u_thumbnail" placeholder="https://..." autocomplete="off">
         </div>
 
         <div class="row">
-          <input id="u_tags" placeholder="AI Tags (Comma Separated)" autocomplete="off">
+          <label class="upload-label" for="u_tags">AI Tags (Comma Separated)</label>
+          <input id="u_tags" placeholder="javascript, arrays, beginner" autocomplete="off">
         </div>
 
         <div class="row">
-          <input id="u_password" type="password" placeholder="Password" autocomplete="new-password">
+          <label class="upload-label" for="u_password">Password</label>
+          <input id="u_password" type="password" placeholder="Enter upload password" autocomplete="new-password">
         </div>
 
         <div class="row actions">
@@ -317,6 +325,61 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
   let fetchedMeta = null;
 
   const withText = (v) => String(v ?? "").trim();
+  const syncTextareaAutoHeight = (textarea) => {
+    if (!textarea) return;
+    if (textarea.dataset.manualResized === "true") return;
+    const styles = window.getComputedStyle(textarea);
+    const lineHeightRaw = Number.parseFloat(styles.lineHeight);
+    const fontSizeRaw = Number.parseFloat(styles.fontSize);
+    const lineHeight = Number.isFinite(lineHeightRaw) ? lineHeightRaw : Math.max(20, fontSizeRaw * 1.4 || 22);
+    const paddingTop = Number.parseFloat(styles.paddingTop) || 0;
+    const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
+    const borderTop = Number.parseFloat(styles.borderTopWidth) || 0;
+    const borderBottom = Number.parseFloat(styles.borderBottomWidth) || 0;
+    const chrome = paddingTop + paddingBottom + borderTop + borderBottom;
+    const min = 48;
+    const max = Math.ceil(lineHeight * 5 + chrome);
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, min), max)}px`;
+    textarea.style.overflowY = "auto";
+  };
+  const bindTextareaManualResize = (textarea) => {
+    if (!textarea || textarea.dataset.resizeBound === "true") return;
+    textarea.dataset.resizeBound = "true";
+    let dragFromHandle = false;
+    let startHeight = 0;
+    let startWidth = 0;
+
+    textarea.addEventListener("pointerdown", (event) => {
+      const rect = textarea.getBoundingClientRect();
+      const edgeX = rect.right - event.clientX;
+      const edgeY = rect.bottom - event.clientY;
+      // Only lock auto-height after true handle drag start.
+      dragFromHandle = edgeX >= 0 && edgeX <= 24 && edgeY >= 0 && edgeY <= 24;
+      if (!dragFromHandle) return;
+
+      startHeight = textarea.offsetHeight;
+      startWidth = textarea.offsetWidth;
+
+      const finishResize = () => {
+        if (!dragFromHandle) return;
+        const changed =
+          Math.abs(textarea.offsetHeight - startHeight) > 2 ||
+          Math.abs(textarea.offsetWidth - startWidth) > 2;
+        if (changed) {
+          textarea.dataset.manualResized = "true";
+          textarea.style.overflowY = "auto";
+        }
+        dragFromHandle = false;
+        window.removeEventListener("pointerup", finishResize);
+        window.removeEventListener("pointercancel", finishResize);
+      };
+
+      window.addEventListener("pointerup", finishResize);
+      window.addEventListener("pointercancel", finishResize);
+    });
+  };
   const isPlaylistOnlyLink = (link) => {
     const playlistId = extractYouTubePlaylistId(link);
     const videoId = extractYouTubeVideoId(link);
@@ -372,6 +435,9 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
     if (!hasUserValue && cleanSuggestion) {
       el.value = cleanSuggestion;
     }
+    if (el?.tagName === "TEXTAREA") {
+      syncTextareaAutoHeight(el);
+    }
     markFieldState(el);
   };
 
@@ -385,6 +451,14 @@ export function createUploadModal({ db, state, notify, onUploaded } = {}) {
     tagsInput,
     passwordInput,
   ].forEach(prepareTabAutofillField);
+
+  [descInput, playlistDescInput].forEach((el) => {
+    if (!el) return;
+    delete el.dataset.manualResized;
+    el.addEventListener("input", () => syncTextareaAutoHeight(el));
+    bindTextareaManualResize(el);
+    syncTextareaAutoHeight(el);
+  });
 
   const applyMetadata = (meta) => {
     if (!meta) return;

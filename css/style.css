@@ -24,7 +24,7 @@
   --text-tertiary: #a1a1aa;
 
   /* === Utility === */
-  --field-bg: var(--surface);
+  --field-bg: var(--surface-tertiary);
   --field-bg-focus: var(--surface);
   --field-border: var(--border);
   --field-text: var(--text-primary);
@@ -1285,12 +1285,30 @@ h1 {
 }
 
 .edit-modal-card {
-  padding: 18px;
+  padding: 22px;
+  background: color-mix(in srgb, var(--surface) 94%, #000000 6%);
+  border: 1px solid color-mix(in srgb, var(--border) 75%, var(--border) 25%);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .edit-modal-card h3 {
   margin-top: 2px;
   margin-bottom: 6px;
+}
+
+.edit-subhead {
+  margin: 0;
+  color: color-mix(in srgb, var(--text-secondary) 80%, #ffffff 20%);
+  line-height: 1.35;
+  font-size: 0.96rem;
+}
+
+#edit-modal .modal-backdrop {
+  background: rgba(4, 6, 10, 0.68);
+  backdrop-filter: blur(8px);
 }
 
 .edit-modal-card .modal-close {
@@ -1315,84 +1333,114 @@ h1 {
 }
 
 .edit-form {
-  margin-top: 14px;
+  margin-top: 18px;
   display: grid;
-  gap: 15px;
-}
-
-.edit-form label {
-  display: block;
-  font-size: 1rem;
-  color: var(--field-label);
+  gap: 14px;
 }
 
 .edit-form input,
 .edit-form textarea,
 .edit-form select {
-  min-height: 46px;
+  min-height: 48px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--field-border);
-  background-color: var(--field-bg);
+  border: 1px solid color-mix(in srgb, var(--field-border) 88%, #ffffff 12%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--field-bg) 78%, #1a1a1a 22%),
+    color-mix(in srgb, var(--field-bg) 90%, #000000 10%)
+  );
   color: var(--field-text);
-  padding: 9px 11px;
+  padding: 0 16px;
+  font-size: 1rem;
   outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.32),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.34);
 }
 
-.edit-form .floating-field > input,
-.edit-form .floating-field > textarea {
-  width: 100%;
-  padding: 18px 11px 9px;
+.edit-form .row {
+  display: grid;
+  gap: 7px;
 }
 
-.edit-form .floating-field > select {
-  width: 100%;
-  min-height: 46px;
-  padding: 18px 11px 9px;
+.edit-form .row-split {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: end;
 }
 
-.edit-form .floating-field > textarea {
-  min-height: 112px;
-  padding-top: 22px;
+.edit-form input:hover,
+.edit-form textarea:hover,
+.edit-form select:hover {
+  border-color: color-mix(in srgb, var(--field-border-focus) 28%, var(--field-border) 72%);
+  filter: brightness(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36),
+    0 8px 18px rgba(0, 0, 0, 0.32),
+    0 2px 4px rgba(0, 0, 0, 0.32);
 }
 
 .edit-form input:focus-visible,
 .edit-form textarea:focus-visible,
 .edit-form select:focus-visible {
   outline: none;
-  border-color: var(--field-border-focus);
-  background-color: var(--field-bg-focus);
-  box-shadow: none;
+  border-color: color-mix(in srgb, var(--field-border-focus) 46%, var(--field-border) 54%);
+  background-color: color-mix(in srgb, var(--field-bg-focus) 90%, #000000 10%);
+  transform: translateY(-1px) scale(1.003);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 2px color-mix(in srgb, var(--field-border-focus) 22%, transparent),
+    0 12px 24px rgba(0, 0, 0, 0.38);
 }
 
 .edit-form textarea {
+  min-height: 48px;
+  max-height: none;
+  padding: 13px 16px;
   resize: vertical;
-  min-height: 90px;
+  overflow: auto;
 }
 
-.edit-form .floating-field > .field-label {
-  color: var(--field-label);
+.edit-form textarea::-webkit-resizer {
   background: transparent;
-  padding: 0;
 }
 
-.edit-form .floating-field > input:focus + .field-label,
-.edit-form .floating-field > input:not(:placeholder-shown) + .field-label,
-.edit-form .floating-field > textarea:focus + .field-label,
-.edit-form .floating-field > textarea:not(:placeholder-shown) + .field-label,
-.edit-form .floating-field > select:focus + .field-label,
-.edit-form .floating-field.is-active > .field-label,
-.edit-form .floating-field.select-field > .field-label {
-  color: var(--field-label-active);
-  background: var(--surface);
-  padding: 0 10px;
+.edit-form select {
+  padding-right: 42px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--text-tertiary) 78%, #ffffff 22%) 50%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text-tertiary) 78%, #ffffff 22%) 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 14px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.edit-form input::placeholder,
+.edit-form textarea::placeholder {
+  color: color-mix(in srgb, var(--text-tertiary) 66%, #ffffff 34%);
 }
 
 .edit-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 10px;
+}
+
+#edit-delete {
+  margin-right: auto;
 }
 
 .analytics-card {
@@ -1498,8 +1546,8 @@ h1 {
 .upload-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  backdrop-filter: blur(4px);
+  background: rgba(4, 6, 10, 0.68);
+  backdrop-filter: blur(8px);
 }
 
 .upload-modal-content {
@@ -1507,11 +1555,22 @@ h1 {
   width: min(680px, 100%);
   max-height: calc(100vh - 28px);
   overflow: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, #000000 6%);
+  border: 1px solid color-mix(in srgb, var(--border) 75%, var(--border) 25%);
   border-radius: var(--radius-lg);
-  padding: 18px;
-  box-shadow: var(--shadow-strong);
+  padding: 22px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transform: translateY(10px) scale(0.985);
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease;
+}
+
+.upload-modal.upload-modal-open .upload-modal-content {
+  transform: translateY(0) scale(1);
 }
 
 .upload-modal-close {
@@ -1556,52 +1615,107 @@ h1 {
 
 .upload-subhead {
   margin: 0;
-  color: var(--text-secondary);
+  color: color-mix(in srgb, var(--text-secondary) 80%, #ffffff 20%);
   line-height: 1.35;
-  font-size: 0.92rem;
+  font-size: 0.96rem;
 }
 
 .upload-form {
   display: grid;
-  gap: 18px;
-  margin-top: 16px;
+  gap: 14px;
+  margin-top: 18px;
 }
 
 .upload-form .row {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .upload-form .row.inline {
   grid-template-columns: 1fr;
 }
 
+.upload-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--text-secondary) 84%, #ffffff 16%);
+  margin-left: 2px;
+}
+
 .upload-form input,
 .upload-form textarea {
-  min-height: 44px;
+  min-height: 48px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--field-border);
-  background-color: var(--field-bg);
+  border: 1px solid color-mix(in srgb, var(--field-border) 88%, #ffffff 12%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--field-bg) 78%, #1a1a1a 22%),
+    color-mix(in srgb, var(--field-bg) 90%, #000000 10%)
+  );
   color: var(--field-text);
   padding: 0 16px;
+  font-size: 1rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.32),
+    0 6px 14px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.34);
+}
+
+.upload-form input:hover,
+.upload-form textarea:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--field-border-focus) 28%,
+    var(--field-border) 72%
+  );
+  filter: brightness(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36),
+    0 8px 18px rgba(0, 0, 0, 0.32),
+    0 2px 4px rgba(0, 0, 0, 0.32);
 }
 
 .upload-form input:focus-visible,
 .upload-form textarea:focus-visible {
   outline: none;
-  border-color: var(--field-border-focus);
-  background-color: var(--field-bg-focus);
-  box-shadow: none;
+  border-color: color-mix(
+    in srgb,
+    var(--field-border-focus) 46%,
+    var(--field-border) 54%
+  );
+  background-color: color-mix(in srgb, var(--field-bg-focus) 90%, #000000 10%);
+  transform: translateY(-1px) scale(1.003);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 2px color-mix(in srgb, var(--field-border-focus) 22%, transparent),
+    0 12px 24px rgba(0, 0, 0, 0.38);
 }
 
 .upload-form textarea {
-  min-height: 110px;
-  padding: 14px 16px;
+  min-height: 48px;
+  max-height: none;
+  padding: 13px 16px;
+  resize: vertical;
+  overflow: auto;
+}
+
+.upload-form textarea::-webkit-resizer {
+  background: transparent;
 }
 
 .upload-form input::placeholder,
 .upload-form textarea::placeholder {
-  color: var(--text-tertiary);
+  color: color-mix(in srgb, var(--text-tertiary) 66%, #ffffff 34%);
 }
 
 .upload-inline-label {
@@ -1797,6 +1911,11 @@ h1 {
 
   .upload-form .actions .btn {
     flex: 1;
+  }
+
+  .edit-form .row-split {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 }
 

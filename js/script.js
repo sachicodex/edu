@@ -332,6 +332,11 @@ function bindEvents() {
     await saveEdit();
   });
 
+  dom.editDescription?.addEventListener("input", () => {
+    syncTextareaAutoHeight(dom.editDescription);
+  });
+  bindTextareaManualResize(dom.editDescription);
+
   dom.editDelete?.addEventListener("click", async () => {
     if (state.editingPlaylistName) {
       await deletePlaylist(state.editingPlaylistName);
@@ -963,15 +968,72 @@ function configureEditModalMode(mode = "video") {
       ? '<i data-lucide="trash-2"></i>Delete Playlist'
       : '<i data-lucide="trash-2"></i>Delete';
   }
-  const thumbLabel = dom.editThumbnail?.closest("label");
-  const youtubeLabel = dom.editYoutube?.closest("label");
-  thumbLabel?.classList.toggle("hidden", isPlaylist);
-  youtubeLabel?.classList.toggle("hidden", isPlaylist);
+  const thumbRow = dom.editThumbnail?.closest(".row");
+  const youtubeRow = dom.editYoutube?.closest(".row");
+  thumbRow?.classList.toggle("hidden", isPlaylist);
+  youtubeRow?.classList.toggle("hidden", isPlaylist);
   try {
     window.lucide?.createIcons();
   } catch {
     // icon fallback
   }
+}
+
+function syncTextareaAutoHeight(textarea) {
+  if (!textarea) return;
+  if (textarea.dataset.manualResized === "true") return;
+  const styles = window.getComputedStyle(textarea);
+  const lineHeightRaw = Number.parseFloat(styles.lineHeight);
+  const fontSizeRaw = Number.parseFloat(styles.fontSize);
+  const lineHeight = Number.isFinite(lineHeightRaw) ? lineHeightRaw : Math.max(20, fontSizeRaw * 1.4 || 22);
+  const paddingTop = Number.parseFloat(styles.paddingTop) || 0;
+  const paddingBottom = Number.parseFloat(styles.paddingBottom) || 0;
+  const borderTop = Number.parseFloat(styles.borderTopWidth) || 0;
+  const borderBottom = Number.parseFloat(styles.borderBottomWidth) || 0;
+  const chrome = paddingTop + paddingBottom + borderTop + borderBottom;
+  const min = 48;
+  const max = Math.ceil(lineHeight * 5 + chrome);
+
+  textarea.style.height = "auto";
+  textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, min), max)}px`;
+  textarea.style.overflowY = "auto";
+}
+
+function bindTextareaManualResize(textarea) {
+  if (!textarea || textarea.dataset.resizeBound === "true") return;
+  textarea.dataset.resizeBound = "true";
+  let dragFromHandle = false;
+  let startHeight = 0;
+  let startWidth = 0;
+
+  textarea.addEventListener("pointerdown", (event) => {
+    const rect = textarea.getBoundingClientRect();
+    const edgeX = rect.right - event.clientX;
+    const edgeY = rect.bottom - event.clientY;
+    // Detect real resize-handle intent near bottom-right corner.
+    dragFromHandle = edgeX >= 0 && edgeX <= 24 && edgeY >= 0 && edgeY <= 24;
+    if (!dragFromHandle) return;
+
+    startHeight = textarea.offsetHeight;
+    startWidth = textarea.offsetWidth;
+
+    const finishResize = () => {
+      if (!dragFromHandle) return;
+      const changed =
+        Math.abs(textarea.offsetHeight - startHeight) > 2 ||
+        Math.abs(textarea.offsetWidth - startWidth) > 2;
+      if (changed) {
+        textarea.dataset.manualResized = "true";
+        textarea.style.overflowY = "auto";
+      }
+      dragFromHandle = false;
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+    };
+
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+  });
 }
 
 function openPlaylistEditModal(playlistName) {
@@ -987,6 +1049,7 @@ function openPlaylistEditModal(playlistName) {
 
   if (dom.editTitle) dom.editTitle.value = playlist.name;
   if (dom.editDescription) dom.editDescription.value = playlist.description || "";
+  if (dom.editDescription) delete dom.editDescription.dataset.manualResized;
 
   const categoryCounts = playlist.items.reduce((map, item) => {
     const key = String(item.category || "General");
@@ -1013,6 +1076,9 @@ function openPlaylistEditModal(playlistName) {
 
   dom.editModal?.classList.remove("hidden");
   dom.editModal?.setAttribute("aria-hidden", "false");
+  window.requestAnimationFrame(() => {
+    syncTextareaAutoHeight(dom.editDescription);
+  });
   try {
     window.lucide?.createIcons();
   } catch {
@@ -1608,6 +1674,7 @@ function openEditModal(id) {
   configureEditModalMode("video");
   if (dom.editTitle) dom.editTitle.value = video.title;
   if (dom.editDescription) dom.editDescription.value = video.description;
+  if (dom.editDescription) delete dom.editDescription.dataset.manualResized;
   if (dom.editCategory) dom.editCategory.value = video.category;
   if (dom.editDifficulty) {
     dom.editDifficulty.value = ["Beginner", "Intermediate", "Advanced"].includes(video.difficulty)
@@ -1619,6 +1686,9 @@ function openEditModal(id) {
 
   dom.editModal?.classList.remove("hidden");
   dom.editModal?.setAttribute("aria-hidden", "false");
+  window.requestAnimationFrame(() => {
+    syncTextareaAutoHeight(dom.editDescription);
+  });
 }
 
 function closeEditModal() {
