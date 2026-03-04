@@ -43,6 +43,7 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -55,6 +56,13 @@ body {
   font-family: "Montserrat", "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--text-primary);
+  -webkit-touch-callout: none;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  user-select: none;
 }
 
 button,
@@ -128,7 +136,11 @@ select:invalid {
   aspect-ratio: 1 / 1;
   left: -9vw;
   top: 10vh;
-  background: radial-gradient(circle, rgb(245 124 47 / 34%) 0%, transparent 68%);
+  background: radial-gradient(
+    circle,
+    rgb(245 124 47 / 34%) 0%,
+    transparent 68%
+  );
 }
 
 .loading-aurora-b {
@@ -137,7 +149,11 @@ select:invalid {
   aspect-ratio: 1 / 1;
   right: -12vw;
   bottom: 6vh;
-  background: radial-gradient(circle, rgb(56 189 248 / 24%) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgb(56 189 248 / 24%) 0%,
+    transparent 70%
+  );
   animation-delay: 1.3s;
 }
 
@@ -431,6 +447,10 @@ select:invalid {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.upload-label-mobile {
+  display: none;
 }
 
 .soft-btn,
@@ -855,7 +875,6 @@ h1 {
 .card-duration,
 .card-completed {
   position: absolute;
-  right: 8px;
   border-radius: 999px;
   font-size: 0.74rem;
   padding: 4px 8px;
@@ -863,17 +882,19 @@ h1 {
 }
 
 .card-duration {
+  right: 8px;
   top: auto;
   bottom: 8px;
   background: color-mix(in srgb, var(--surface-secondary) 78%, transparent);
 }
 
 .card-completed {
-  top: 8px;
-  bottom: auto;
-  background: color-mix(in srgb, var(--primary) 18%, transparent);
-  border: 1px solid color-mix(in srgb, var(--primary) 52%, transparent);
-  color: var(--primary-hover);
+  left: 8px;
+  top: auto;
+  bottom: 8px;
+  background: color-mix(in srgb, var(--success) 26%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 60%, transparent);
+  color: var(--surface);
 }
 
 .card-body {
@@ -1211,6 +1232,10 @@ h1 {
 .custom-player-btn:hover {
   background: color-mix(in srgb, var(--surface-hover) 96%, transparent);
   border-color: var(--field-border-focus);
+}
+
+.custom-player-controls [data-player="fullscreen"] {
+  display: none;
 }
 
 .custom-player-seek,
@@ -1565,7 +1590,11 @@ h1 {
   min-width: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: linear-gradient(to bottom, var(--surface-secondary), var(--surface-tertiary));
+  background: linear-gradient(
+    to bottom,
+    var(--surface-secondary),
+    var(--surface-tertiary)
+  );
   z-index: 55;
 }
 
@@ -2001,9 +2030,26 @@ h1 {
     grid-template-columns: auto 1fr;
   }
 
+  .search-box {
+    width: 100%;
+    min-width: 0;
+  }
+
   .topbar-actions {
     grid-column: 1 / -1;
     justify-content: space-between;
+  }
+
+  #view-toggle {
+    display: none;
+  }
+
+  .upload-label-desktop {
+    display: none;
+  }
+
+  .upload-label-mobile {
+    display: inline;
   }
 
   .hero-panel {
@@ -2016,6 +2062,10 @@ h1 {
 
   .mobile-only {
     display: inline-grid;
+  }
+
+  #modal-share {
+    display: none;
   }
 }
 
@@ -2051,8 +2101,12 @@ h1 {
   }
 
   .custom-player-time,
-  .custom-player-volume-wrap {
+  .custom-player-volume-group {
     display: none;
+  }
+
+  .custom-player-controls [data-player="fullscreen"] {
+    display: grid;
   }
 
   .upload-modal {
@@ -2079,6 +2133,23 @@ h1 {
   .edit-form .row-split {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  .custom-player-controls {
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+    padding: 7px 8px;
+  }
+
+  .custom-player-time,
+  .custom-player-volume-group {
+    display: none;
+  }
+
+  .custom-player-controls [data-player="fullscreen"] {
+    display: grid;
   }
 }
 

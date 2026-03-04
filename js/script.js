@@ -46,6 +46,7 @@ let modalPlayerKind = "";
 let modalPlayerTick = null;
 let ytApiReadyPromise = null;
 let modalVolumeHideTimer = null;
+let modalVideoOrientation = "unknown";
 
 const dom = {
   loadingScreen: document.getElementById("loading-screen"),
@@ -141,6 +142,7 @@ const ROUTE_COPY = {
 
 function init() {
   enforceNoAutofill();
+  hardenAppInteractions();
   syncSavedState();
   bindEvents();
   syncSortUi();
@@ -202,6 +204,27 @@ function enforceNoAutofill() {
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function hardenAppInteractions() {
+  document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  });
+
+  document.addEventListener("dragstart", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("img, a")) {
+      event.preventDefault();
+    }
+  });
+
+  document.addEventListener("selectstart", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("input, textarea, [contenteditable='true']")) return;
+    event.preventDefault();
+  });
 }
 
 function bindEvents() {
@@ -449,6 +472,10 @@ function bindEvents() {
     if (!dom.editDifficultySelect?.contains(event.target)) {
       setEditDifficultyMenuOpen(false);
     }
+  });
+
+  ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach((eventName) => {
+    document.addEventListener(eventName, handleFullscreenChange);
   });
 }
 
@@ -1220,6 +1247,7 @@ function openVideoModal(id) {
 
   const source = getSourceUrl(video);
   const ytId = youtubeId(source);
+  modalVideoOrientation = inferVideoOrientation(video, ytId);
 
   if (dom.videoIframeWrap) {
     if (ytId) {
@@ -1277,6 +1305,8 @@ function syncModalButtons() {
 
 function closeVideoModal() {
   if (!dom.videoModal || dom.videoModal.classList.contains("hidden")) return;
+  void exitFullscreenIfActive();
+  unlockOrientation();
   cleanupModalPlayer();
   dom.videoModal.classList.add("hidden");
   dom.videoModal.setAttribute("aria-hidden", "true");
@@ -1285,25 +1315,123 @@ function closeVideoModal() {
 }
 
 async function toggleVideoFullscreen() {
-  const fullscreenEl = document.fullscreenElement;
+  const fullscreenEl = getFullscreenElement();
   if (fullscreenEl) {
-    try {
-      await document.exitFullscreen();
-    } catch {
-      // noop
-    }
+    await exitFullscreenIfActive();
+    unlockOrientation();
     return;
   }
 
-  const target =
-    dom.videoIframeWrap?.querySelector(".custom-player-shell") ||
-    dom.videoIframeWrap;
-  if (!target || typeof target.requestFullscreen !== "function") return;
+  const target = dom.videoIframeWrap?.querySelector(".custom-player-shell") || dom.videoIframeWrap;
+  if (!target) return;
+  const entered = await requestElementFullscreen(target);
+  if (entered) {
+    await applyOrientationLockForFullscreen();
+    updateFullscreenControlState();
+    return;
+  }
 
+  // iOS Safari fallback for HTML5 video.
+  const html5Player = dom.videoIframeWrap?.querySelector("#custom-html5-player");
+  if (html5Player && typeof html5Player.webkitEnterFullscreen === "function") {
+    try {
+      html5Player.webkitEnterFullscreen();
+      await applyOrientationLockForFullscreen();
+      updateFullscreenControlState();
+      return;
+    } catch {
+      // noop
+    }
+  }
+
+  if (html5Player) {
+    await requestElementFullscreen(html5Player);
+    await applyOrientationLockForFullscreen();
+    updateFullscreenControlState();
+  }
+}
+
+function getFullscreenElement() {
+  return (
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement ||
+    null
+  );
+}
+
+async function exitFullscreenIfActive() {
+  const fullscreenEl = getFullscreenElement();
+  if (!fullscreenEl) return;
+  const exit =
+    document.exitFullscreen ||
+    document.webkitExitFullscreen ||
+    document.mozCancelFullScreen ||
+    document.msExitFullscreen;
+  if (typeof exit !== "function") return;
   try {
-    await target.requestFullscreen();
+    await exit.call(document);
   } catch {
     // noop
+  }
+}
+
+function isLandscapeVideoForFullscreen() {
+  return modalVideoOrientation === "landscape";
+}
+
+async function applyOrientationLockForFullscreen() {
+  if (!isLandscapeVideoForFullscreen()) return;
+  const orientationApi = screen?.orientation;
+  if (!orientationApi || typeof orientationApi.lock !== "function") return;
+  try {
+    await orientationApi.lock("landscape");
+  } catch {
+    // noop
+  }
+}
+
+function unlockOrientation() {
+  const orientationApi = screen?.orientation;
+  if (!orientationApi || typeof orientationApi.unlock !== "function") return;
+  try {
+    orientationApi.unlock();
+  } catch {
+    // noop
+  }
+}
+
+function inferVideoOrientation(video, ytId = "") {
+  const source = String(video?.youtubeLink || video?.videoUrl || "");
+  if (/\/shorts\//i.test(source)) return "portrait";
+  if (ytId) return "landscape";
+  return "unknown";
+}
+
+function handleFullscreenChange() {
+  if (!getFullscreenElement()) {
+    unlockOrientation();
+  } else {
+    void applyOrientationLockForFullscreen();
+  }
+  updateFullscreenControlState();
+}
+
+async function requestElementFullscreen(el) {
+  if (!el) return false;
+  const request =
+    el.requestFullscreen ||
+    el.webkitRequestFullscreen ||
+    el.mozRequestFullScreen ||
+    el.msRequestFullscreen;
+  if (typeof request !== "function") return false;
+
+  try {
+    await request.call(el);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -1332,6 +1460,7 @@ function customPlayerShell(kind, src = "") {
             <input class="custom-player-volume" data-player="volume" type="range" min="0" max="100" value="100" aria-label="Volume" />
           </div>
         </div>
+        <button class="custom-player-btn" data-player="fullscreen" aria-label="Toggle Fullscreen"><i data-lucide="maximize"></i></button>
       </div>
     </div>
   `;
@@ -1351,6 +1480,7 @@ function getCustomControls() {
     volumeWrap: shell.querySelector('[data-player="volume-wrap"]'),
     muteBtn: shell.querySelector('[data-player="mute"]'),
     volume: shell.querySelector('[data-player="volume"]'),
+    fullscreenBtn: shell.querySelector('[data-player="fullscreen"]'),
   };
 }
 
@@ -1386,8 +1516,10 @@ function updateCustomButtons({ isPlaying = false, isMuted = false } = {}) {
 
   const playState = isPlaying ? "pause" : "play";
   const muteState = isMuted ? "volume-x" : "volume-2";
+  const fullscreenState = getFullscreenElement() ? "minimize" : "maximize";
   const playChanged = controls.playBtn?.dataset.icon !== playState;
   const muteChanged = controls.muteBtn?.dataset.icon !== muteState;
+  const fullscreenChanged = controls.fullscreenBtn?.dataset.icon !== fullscreenState;
 
   if (controls.playBtn) {
     if (playChanged) {
@@ -1401,13 +1533,30 @@ function updateCustomButtons({ isPlaying = false, isMuted = false } = {}) {
       controls.muteBtn.dataset.icon = muteState;
     }
   }
-  if (playChanged || muteChanged) {
+  if (controls.fullscreenBtn) {
+    if (fullscreenChanged) {
+      controls.fullscreenBtn.innerHTML = `<i data-lucide="${fullscreenState}"></i>`;
+      controls.fullscreenBtn.dataset.icon = fullscreenState;
+      controls.fullscreenBtn.setAttribute("aria-label", fullscreenState === "minimize" ? "Exit Fullscreen" : "Enter Fullscreen");
+    }
+  }
+  if (playChanged || muteChanged || fullscreenChanged) {
     try {
       window.lucide?.createIcons();
     } catch {
       // icon fallback
     }
   }
+}
+
+function updateFullscreenControlState() {
+  updateCustomButtons({
+    isPlaying: modalPlayerKind === "video" ? !(modalPlayer?.paused ?? true) : true,
+    isMuted:
+      modalPlayerKind === "video"
+        ? Boolean(modalPlayer?.muted || modalPlayer?.volume === 0)
+        : Boolean(modalPlayer?.isMuted?.()),
+  });
 }
 
 function startCustomPlayerTick(readState, options = {}) {
@@ -1577,6 +1726,10 @@ function setupYouTubeCustomPlayer({ videoId, title }) {
             updateCustomButtons({ isMuted: !muted });
           });
 
+          controls.fullscreenBtn?.addEventListener("click", () => {
+            void toggleVideoFullscreen();
+          });
+
           const commitSeek = () => {
             const duration = Number(modalPlayer.getDuration?.() || 0);
             if (!duration) return;
@@ -1699,6 +1852,10 @@ function setupHtml5CustomPlayer() {
     updateCustomButtons({ isMuted: player.muted, isPlaying: !player.paused });
   });
 
+  controls.fullscreenBtn?.addEventListener("click", () => {
+    void toggleVideoFullscreen();
+  });
+
   const commitSeek = () => {
     const duration = Number(player.duration || 0);
     if (!duration) return;
@@ -1741,6 +1898,16 @@ function setupHtml5CustomPlayer() {
 
   updateCustomButtons({ isPlaying: true, isMuted: false });
   setPausedOverlayVisible(controls, false);
+  player.addEventListener("loadedmetadata", () => {
+    const width = Number(player.videoWidth || 0);
+    const height = Number(player.videoHeight || 0);
+    if (width > 0 && height > 0) {
+      modalVideoOrientation = width >= height ? "landscape" : "portrait";
+      if (getFullscreenElement()) {
+        void applyOrientationLockForFullscreen();
+      }
+    }
+  });
   player.addEventListener("play", () => updateCustomButtons({ isPlaying: true, isMuted: Boolean(player.muted || player.volume === 0) }));
   player.addEventListener("play", () => setPausedOverlayVisible(controls, false));
   player.addEventListener("pause", () => updateCustomButtons({ isPlaying: false, isMuted: Boolean(player.muted || player.volume === 0) }));
