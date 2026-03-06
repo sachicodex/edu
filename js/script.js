@@ -1,5 +1,16 @@
 
 import { DB, UPLOAD, SAVED, SEARCH, TOAST } from "../services/index.js";
+import {
+  browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc as fsDoc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = window.FIREBASE_CONFIG || {
   apiKey: "",
@@ -9,6 +20,13 @@ const firebaseConfig = window.FIREBASE_CONFIG || {
 
 const db = DB.initDB(firebaseConfig);
 window.firestoreDb = db;
+const auth = getAuth();
+const DEFAULT_ADMIN_EMAILS = [
+  String(window.APP_CONTROLLER_EMAIL || "").trim(),
+  ...(Array.isArray(window.APP_CONTROLLER_EMAILS) ? window.APP_CONTROLLER_EMAILS : []),
+]
+  .map((email) => String(email || "").trim().toLowerCase())
+  .filter(Boolean);
 
 const COMPLETED_KEY = "eduflow_completed";
 const HISTORY_KEY = "eduflow_history";
@@ -28,7 +46,12 @@ const state = {
   completedIds: loadSet(COMPLETED_KEY),
   watchHistory: loadHistory(),
   savedIds: new Set(),
+  currentUser: null,
+  userProfile: null,
+  isAdmin: false,
+  adminEmails: new Set(DEFAULT_ADMIN_EMAILS),
 };
+let adminConfigLoaded = false;
 
 const SORT_LABELS = {
   newest: "Newest",
@@ -47,9 +70,25 @@ let modalPlayerTick = null;
 let ytApiReadyPromise = null;
 let modalVolumeHideTimer = null;
 let modalVideoOrientation = "unknown";
+let appInitialized = false;
+let authBusy = false;
+let authMode = "signup";
 
 const dom = {
+  authScreen: document.getElementById("auth-screen"),
+  authForm: document.getElementById("auth-form"),
+  authTitle: document.getElementById("auth-title"),
+  authSubtitle: document.getElementById("auth-subtitle"),
+  authMessage: document.getElementById("auth-message"),
+  authFirstnameRow: document.getElementById("auth-firstname-row"),
+  authFirstname: document.getElementById("auth-firstname"),
+  authEmail: document.getElementById("auth-email"),
+  authPassword: document.getElementById("auth-password"),
+  authSubmit: document.getElementById("auth-submit"),
+  authSwitchLabel: document.getElementById("auth-switch-label"),
+  authSwitch: document.getElementById("auth-switch"),
   loadingScreen: document.getElementById("loading-screen"),
+  appShell: document.querySelector(".app-shell"),
   sidebar: document.getElementById("sidebar"),
   mobileOverlay: document.getElementById("mobile-overlay"),
   sidebarToggle: document.getElementById("sidebar-toggle"),
@@ -110,6 +149,10 @@ const dom = {
   editThumbnail: document.getElementById("edit-thumbnail"),
   editYoutube: document.getElementById("edit-youtube"),
   editDelete: document.getElementById("edit-delete"),
+  profileAvatar: document.getElementById("profile-avatar"),
+  profileName: document.getElementById("profile-name"),
+  profileRole: document.getElementById("profile-role"),
+  logoutBtn: document.getElementById("logout-btn"),
 };
 
 const ROUTE_COPY = {
@@ -139,6 +182,294 @@ const ROUTE_COPY = {
       "Track completion, content mix, watch behavior, and operational learning health.",
   },
 };
+
+function bootstrapAuth() {
+  bindAuthEvents();
+  setAuthMode("signup");
+
+  setPersistence(auth, browserLocalPersistence).catch((error) => {
+    console.error("Auth persistence error:", error);
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    state.currentUser = user || null;
+    await ensureAdminConfigLoaded();
+    state.isAdmin = false;
+
+    if (!user) {
+      state.userProfile = null;
+      applyAdminAccessUi();
+      showAuthScreen();
+      return;
+    }
+
+    hideAuthScreen();
+    await loadUserProfile(user);
+    state.isAdmin = isAdminEmail(user?.email) || Boolean(state.userProfile?.isAdmin);
+    applyUserProfileToUi();
+    applyAdminAccessUi();
+
+    if (!appInitialized) {
+      init();
+      appInitialized = true;
+      return;
+    }
+
+    try {
+      await loadVideos();
+      renderAll();
+    } catch (error) {
+      console.error("Reload error:", error);
+      notify("Unable to reload cloud videos.", "error");
+    }
+  });
+}
+
+function bindAuthEvents() {
+  dom.authSwitch?.addEventListener("click", () => {
+    const nextMode = authMode === "signup" ? "login" : "signup";
+    setAuthMode(nextMode);
+  });
+
+  dom.authForm?.addEventListener("submit", handleAuthSubmit);
+  dom.authEmail?.addEventListener("input", clearAuthMessage);
+  dom.authPassword?.addEventListener("input", clearAuthMessage);
+  dom.authFirstname?.addEventListener("input", clearAuthMessage);
+
+  dom.logoutBtn?.addEventListener("click", async () => {
+    if (authBusy) return;
+    toggleAuthBusy(true);
+    try {
+      await signOut(auth);
+      notify("Logged out", "success");
+    } catch (error) {
+      console.error("Logout error:", error);
+      notify("Unable to log out right now.", "error");
+    } finally {
+      toggleAuthBusy(false);
+    }
+  });
+}
+
+function setAuthMode(mode) {
+  authMode = mode === "login" ? "login" : "signup";
+  const isSignUp = authMode === "signup";
+
+  if (dom.authTitle) dom.authTitle.textContent = isSignUp ? "Create your account" : "Welcome back";
+  if (dom.authSubtitle) {
+    dom.authSubtitle.textContent = isSignUp
+      ? "Sign up to sync your learning workspace."
+      : "Log in to continue your learning workspace.";
+  }
+
+  if (dom.authSubmit) dom.authSubmit.textContent = isSignUp ? "Create account" : "Log in";
+  if (dom.authSwitchLabel) {
+    dom.authSwitchLabel.textContent = isSignUp ? "Already have an account?" : "New here?";
+  }
+  if (dom.authSwitch) dom.authSwitch.textContent = isSignUp ? "Log in" : "Create account";
+
+  if (dom.authFirstnameRow) dom.authFirstnameRow.classList.toggle("hidden", !isSignUp);
+  if (dom.authFirstname) {
+    dom.authFirstname.required = isSignUp;
+    if (!isSignUp) dom.authFirstname.value = "";
+  }
+  clearAuthMessage();
+}
+
+function showAuthScreen() {
+  dom.authScreen?.classList.remove("hidden");
+  dom.appShell?.classList.add("hidden");
+  dom.loadingScreen?.classList.add("hidden");
+}
+
+function hideAuthScreen() {
+  dom.authScreen?.classList.add("hidden");
+  dom.appShell?.classList.remove("hidden");
+}
+
+function toggleAuthBusy(isBusy) {
+  authBusy = Boolean(isBusy);
+  if (dom.authSubmit) dom.authSubmit.disabled = authBusy;
+  if (dom.authSwitch) dom.authSwitch.disabled = authBusy;
+  if (dom.authEmail) dom.authEmail.disabled = authBusy;
+  if (dom.authPassword) dom.authPassword.disabled = authBusy;
+  if (dom.authFirstname) dom.authFirstname.disabled = authBusy;
+}
+
+function showAuthMessage(message, type = "info") {
+  if (!dom.authMessage) return;
+  const tone = ["success", "error", "warning", "info"].includes(type) ? type : "info";
+  dom.authMessage.textContent = String(message || "");
+  dom.authMessage.classList.remove("hidden", "success", "error", "warning", "info");
+  dom.authMessage.classList.add(tone);
+}
+
+function clearAuthMessage() {
+  if (!dom.authMessage) return;
+  dom.authMessage.textContent = "";
+  dom.authMessage.classList.add("hidden");
+  dom.authMessage.classList.remove("success", "error", "warning", "info");
+}
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  if (authBusy) return;
+  clearAuthMessage();
+
+  const email = String(dom.authEmail?.value || "").trim();
+  const password = String(dom.authPassword?.value || "");
+  const firstName = String(dom.authFirstname?.value || "").trim();
+  const isSignUp = authMode === "signup";
+
+  if (!email || !password) {
+    showAuthMessage("Email and password are required.", "error");
+    notify("Email and password are required.", "error");
+    return;
+  }
+
+  if (isSignUp && !firstName) {
+    showAuthMessage("First name is required to create an account.", "error");
+    notify("First name is required to create an account.", "error");
+    return;
+  }
+
+  toggleAuthBusy(true);
+  try {
+    if (isSignUp) {
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(credential.user, { displayName: firstName });
+      await upsertUserProfile(credential.user, firstName);
+      showAuthMessage("Account created successfully. Signing you in...", "success");
+      notify("Account created successfully.", "success");
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+      showAuthMessage("Login successful. Loading your workspace...", "success");
+      notify("Logged in successfully.", "success");
+    }
+  } catch (error) {
+    console.error("Auth submit error:", error);
+    const message = readAuthError(error, authMode);
+    showAuthMessage(message, "error");
+    notify(message, "error");
+  } finally {
+    toggleAuthBusy(false);
+  }
+}
+
+async function upsertUserProfile(user, firstName) {
+  if (!user?.uid) return;
+  const display = String(firstName || user.displayName || "").trim();
+  await setDoc(
+    fsDoc(db, "users", user.uid),
+    {
+      firstName: display,
+      email: String(user.email || ""),
+      updated_at: serverTimestamp(),
+      created_at: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+async function loadUserProfile(user) {
+  if (!user?.uid) {
+    state.userProfile = null;
+    return;
+  }
+
+  let profile = null;
+  try {
+    const snapshot = await getDoc(fsDoc(db, "users", user.uid));
+    if (snapshot.exists()) {
+      profile = snapshot.data() || null;
+    }
+  } catch (error) {
+    console.error("Profile load error:", error);
+  }
+
+  const fallbackName = String(user.displayName || "").trim() || "Learner";
+  const firstName = String(profile?.firstName || "").trim() || fallbackName;
+  state.userProfile = {
+    firstName,
+    email: String(profile?.email || user.email || "").trim(),
+    isAdmin: Boolean(profile?.isAdmin),
+  };
+
+  try {
+    await upsertUserProfile(user, firstName);
+  } catch (error) {
+    console.error("Profile sync error:", error);
+  }
+}
+
+function applyUserProfileToUi() {
+  const firstName = String(state.userProfile?.firstName || "Learner");
+  const email = String(state.userProfile?.email || state.currentUser?.email || "");
+  const initials = initialsFromName(firstName);
+
+  if (dom.profileName) dom.profileName.textContent = firstName;
+  if (dom.profileRole) dom.profileRole.textContent = email || "Authenticated user";
+  if (dom.profileAvatar) dom.profileAvatar.textContent = initials;
+}
+
+function isAdminEmail(email) {
+  const normalized = String(email || "").trim().toLowerCase();
+  if (!normalized) return false;
+  return state.adminEmails.has(normalized);
+}
+
+async function ensureAdminConfigLoaded() {
+  if (adminConfigLoaded) return;
+  adminConfigLoaded = true;
+
+  try {
+    const accessSnapshot = await getDoc(fsDoc(db, "app_config", "access"));
+    if (!accessSnapshot.exists()) return;
+    const data = accessSnapshot.data() || {};
+    const configured = [
+      String(data.adminEmail || "").trim(),
+      ...(Array.isArray(data.adminEmails) ? data.adminEmails : []),
+    ]
+      .map((email) => String(email || "").trim().toLowerCase())
+      .filter(Boolean);
+
+    configured.forEach((email) => state.adminEmails.add(email));
+  } catch (error) {
+    console.error("Admin config load error:", error);
+  }
+}
+
+function applyAdminAccessUi() {
+  const restricted = !state.isAdmin;
+  dom.uploadBtn?.classList.toggle("hidden", restricted);
+  dom.modalEdit?.classList.toggle("hidden", restricted);
+}
+
+function requireAdminAccess() {
+  if (state.isAdmin) return true;
+  notify("Only app controller can use this feature.", "warning");
+  return false;
+}
+
+function initialsFromName(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function readAuthError(error, mode) {
+  const code = String(error?.code || "");
+  if (code.includes("email-already-in-use")) return "This email already has an account. Please log in.";
+  if (code.includes("invalid-credential")) return "Invalid email or password.";
+  if (code.includes("invalid-email")) return "Please enter a valid email address.";
+  if (code.includes("weak-password")) return "Password must be at least 6 characters.";
+  if (code.includes("too-many-requests")) return "Too many attempts. Try again later.";
+  return mode === "signup" ? "Unable to create account right now." : "Unable to log in right now.";
+}
 
 function init() {
   enforceNoAutofill();
@@ -295,6 +626,7 @@ function bindEvents() {
   });
 
   dom.uploadBtn?.addEventListener("click", () => {
+    if (!requireAdminAccess()) return;
     UPLOAD.createUploadModal({
       db,
       state,
@@ -408,11 +740,13 @@ function bindEvents() {
 
   dom.modalEdit?.addEventListener("click", () => {
     if (!state.activeVideoId) return;
+    if (!requireAdminAccess()) return;
     openEditModal(state.activeVideoId);
   });
 
   dom.editForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!requireAdminAccess()) return;
     await saveEdit();
   });
 
@@ -422,6 +756,7 @@ function bindEvents() {
   bindTextareaManualResize(dom.editDescription);
 
   dom.editDelete?.addEventListener("click", async () => {
+    if (!requireAdminAccess()) return;
     if (state.editingPlaylistName) {
       await deletePlaylist(state.editingPlaylistName);
       return;
@@ -575,6 +910,7 @@ async function handleCardAction(actionEl) {
   }
 
   if (action === "edit") {
+    if (!requireAdminAccess()) return;
     openEditModal(id);
     return;
   }
@@ -609,6 +945,7 @@ async function handleCardAction(actionEl) {
   }
 
   if (action === "edit-playlist") {
+    if (!requireAdminAccess()) return;
     const encoded = String(actionEl.dataset.playlist || "");
     const playlistName = decodeURIComponent(encoded);
     openPlaylistEditModal(playlistName);
@@ -909,6 +1246,13 @@ function videoCard(video) {
   const thumb = sanitizeUrl(video.thumbnail);
   const completed = state.completedIds.has(String(video.id));
   const saved = state.savedIds.has(String(video.id));
+  const editAction = state.isAdmin
+    ? `
+          <button class="card-action-icon" data-action="edit" data-id="${id}" title="Edit" aria-label="Edit">
+            <i data-lucide="square-pen"></i>
+          </button>
+      `
+    : "";
 
   return `
     <article class="video-card interactive-card" data-action="watch" data-id="${id}" tabindex="0" role="button" aria-label="Watch ${escapeAttr(video.title)}">
@@ -937,9 +1281,7 @@ function videoCard(video) {
           <button class="card-action-icon" data-action="share" data-id="${id}" title="Share" aria-label="Share">
             <i data-lucide="share-2"></i>
           </button>
-          <button class="card-action-icon" data-action="edit" data-id="${id}" title="Edit" aria-label="Edit">
-            <i data-lucide="square-pen"></i>
-          </button>
+          ${editAction}
         </div>
       </div>
     </article>
@@ -952,6 +1294,13 @@ function playlistCard(playlist) {
   const thumbnail = sanitizeUrl(firstItem?.thumbnail);
   const firstSource = getSourceUrl(firstItem);
   const totalViews = playlist.items.reduce((sum, item) => sum + (Number(item.views) || 0), 0);
+  const editPlaylistAction = state.isAdmin
+    ? `
+          <button class="card-action-icon" data-action="edit-playlist" data-playlist="${encodedPlaylist}" title="Edit playlist" aria-label="Edit playlist">
+            <i data-lucide="square-pen"></i>
+          </button>
+      `
+    : "";
 
   return `
     <article class="playlist-card video-card interactive-card" data-action="open-playlist" data-playlist="${encodedPlaylist}" tabindex="0" role="button" aria-label="Open playlist ${escapeAttr(playlist.name)}">
@@ -979,9 +1328,7 @@ function playlistCard(playlist) {
           <button class="card-action-icon" data-action="share-playlist" data-playlist="${encodedPlaylist}" data-share-url="${escapeAttr(firstSource)}" title="Share playlist" aria-label="Share playlist">
             <i data-lucide="share-2"></i>
           </button>
-          <button class="card-action-icon" data-action="edit-playlist" data-playlist="${encodedPlaylist}" title="Edit playlist" aria-label="Edit playlist">
-            <i data-lucide="square-pen"></i>
-          </button>
+          ${editPlaylistAction}
         </div>
       </div>
     </article>
@@ -1162,6 +1509,10 @@ function bindTextareaManualResize(textarea) {
 }
 
 function openPlaylistEditModal(playlistName) {
+  if (!state.isAdmin) {
+    notify("Only app controller can use this feature.", "warning");
+    return;
+  }
   const playlist = getPlaylists().find((item) => item.name === playlistName);
   if (!playlist) {
     notify("Playlist not found", "error");
@@ -1301,6 +1652,8 @@ function syncModalButtons() {
   if (dom.modalComplete) {
     dom.modalComplete.innerHTML = `<i data-lucide="check-check"></i>${completed ? "Completed" : "Mark Complete"}`;
   }
+
+  dom.modalEdit?.classList.toggle("hidden", !state.isAdmin);
 }
 
 function closeVideoModal() {
@@ -1924,6 +2277,10 @@ function setupHtml5CustomPlayer() {
 }
 
 function openEditModal(id) {
+  if (!state.isAdmin) {
+    notify("Only app controller can use this feature.", "warning");
+    return;
+  }
   const video = findVideoById(id);
   if (!video) {
     notify("Video not found", "error");
@@ -1959,6 +2316,10 @@ function closeEditModal() {
 }
 
 async function saveEdit() {
+  if (!state.isAdmin) {
+    notify("Only app controller can use this feature.", "warning");
+    return;
+  }
   if (state.editingPlaylistName) {
     const oldName = state.editingPlaylistName;
     const playlist = getPlaylists().find((item) => item.name === oldName);
@@ -2060,6 +2421,10 @@ async function saveEdit() {
 }
 
 async function deleteVideo(id) {
+  if (!state.isAdmin) {
+    notify("Only app controller can use this feature.", "warning");
+    return;
+  }
   const video = findVideoById(id);
   const ok = window.confirm(`Delete "${video?.title || "this video"}" permanently?`);
   if (!ok) return;
@@ -2092,6 +2457,10 @@ async function deleteVideo(id) {
 }
 
 async function deletePlaylist(playlistName) {
+  if (!state.isAdmin) {
+    notify("Only app controller can use this feature.", "warning");
+    return;
+  }
   const playlist = getPlaylists().find((item) => item.name === playlistName);
   if (!playlist) {
     notify("Playlist not found", "error");
@@ -2383,4 +2752,4 @@ function randomId() {
   return `local-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
 
-init();
+bootstrapAuth();

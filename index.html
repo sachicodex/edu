@@ -25,7 +25,7 @@
         projectId: "sachicodex-edu-test",
         storageBucket: "sachicodex-edu-test.firebasestorage.app",
         messagingSenderId: "990789366745",
-        appId: "1:990789366745:web:a15d456505c5e28db29fc8"
+        appId: "1:990789366745:web:a15d456505c5e28db29fc8",
       };
     </script>
 
@@ -34,6 +34,66 @@
   </head>
 
   <body>
+    <div id="auth-screen" class="auth-screen hidden" aria-live="polite">
+      <div class="auth-aurora auth-aurora-a" aria-hidden="true"></div>
+      <div class="auth-aurora auth-aurora-b" aria-hidden="true"></div>
+      <div class="auth-card">
+        <div class="auth-badge">EduFlow Cloud</div>
+        <h1 id="auth-title">Create your account</h1>
+        <p id="auth-subtitle">Sign up to sync your learning workspace.</p>
+        <div
+          id="auth-message"
+          class="auth-message hidden"
+          aria-live="polite"
+        ></div>
+
+        <form id="auth-form" class="auth-form">
+          <div id="auth-firstname-row" class="row">
+            <label class="upload-label" for="auth-firstname">First Name</label>
+            <input
+              id="auth-firstname"
+              type="text"
+              placeholder="Enter first name"
+              required
+            />
+          </div>
+          <div class="row">
+            <label class="upload-label" for="auth-email">Email</label>
+            <input
+              id="auth-email"
+              type="email"
+              placeholder="Enter email"
+              required
+            />
+          </div>
+          <div class="row">
+            <label class="upload-label" for="auth-password">Password</label>
+            <input
+              id="auth-password"
+              type="password"
+              placeholder="Enter password"
+              minlength="6"
+              required
+            />
+          </div>
+          <button
+            id="auth-submit"
+            type="submit"
+            class="primary-btn auth-submit"
+          >
+            Create account
+          </button>
+        </form>
+
+        <p class="auth-switch-copy">
+          <span id="auth-switch-label">Already have an account?</span>
+          <button id="auth-switch" type="button" class="link-btn">
+            Log in
+          </button>
+        </p>
+      </div>
+    </div>
+
     <div id="loading-screen" class="loading-screen" aria-live="polite">
       <div class="loading-aurora loading-aurora-a" aria-hidden="true"></div>
       <div class="loading-aurora loading-aurora-b" aria-hidden="true"></div>
@@ -44,7 +104,9 @@
           EduFlow Cloud
         </div>
         <h1 class="loading-brand">Preparing your workspace</h1>
-        <p class="loading-copy">Syncing videos, playlists, and learning progress</p>
+        <p class="loading-copy">
+          Syncing videos, playlists, and learning progress
+        </p>
         <div class="loading-progress" role="progressbar" aria-label="Loading">
           <span></span>
         </div>
@@ -89,11 +151,18 @@
 
         <div class="sidebar-foot">
           <div class="profile-card">
-            <div class="avatar">SC</div>
-            <div>
-              <div class="name">Sachi Workspace</div>
-              <div class="role">Productive learner mode</div>
+            <div id="profile-avatar" class="avatar">SC</div>
+            <div class="profile-meta">
+              <div id="profile-name" class="name">Sachi</div>
+              <div id="profile-role" class="role">hello@example.com</div>
             </div>
+            <button
+              id="logout-btn"
+              class="soft-btn profile-logout"
+              type="button"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </aside>
@@ -102,7 +171,11 @@
 
       <main class="workspace">
         <header class="topbar">
-          <button id="sidebar-toggle" class="icon-btn mobile-only" aria-label="Open navigation">
+          <button
+            id="sidebar-toggle"
+            class="icon-btn mobile-only"
+            aria-label="Open navigation"
+          >
             <i data-lucide="menu"></i>
           </button>
 
@@ -114,7 +187,9 @@
               placeholder="Search by title, topic, tags, difficulty..."
               autocomplete="off"
             />
-            <button id="search-btn" type="submit" class="soft-btn">Search</button>
+            <button id="search-btn" type="submit" class="soft-btn">
+              Search
+            </button>
           </form>
 
           <div class="topbar-actions">
@@ -129,13 +204,60 @@
                 <span id="sort-trigger-label">Newest</span>
                 <i data-lucide="chevron-down"></i>
               </button>
-              <div id="sort-menu" class="sort-menu hidden" role="listbox" aria-label="Sort options">
-                <button type="button" class="sort-option" data-sort="newest" role="option">Newest</button>
-                <button type="button" class="sort-option" data-sort="oldest" role="option">Oldest</button>
-                <button type="button" class="sort-option" data-sort="most-viewed" role="option">Most Viewed</button>
-                <button type="button" class="sort-option" data-sort="duration-long" role="option">Duration: Longest</button>
-                <button type="button" class="sort-option" data-sort="duration-short" role="option">Duration: Shortest</button>
-                <button type="button" class="sort-option" data-sort="alphabetical" role="option">A to Z</button>
+              <div
+                id="sort-menu"
+                class="sort-menu hidden"
+                role="listbox"
+                aria-label="Sort options"
+              >
+                <button
+                  type="button"
+                  class="sort-option"
+                  data-sort="newest"
+                  role="option"
+                >
+                  Newest
+                </button>
+                <button
+                  type="button"
+                  class="sort-option"
+                  data-sort="oldest"
+                  role="option"
+                >
+                  Oldest
+                </button>
+                <button
+                  type="button"
+                  class="sort-option"
+                  data-sort="most-viewed"
+                  role="option"
+                >
+                  Most Viewed
+                </button>
+                <button
+                  type="button"
+                  class="sort-option"
+                  data-sort="duration-long"
+                  role="option"
+                >
+                  Duration: Longest
+                </button>
+                <button
+                  type="button"
+                  class="sort-option"
+                  data-sort="duration-short"
+                  role="option"
+                >
+                  Duration: Shortest
+                </button>
+                <button
+                  type="button"
+                  class="sort-option"
+                  data-sort="alphabetical"
+                  role="option"
+                >
+                  A to Z
+                </button>
               </div>
             </div>
             <button id="view-toggle" class="icon-btn" title="Toggle layout">
@@ -189,9 +311,17 @@
           <button id="clear-filters" class="soft-btn">Reset filters</button>
         </section>
 
-        <section id="content-grid" class="content-grid" aria-live="polite"></section>
+        <section
+          id="content-grid"
+          class="content-grid"
+          aria-live="polite"
+        ></section>
 
-        <section id="playlist-detail" class="playlist-detail hidden" aria-live="polite">
+        <section
+          id="playlist-detail"
+          class="playlist-detail hidden"
+          aria-live="polite"
+        >
           <div class="playlist-top">
             <button id="playlist-back" class="soft-btn">
               <i data-lucide="arrow-left"></i>
@@ -207,10 +337,20 @@
       </main>
     </div>
 
-    <div id="video-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+    <div
+      id="video-modal"
+      class="modal hidden"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+    >
       <div class="modal-backdrop" data-close="video"></div>
       <div class="modal-card video-modal-card">
-        <button class="modal-close" data-close="video" aria-label="Close video modal">
+        <button
+          class="modal-close"
+          data-close="video"
+          aria-label="Close video modal"
+        >
           <i data-lucide="x"></i>
         </button>
         <div id="video-iframe-wrap" class="video-frame-wrap"></div>
@@ -244,10 +384,20 @@
       </div>
     </div>
 
-    <div id="edit-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+    <div
+      id="edit-modal"
+      class="modal hidden"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+    >
       <div class="modal-backdrop" data-close="edit"></div>
       <div class="modal-card edit-modal-card">
-        <button class="modal-close" data-close="edit" aria-label="Close edit modal">
+        <button
+          class="modal-close"
+          data-close="edit"
+          aria-label="Close edit modal"
+        >
           <i data-lucide="x"></i>
         </button>
         <h3>Edit Video</h3>
@@ -255,11 +405,22 @@
         <form id="edit-form" class="edit-form">
           <div class="row">
             <label class="upload-label" for="edit-title">Title</label>
-            <input id="edit-title" type="text" placeholder="Enter video title" required />
+            <input
+              id="edit-title"
+              type="text"
+              placeholder="Enter video title"
+              required
+            />
           </div>
           <div class="row">
-            <label class="upload-label" for="edit-description">Description</label>
-            <textarea id="edit-description" rows="1" placeholder="Short summary of the video"></textarea>
+            <label class="upload-label" for="edit-description"
+              >Description</label
+            >
+            <textarea
+              id="edit-description"
+              rows="1"
+              placeholder="Short summary of the video"
+            ></textarea>
           </div>
           <div class="row row-split">
             <div class="row">
@@ -267,9 +428,15 @@
               <input id="edit-category" type="text" placeholder="General" />
             </div>
             <div class="row">
-              <label class="upload-label" for="edit-difficulty-trigger">Difficulty</label>
+              <label class="upload-label" for="edit-difficulty-trigger"
+                >Difficulty</label
+              >
               <input id="edit-difficulty" type="hidden" value="Beginner" />
-              <div id="edit-difficulty-select" class="sort-select edit-difficulty-select" aria-label="Edit difficulty">
+              <div
+                id="edit-difficulty-select"
+                class="sort-select edit-difficulty-select"
+                aria-label="Edit difficulty"
+              >
                 <button
                   id="edit-difficulty-trigger"
                   class="sort-select-trigger soft-select"
@@ -318,12 +485,18 @@
             </div>
           </div>
           <div class="row edit-thumb-row">
-            <label class="upload-label" for="edit-thumbnail">Thumbnail URL</label>
+            <label class="upload-label" for="edit-thumbnail"
+              >Thumbnail URL</label
+            >
             <input id="edit-thumbnail" type="url" placeholder="https://..." />
           </div>
           <div class="row edit-youtube-row">
             <label class="upload-label" for="edit-youtube">YouTube URL</label>
-            <input id="edit-youtube" type="url" placeholder="https://youtube.com/watch?v=..." />
+            <input
+              id="edit-youtube"
+              type="url"
+              placeholder="https://youtube.com/watch?v=..."
+            />
           </div>
 
           <div class="edit-actions">
