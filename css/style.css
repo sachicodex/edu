@@ -238,7 +238,7 @@ select:invalid {
   align-items: center;
 }
 
-#auth-title{
+#auth-title {
   margin-bottom: 4px;
 }
 
@@ -337,6 +337,47 @@ select:invalid {
     0 12px 24px rgb(0 0 0 / 38%);
 }
 
+.auth-form .password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-form .password-field input {
+  width: 100%;
+  padding-right: 50px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, var(--text-secondary) 84%, #ffffff 16%);
+  cursor: pointer;
+  opacity: 0.3;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--surface-secondary) 70%, transparent);
+}
+
+.password-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .auth-form input::placeholder {
   color: color-mix(in srgb, var(--text-tertiary) 72%, #ffffff 28%);
 }
@@ -368,6 +409,25 @@ select:invalid {
   opacity: 0.72;
   cursor: not-allowed;
   transform: none;
+}
+
+.auth-helper-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -2px;
+}
+
+.auth-helper-link {
+  font-size: 0.88rem;
+}
+
+.auth-secondary {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  margin-top: -15px;
+  margin-bottom: 10px;
+  color: var(--text-primary);
 }
 
 .auth-switch-copy {
@@ -1528,6 +1588,17 @@ h1 {
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: blur(6px);
   z-index: 3;
+  transform: translateY(0);
+  opacity: 1;
+  transition:
+    transform 0.28s ease,
+    opacity 0.22s ease;
+}
+
+.custom-player-shell.is-controls-hidden .custom-player-controls {
+  transform: translateY(calc(100% + 18px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .custom-player-btn {
@@ -2353,15 +2424,18 @@ h1 {
   }
 
   .topbar {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
   }
 
   .search-box {
-    width: 100%;
+    width: auto;
     min-width: 0;
   }
 
   .topbar-actions {
+    grid-column: 1 / -1;
     width: 100%;
     margin-left: 0;
     justify-content: space-between;

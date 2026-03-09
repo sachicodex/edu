@@ -1,10 +1,12 @@
 
-import { DB, UPLOAD, SAVED, SEARCH, TOAST } from "../services/index.js";
+import { DB, UPLOAD, SEARCH, TOAST } from "../services/index.js";
 import {
   browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signOut,
@@ -30,6 +32,7 @@ const DEFAULT_ADMIN_EMAILS = [
 
 const COMPLETED_KEY = "eduflow_completed";
 const HISTORY_KEY = "eduflow_history";
+const SAVED_KEY = "eduflow_saved";
 
 const state = {
   route: "overview",
@@ -43,7 +46,7 @@ const state = {
   activeVideoId: null,
   editingVideoId: null,
   editingPlaylistName: null,
-  completedIds: loadSet(COMPLETED_KEY),
+  completedIds: new Set(),
   watchHistory: loadHistory(),
   savedIds: new Set(),
   currentUser: null,
@@ -69,10 +72,12 @@ let modalPlayerKind = "";
 let modalPlayerTick = null;
 let ytApiReadyPromise = null;
 let modalVolumeHideTimer = null;
+let modalControlsHideTimer = null;
 let modalVideoOrientation = "unknown";
 let appInitialized = false;
 let authBusy = false;
 let authMode = "signup";
+let authPendingEmail = "";
 
 const dom = {
   authScreen: document.getElementById("auth-screen"),
@@ -83,8 +88,13 @@ const dom = {
   authFirstnameRow: document.getElementById("auth-firstname-row"),
   authFirstname: document.getElementById("auth-firstname"),
   authEmail: document.getElementById("auth-email"),
+  authPasswordRow: document.getElementById("auth-password-row"),
   authPassword: document.getElementById("auth-password"),
+  authPasswordToggle: document.getElementById("auth-password-toggle"),
+  authHelperRow: document.getElementById("auth-helper-row"),
+  authForgot: document.getElementById("auth-forgot"),
   authSubmit: document.getElementById("auth-submit"),
+  authSecondary: document.getElementById("auth-secondary"),
   authSwitchLabel: document.getElementById("auth-switch-label"),
   authSwitch: document.getElementById("auth-switch"),
   loadingScreen: document.getElementById("loading-screen"),
@@ -197,40 +207,50 @@ function bootstrapAuth() {
     state.isAdmin = false;
 
     if (!user) {
+      state.savedIds = new Set();
+      state.completedIds = new Set();
       state.userProfile = null;
       applyAdminAccessUi();
+      if (authMode === "verify") setAuthMode("login");
       showAuthScreen();
       return;
     }
 
-    hideAuthScreen();
-    await loadUserProfile(user);
-    state.isAdmin = isAdminEmail(user?.email) || Boolean(state.userProfile?.isAdmin);
-    applyUserProfileToUi();
-    applyAdminAccessUi();
-
-    if (!appInitialized) {
-      init();
-      appInitialized = true;
+    if (!user.emailVerified) {
+      authPendingEmail = String(user.email || authPendingEmail || "").trim();
+      await loadUserProfile(user);
+      applyUserProfileToUi();
+      applyAdminAccessUi();
+      setAuthMode("verify");
+      showAuthMessage(
+        `Verify ${authPendingEmail || "your email address"} to unlock your workspace.`,
+        "warning"
+      );
+      showAuthScreen();
       return;
     }
 
-    try {
-      await loadVideos();
-      renderAll();
-    } catch (error) {
-      console.error("Reload error:", error);
-      notify("Unable to reload cloud videos.", "error");
-    }
+    await activateAuthenticatedSession(user);
   });
 }
 
 function bindAuthEvents() {
   dom.authSwitch?.addEventListener("click", () => {
-    const nextMode = authMode === "signup" ? "login" : "signup";
+    const nextMode =
+      authMode === "signup" ? "login" : authMode === "login" ? "signup" : "login";
     setAuthMode(nextMode);
   });
 
+  dom.authPasswordToggle?.addEventListener("click", () => {
+    setAuthPasswordVisible(dom.authPassword?.type === "password");
+  });
+
+  dom.authForgot?.addEventListener("click", () => {
+    authPendingEmail = String(dom.authEmail?.value || authPendingEmail || "").trim();
+    setAuthMode("forgot");
+  });
+
+  dom.authSecondary?.addEventListener("click", handleAuthSecondaryAction);
   dom.authForm?.addEventListener("submit", handleAuthSubmit);
   dom.authEmail?.addEventListener("input", clearAuthMessage);
   dom.authPassword?.addEventListener("input", clearAuthMessage);
@@ -251,28 +271,102 @@ function bindAuthEvents() {
   });
 }
 
-function setAuthMode(mode) {
-  authMode = mode === "login" ? "login" : "signup";
-  const isSignUp = authMode === "signup";
+function setAuthPasswordVisible(visible) {
+  if (!dom.authPassword || !dom.authPasswordToggle) return;
+  const isVisible = Boolean(visible);
+  dom.authPassword.type = isVisible ? "text" : "password";
+  dom.authPasswordToggle.setAttribute("aria-pressed", String(isVisible));
+  dom.authPasswordToggle.setAttribute("aria-label", isVisible ? "Hide password" : "Show password");
+  dom.authPasswordToggle.innerHTML = "<i data-lucide=\"" + (isVisible ? "eye-off" : "eye") + "\"></i>";
+  window.lucide?.createIcons();
+}
 
-  if (dom.authTitle) dom.authTitle.textContent = isSignUp ? "Create your account" : "Welcome back";
+function setAuthMode(mode) {
+  authMode = ["login", "forgot", "verify"].includes(mode) ? mode : "signup";
+  const isSignUp = authMode === "signup";
+  const isLogin = authMode === "login";
+  const isForgot = authMode === "forgot";
+  const isVerify = authMode === "verify";
+
+  if (dom.authTitle) {
+    dom.authTitle.textContent = isSignUp
+      ? "Create your account"
+      : isForgot
+        ? "Reset your password"
+        : isVerify
+          ? "Confirm your email"
+          : "Welcome back";
+  }
+
   if (dom.authSubtitle) {
     dom.authSubtitle.textContent = isSignUp
       ? "Sign up to sync your learning workspace."
-      : "Log in to continue your learning workspace.";
+      : isLogin
+        ? "Log in to continue your learning workspace."
+        : isForgot
+          ? "We will email a password reset link to your inbox."
+          : "";
   }
 
-  if (dom.authSubmit) dom.authSubmit.textContent = isSignUp ? "Create account" : "Log in";
-  if (dom.authSwitchLabel) {
-    dom.authSwitchLabel.textContent = isSignUp ? "Already have an account?" : "New here?";
+  if (dom.authSubmit) {
+    dom.authSubmit.textContent = isSignUp
+      ? "Create account"
+      : isForgot
+        ? "Send reset link"
+        : isVerify
+          ? "I've verified my email"
+          : "Log in";
   }
-  if (dom.authSwitch) dom.authSwitch.textContent = isSignUp ? "Log in" : "Create account";
+
+  if (dom.authSecondary) {
+    dom.authSecondary.textContent = "Resend verification email";
+    dom.authSecondary.classList.toggle("hidden", !isVerify);
+  }
+
+  if (dom.authSwitchLabel) {
+    dom.authSwitchLabel.textContent = isSignUp
+      ? "Already have an account?"
+      : isLogin
+        ? "New here?"
+        : isForgot
+          ? "Remembered your password?"
+          : "Need a different account?";
+  }
+
+  if (dom.authSwitch) {
+    dom.authSwitch.textContent = isSignUp
+      ? "Log in"
+      : isLogin
+        ? "Create account"
+        : "Log in";
+  }
 
   if (dom.authFirstnameRow) dom.authFirstnameRow.classList.toggle("hidden", !isSignUp);
+  if (dom.authPasswordRow) dom.authPasswordRow.classList.toggle("hidden", isForgot || isVerify);
+  if (dom.authHelperRow) dom.authHelperRow.classList.toggle("hidden", !isLogin);
+
   if (dom.authFirstname) {
     dom.authFirstname.required = isSignUp;
+    dom.authFirstname.disabled = isVerify;
     if (!isSignUp) dom.authFirstname.value = "";
   }
+  if (dom.authPassword) {
+    dom.authPassword.required = !isForgot && !isVerify;
+    dom.authPassword.disabled = isVerify;
+    if (isForgot || isVerify) dom.authPassword.value = "";
+  }
+  if (dom.authEmail) {
+    const fallbackEmail = authPendingEmail || state.currentUser?.email || "";
+    if (isVerify && fallbackEmail && !String(dom.authEmail.value || "").trim()) {
+      dom.authEmail.value = fallbackEmail;
+    }
+    dom.authEmail.disabled = isVerify;
+  }
+  if (dom.authPasswordToggle) {
+    dom.authPasswordToggle.disabled = authBusy || isForgot || isVerify;
+  }
+
+  setAuthPasswordVisible(false);
   clearAuthMessage();
 }
 
@@ -291,9 +385,15 @@ function toggleAuthBusy(isBusy) {
   authBusy = Boolean(isBusy);
   if (dom.authSubmit) dom.authSubmit.disabled = authBusy;
   if (dom.authSwitch) dom.authSwitch.disabled = authBusy;
-  if (dom.authEmail) dom.authEmail.disabled = authBusy;
-  if (dom.authPassword) dom.authPassword.disabled = authBusy;
-  if (dom.authFirstname) dom.authFirstname.disabled = authBusy;
+  if (dom.authSecondary) dom.authSecondary.disabled = authBusy;
+  if (dom.authForgot) dom.authForgot.disabled = authBusy;
+  if (dom.authEmail) dom.authEmail.disabled = authBusy || authMode === "verify";
+  if (dom.authPassword) dom.authPassword.disabled = authBusy || authMode === "verify";
+  if (dom.authPasswordToggle) {
+    dom.authPasswordToggle.disabled =
+      authBusy || authMode === "forgot" || authMode === "verify";
+  }
+  if (dom.authFirstname) dom.authFirstname.disabled = authBusy || authMode === "verify";
 }
 
 function showAuthMessage(message, type = "info") {
@@ -320,8 +420,63 @@ async function handleAuthSubmit(event) {
   const password = String(dom.authPassword?.value || "");
   const firstName = String(dom.authFirstname?.value || "").trim();
   const isSignUp = authMode === "signup";
+  const isForgot = authMode === "forgot";
+  const isVerify = authMode === "verify";
 
-  if (!email || !password) {
+  if (isVerify) {
+    const user = auth.currentUser;
+    if (!user) {
+      setAuthMode("login");
+      showAuthMessage("Log in again to continue.", "warning");
+      return;
+    }
+
+    toggleAuthBusy(true);
+    try {
+      await user.reload();
+      if (auth.currentUser?.emailVerified) {
+        showAuthMessage("Email verified. Loading your workspace...", "success");
+        notify("Email verified.", "success");
+        await activateAuthenticatedSession(auth.currentUser);
+        return;
+      }
+
+      showAuthMessage("Your email is not verified yet. Check your inbox and click the link.", "warning");
+    } catch (error) {
+      console.error("Email verification refresh error:", error);
+      showAuthMessage("Unable to refresh verification status right now.", "error");
+      notify("Unable to refresh verification status.", "error");
+    } finally {
+      toggleAuthBusy(false);
+    }
+    return;
+  }
+
+  if (!email) {
+    showAuthMessage("Email is required.", "error");
+    notify("Email is required.", "error");
+    return;
+  }
+
+  if (isForgot) {
+    toggleAuthBusy(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      authPendingEmail = email;
+      showAuthMessage(`Password reset email sent to ${email}.`, "success");
+      notify("Password reset email sent.", "success");
+    } catch (error) {
+      console.error("Password reset error:", error);
+      const message = readAuthError(error, "forgot");
+      showAuthMessage(message, "error");
+      notify(message, "error");
+    } finally {
+      toggleAuthBusy(false);
+    }
+    return;
+  }
+
+  if (!password) {
     showAuthMessage("Email and password are required.", "error");
     notify("Email and password are required.", "error");
     return;
@@ -339,8 +494,10 @@ async function handleAuthSubmit(event) {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: firstName });
       await upsertUserProfile(credential.user, firstName);
-      showAuthMessage("Account created successfully. Signing you in...", "success");
-      notify("Account created successfully.", "success");
+      await sendEmailVerification(credential.user);
+      authPendingEmail = email;
+      showAuthMessage(`Account created. Verification email sent to ${email}.`, "success");
+      notify("Account created. Verify your email.", "success");
     } else {
       await signInWithEmailAndPassword(auth, email, password);
       showAuthMessage("Login successful. Loading your workspace...", "success");
@@ -349,6 +506,57 @@ async function handleAuthSubmit(event) {
   } catch (error) {
     console.error("Auth submit error:", error);
     const message = readAuthError(error, authMode);
+    showAuthMessage(message, "error");
+    notify(message, "error");
+  } finally {
+    toggleAuthBusy(false);
+  }
+}
+
+async function activateAuthenticatedSession(user) {
+  hideAuthScreen();
+  await loadUserProfile(user);
+  await loadUserLibraryState(user);
+  state.isAdmin = isAdminEmail(user?.email) || Boolean(state.userProfile?.isAdmin);
+  applyUserProfileToUi();
+  applyAdminAccessUi();
+
+  if (!appInitialized) {
+    init();
+    appInitialized = true;
+    return;
+  }
+
+  try {
+    await loadVideos();
+    renderAll();
+  } catch (error) {
+    console.error("Reload error:", error);
+    notify("Unable to reload cloud videos.", "error");
+  }
+}
+
+async function handleAuthSecondaryAction() {
+  if (authBusy) return;
+
+  if (authMode !== "verify") return;
+
+  const user = auth.currentUser;
+  if (!user) {
+    setAuthMode("login");
+    showAuthMessage("Log in again to request a new verification email.", "warning");
+    return;
+  }
+
+  toggleAuthBusy(true);
+  try {
+    await sendEmailVerification(user);
+    authPendingEmail = String(user.email || authPendingEmail || "").trim();
+    showAuthMessage(`Verification email sent to ${authPendingEmail}.`, "success");
+    notify("Verification email sent.", "success");
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    const message = readAuthError(error, "verify");
     showAuthMessage(message, "error");
     notify(message, "error");
   } finally {
@@ -468,13 +676,16 @@ function readAuthError(error, mode) {
   if (code.includes("invalid-email")) return "Please enter a valid email address.";
   if (code.includes("weak-password")) return "Password must be at least 6 characters.";
   if (code.includes("too-many-requests")) return "Too many attempts. Try again later.";
+  if (code.includes("user-not-found")) return "No account was found for that email address.";
+  if (code.includes("network-request-failed")) return "Network error. Check your connection and try again.";
+  if (mode === "forgot") return "Unable to send the password reset email right now.";
+  if (mode === "verify") return "Unable to send the verification email right now.";
   return mode === "signup" ? "Unable to create account right now." : "Unable to log in right now.";
 }
 
 function init() {
   enforceNoAutofill();
   hardenAppInteractions();
-  syncSavedState();
   bindEvents();
   syncSortUi();
   syncEditDifficultyUi();
@@ -707,15 +918,15 @@ function bindEvents() {
     el.addEventListener("click", closeEditModal);
   });
 
-  dom.modalSave?.addEventListener("click", () => {
+  dom.modalSave?.addEventListener("click", async () => {
     if (!state.activeVideoId) return;
-    toggleSave(state.activeVideoId);
+    await toggleSave(state.activeVideoId);
     syncModalButtons();
   });
 
-  dom.modalComplete?.addEventListener("click", () => {
+  dom.modalComplete?.addEventListener("click", async () => {
     if (!state.activeVideoId) return;
-    toggleCompleted(state.activeVideoId);
+    await toggleCompleted(state.activeVideoId);
     syncModalButtons();
   });
 
@@ -876,7 +1087,7 @@ async function handleCardAction(actionEl) {
   }
 
   if (action === "save") {
-    toggleSave(id);
+    await toggleSave(id);
     return;
   }
 
@@ -916,7 +1127,7 @@ async function handleCardAction(actionEl) {
   }
 
   if (action === "toggle-complete") {
-    toggleCompleted(id);
+    await toggleCompleted(id);
     return;
   }
 
@@ -1213,24 +1424,24 @@ function renderAnalytics() {
       <article class="analytics-card">
         <h3>Category Distribution</h3>
         ${categoryCounts.length
-          ? categoryCounts
-              .map(
-                ([name, count]) => `
+        ? categoryCounts
+          .map(
+            ([name, count]) => `
                     <p>${escapeHtml(name)} (${count})</p>
                     <div class="analytics-line"><span style="width:${Math.round((count / maxCategoryCount) * 100)}%"></span></div>
                   `
-              )
-              .join("")
-          : "<p>No category data yet.</p>"}
+          )
+          .join("")
+        : "<p>No category data yet.</p>"}
       </article>
 
       <article class="analytics-card">
         <h3>Recent Watch History</h3>
         ${historyRows.length
-          ? historyRows
-              .map((item) => `<p>${escapeHtml(item.title)} <br /><small>${new Date(item.watchedAt).toLocaleString()}</small></p>`)
-              .join("")
-          : "<p>No watch events yet.</p>"}
+        ? historyRows
+          .map((item) => `<p>${escapeHtml(item.title)} <br /><small>${new Date(item.watchedAt).toLocaleString()}</small></p>`)
+          .join("")
+        : "<p>No watch events yet.</p>"}
       </article>
     `;
   }
@@ -1379,10 +1590,10 @@ function updateMetrics() {
     const scopedHours = scopedVideos.reduce((sum, video) => sum + durationToSeconds(video.duration), 0) / 3600;
     const scopedCompletion = scopedVideos.length
       ? Math.round(
-          (scopedVideos.filter((video) => state.completedIds.has(String(video.id))).length /
-            scopedVideos.length) *
-            100
-        )
+        (scopedVideos.filter((video) => state.completedIds.has(String(video.id))).length /
+          scopedVideos.length) *
+        100
+      )
       : 0;
 
     if (selectedPlaylist) {
@@ -1419,7 +1630,9 @@ function updateMetrics() {
     setCard(dom.statCompletionLabel, dom.statCompletion, "Completion", `${completion}%`);
   }
 
-  SAVED.updateSavedCount({ savedCountEl: dom.savedCount });
+  if (dom.savedCount) {
+    dom.savedCount.textContent = String(state.savedIds.size);
+  }
 }
 
 function updateViewToggleIcon() {
@@ -1558,35 +1771,96 @@ function openPlaylistEditModal(playlistName) {
   }
 }
 
-function syncSavedState() {
-  const list = SAVED.getSaved();
-  state.savedIds = new Set(list.map((item) => String(item.id)));
-}
+async function toggleSave(id) {
+  const sid = String(id || "");
+  if (!sid) return;
 
-function toggleSave(id) {
-  SAVED.toggleSave(id, {
-    state,
-    notify,
-    updateSavedCount: () => {
-      syncSavedState();
-      updateMetrics();
-    },
-  });
+  const previous = new Set(state.savedIds);
+  const nextSaved = new Set(previous);
+  const exists = nextSaved.has(sid);
+  if (exists) {
+    nextSaved.delete(sid);
+  } else {
+    nextSaved.add(sid);
+  }
 
-  syncSavedState();
+  state.savedIds = nextSaved;
   renderAll();
+  if (state.activeVideoId === sid) {
+    syncModalButtons();
+  }
+
+  try {
+    await persistUserLibraryState();
+    notify(exists ? "Removed from saved" : "Video saved!", exists ? "info" : "success");
+  } catch (error) {
+    console.error("Save sync failed:", error);
+    state.savedIds = previous;
+    renderAll();
+    if (state.activeVideoId === sid) {
+      syncModalButtons();
+    }
+    notify("Unable to sync saved videos right now.", "error");
+  }
 }
 
-function toggleCompleted(id) {
+async function toggleCompleted(id) {
   const sid = String(id);
+  const previous = new Set(state.completedIds);
   if (state.completedIds.has(sid)) {
     state.completedIds.delete(sid);
   } else {
     state.completedIds.add(sid);
   }
 
-  persistSet(COMPLETED_KEY, state.completedIds);
   renderAll();
+  if (state.activeVideoId === sid) {
+    syncModalButtons();
+  }
+  try {
+    await persistUserLibraryState();
+  } catch (error) {
+    console.error("Completed sync failed:", error);
+    state.completedIds = previous;
+    renderAll();
+    if (state.activeVideoId === sid) {
+      syncModalButtons();
+    }
+    notify("Unable to sync completed videos right now.", "error");
+  }
+}
+
+async function markCompleted(id, options = {}) {
+  const sid = String(id || "");
+  if (!sid || state.completedIds.has(sid)) return false;
+
+  const previous = new Set(state.completedIds);
+  state.completedIds.add(sid);
+
+  if (options.render !== false) {
+    renderAll();
+  }
+  if (state.activeVideoId === sid) {
+    syncModalButtons();
+  }
+  try {
+    await persistUserLibraryState();
+    if (options.notify) {
+      notify("Marked as completed", "success");
+    }
+    return true;
+  } catch (error) {
+    console.error("Completed sync failed:", error);
+    state.completedIds = previous;
+    if (options.render !== false) {
+      renderAll();
+    }
+    if (state.activeVideoId === sid) {
+      syncModalButtons();
+    }
+    notify("Unable to sync completed videos right now.", "error");
+    return false;
+  }
 }
 
 function openVideoModal(id) {
@@ -1863,6 +2137,96 @@ function setPausedOverlayVisible(controls, visible) {
   controls.shell.classList.toggle("is-paused", Boolean(visible));
 }
 
+function isCoarsePointerDevice() {
+  return Boolean(window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches);
+}
+
+function setCustomControlsVisible(controls, visible) {
+  if (!controls?.shell) return;
+  controls.shell.classList.toggle("is-controls-hidden", !visible);
+}
+
+function clearCustomControlsHideTimer() {
+  if (!modalControlsHideTimer) return;
+  window.clearTimeout(modalControlsHideTimer);
+  modalControlsHideTimer = null;
+}
+
+function scheduleCustomControlsHide(controls, isPlaying, delay = 5000) {
+  if (!controls?.shell) return;
+  clearCustomControlsHideTimer();
+  if (!isPlaying) {
+    setCustomControlsVisible(controls, true);
+    return;
+  }
+
+  modalControlsHideTimer = window.setTimeout(() => {
+    const coarsePointer = isCoarsePointerDevice();
+    const isPaused = controls.shell.classList.contains("is-paused");
+    const isFocused = !coarsePointer && controls.shell.matches(":focus-within");
+    const isVolumeActive =
+      !coarsePointer && controls.volumeGroup?.matches(":hover, :focus-within");
+    if (isPaused || isFocused || isVolumeActive) {
+      scheduleCustomControlsHide(controls, isPlaying, 1600);
+      return;
+    }
+    setCustomControlsVisible(controls, false);
+    modalControlsHideTimer = null;
+  }, delay);
+}
+
+function bindCustomControlsVisibility(controls, options = {}) {
+  if (!controls?.shell || controls.shell.dataset.controlsVisibilityBound === "true") return;
+  controls.shell.dataset.controlsVisibilityBound = "true";
+
+  const isPlaying = () => Boolean(options.isPlaying?.());
+  const reveal = (delay = 5000) => {
+    setCustomControlsVisible(controls, true);
+    scheduleCustomControlsHide(controls, isPlaying(), delay);
+  };
+
+  controls.shell.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse") return;
+    reveal();
+  });
+
+  controls.shell.addEventListener("mouseenter", () => {
+    if (isCoarsePointerDevice()) return;
+    reveal();
+  });
+
+  controls.shell.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse") return;
+    reveal();
+  });
+
+  controls.shell.addEventListener("focusin", () => {
+    reveal();
+  });
+
+  controls.shell.addEventListener("focusout", () => {
+    window.setTimeout(() => {
+      scheduleCustomControlsHide(controls, isPlaying(), 1600);
+    }, 0);
+  });
+
+  controls.shell.addEventListener("mouseleave", () => {
+    if (isCoarsePointerDevice()) return;
+    scheduleCustomControlsHide(controls, isPlaying(), 1200);
+  });
+}
+
+function syncCustomControlsPlaybackState(controls, isPlaying) {
+  if (!controls?.shell) return;
+  if (!isPlaying) {
+    clearCustomControlsHideTimer();
+    setCustomControlsVisible(controls, true);
+    return;
+  }
+  setCustomControlsVisible(controls, true);
+  scheduleCustomControlsHide(controls, true, 5000);
+}
+
 function updateCustomButtons({ isPlaying = false, isMuted = false } = {}) {
   const controls = getCustomControls();
   if (!controls) return;
@@ -1965,6 +2329,8 @@ function cleanupModalPlayer() {
     window.clearTimeout(modalVolumeHideTimer);
     modalVolumeHideTimer = null;
   }
+
+  clearCustomControlsHideTimer();
 }
 
 function wireVolumeHoverControls(controls) {
@@ -2024,6 +2390,16 @@ function setupYouTubeCustomPlayer({ videoId, title }) {
   if (!host || !controls) return;
   let isScrubbing = false;
 
+  bindCustomControlsVisibility(controls, {
+    isPlaying: () => {
+      const stateCode = modalPlayer?.getPlayerState?.();
+      return (
+        stateCode === window.YT?.PlayerState?.PLAYING ||
+        stateCode === window.YT?.PlayerState?.BUFFERING
+      );
+    },
+  });
+
   ensureYouTubeApiReady().then((YT) => {
     if (!YT?.Player || !document.body.contains(host)) return;
 
@@ -2065,6 +2441,13 @@ function setupYouTubeCustomPlayer({ videoId, title }) {
           });
 
           controls.hitArea?.addEventListener("click", () => {
+            if (
+              isCoarsePointerDevice() &&
+              controls.shell.classList.contains("is-controls-hidden")
+            ) {
+              syncCustomControlsPlaybackState(controls, true);
+              return;
+            }
             controls.playBtn?.click();
           });
           controls.pauseOverlay?.addEventListener("click", () => {
@@ -2137,6 +2520,7 @@ function setupYouTubeCustomPlayer({ videoId, title }) {
 
           updateCustomButtons({ isPlaying: true, isMuted: false });
           setPausedOverlayVisible(controls, false);
+          syncCustomControlsPlaybackState(controls, true);
           wireVolumeHoverControls(controls);
           try {
             window.lucide?.createIcons();
@@ -2148,11 +2532,15 @@ function setupYouTubeCustomPlayer({ videoId, title }) {
           const stateCode = modalPlayer.getPlayerState?.();
           const isPlaying =
             stateCode === YT.PlayerState.PLAYING || stateCode === YT.PlayerState.BUFFERING;
+          if (stateCode === YT.PlayerState.ENDED && state.activeVideoId) {
+            markCompleted(state.activeVideoId, { render: true });
+          }
           updateCustomButtons({
             isPlaying,
             isMuted: Boolean(modalPlayer.isMuted?.()),
           });
           setPausedOverlayVisible(controls, !isPlaying);
+          syncCustomControlsPlaybackState(controls, isPlaying);
         },
       },
     });
@@ -2172,10 +2560,14 @@ function setupHtml5CustomPlayer() {
   player.volume = 1;
   let isScrubbing = false;
 
+  bindCustomControlsVisibility(controls, {
+    isPlaying: () => !player.paused,
+  });
+
   const play = () => {
     const promise = player.play();
     if (promise && typeof promise.catch === "function") {
-      promise.catch(() => {});
+      promise.catch(() => { });
     }
   };
   play();
@@ -2193,6 +2585,14 @@ function setupHtml5CustomPlayer() {
   });
 
   controls.hitArea?.addEventListener("click", () => {
+    if (
+      isCoarsePointerDevice() &&
+      controls.shell.classList.contains("is-controls-hidden") &&
+      !player.paused
+    ) {
+      syncCustomControlsPlaybackState(controls, true);
+      return;
+    }
     controls.playBtn?.click();
   });
   controls.pauseOverlay?.addEventListener("click", () => {
@@ -2251,6 +2651,7 @@ function setupHtml5CustomPlayer() {
 
   updateCustomButtons({ isPlaying: true, isMuted: false });
   setPausedOverlayVisible(controls, false);
+  syncCustomControlsPlaybackState(controls, true);
   player.addEventListener("loadedmetadata", () => {
     const width = Number(player.videoWidth || 0);
     const height = Number(player.videoHeight || 0);
@@ -2263,10 +2664,18 @@ function setupHtml5CustomPlayer() {
   });
   player.addEventListener("play", () => updateCustomButtons({ isPlaying: true, isMuted: Boolean(player.muted || player.volume === 0) }));
   player.addEventListener("play", () => setPausedOverlayVisible(controls, false));
+  player.addEventListener("play", () => syncCustomControlsPlaybackState(controls, true));
   player.addEventListener("pause", () => updateCustomButtons({ isPlaying: false, isMuted: Boolean(player.muted || player.volume === 0) }));
   player.addEventListener("pause", () => setPausedOverlayVisible(controls, true));
+  player.addEventListener("pause", () => syncCustomControlsPlaybackState(controls, false));
   player.addEventListener("ended", () => updateCustomButtons({ isPlaying: false, isMuted: Boolean(player.muted || player.volume === 0) }));
   player.addEventListener("ended", () => setPausedOverlayVisible(controls, true));
+  player.addEventListener("ended", () => syncCustomControlsPlaybackState(controls, false));
+  player.addEventListener("ended", () => {
+    if (state.activeVideoId) {
+      markCompleted(state.activeVideoId, { render: true });
+    }
+  });
   player.addEventListener("volumechange", () => updateCustomButtons({ isPlaying: !player.paused, isMuted: Boolean(player.muted || player.volume === 0) }));
   wireVolumeHoverControls(controls);
   try {
@@ -2434,14 +2843,13 @@ async function deleteVideo(id) {
     state.videos = state.videos.filter((item) => String(item.id) !== String(id));
 
     if (state.savedIds.has(String(id))) {
-      SAVED.toggleSave(id, { state, notify: () => {}, updateSavedCount: () => {} });
-      syncSavedState();
+      state.savedIds.delete(String(id));
     }
 
     if (state.completedIds.has(String(id))) {
       state.completedIds.delete(String(id));
-      persistSet(COMPLETED_KEY, state.completedIds);
     }
+    await persistUserLibraryState();
 
     state.watchHistory = state.watchHistory.filter((item) => String(item.id) !== String(id));
     persistHistory();
@@ -2479,16 +2887,17 @@ async function deletePlaylist(playlistName) {
     persistHistory();
 
     let completedChanged = false;
+    let savedChanged = false;
     removedIds.forEach((id) => {
       if (state.completedIds.delete(id)) completedChanged = true;
       if (state.savedIds.has(id)) {
-        SAVED.toggleSave(id, { state, notify: () => {}, updateSavedCount: () => {} });
+        state.savedIds.delete(id);
+        savedChanged = true;
       }
     });
-    if (completedChanged) {
-      persistSet(COMPLETED_KEY, state.completedIds);
+    if (completedChanged || savedChanged) {
+      await persistUserLibraryState();
     }
-    syncSavedState();
 
     if (state.selectedPlaylist === playlist.name) {
       state.selectedPlaylist = null;
@@ -2690,6 +3099,125 @@ function closeSidebar() {
   dom.mobileOverlay?.classList.remove("open");
 }
 
+function userScopedStorageKey(baseKey, uid) {
+  const sid = String(uid || "").trim();
+  return sid ? `${baseKey}:${sid}` : baseKey;
+}
+
+function getUserLibraryDocRef(user = state.currentUser) {
+  const uid = String(user?.uid || "").trim();
+  if (!uid) return null;
+  return fsDoc(db, "users", uid);
+}
+
+function loadLocalSavedIds(uid = "") {
+  try {
+    const scopedRaw = localStorage.getItem(userScopedStorageKey(SAVED_KEY, uid));
+    if (scopedRaw) {
+      const parsed = JSON.parse(scopedRaw);
+      if (Array.isArray(parsed)) {
+        return new Set(parsed.map((item) => String(item)));
+      }
+    }
+  } catch {
+    // ignore cache parse errors
+  }
+
+  try {
+    const legacyRaw = localStorage.getItem("eduvideo_saved");
+    const parsed = legacyRaw ? JSON.parse(legacyRaw) : [];
+    if (Array.isArray(parsed)) {
+      return new Set(
+        parsed
+          .map((item) => String(item?.id || ""))
+          .filter(Boolean)
+      );
+    }
+  } catch {
+    // ignore legacy parse errors
+  }
+
+  return new Set();
+}
+
+function cacheUserLibraryState(user = state.currentUser) {
+  const uid = String(user?.uid || "").trim();
+  if (!uid) return;
+  localStorage.setItem(
+    userScopedStorageKey(COMPLETED_KEY, uid),
+    JSON.stringify(Array.from(state.completedIds))
+  );
+  localStorage.setItem(
+    userScopedStorageKey(SAVED_KEY, uid),
+    JSON.stringify(Array.from(state.savedIds))
+  );
+}
+
+async function loadUserLibraryState(user = state.currentUser) {
+  const uid = String(user?.uid || "").trim();
+  if (!uid) {
+    state.savedIds = new Set();
+    state.completedIds = new Set();
+    return;
+  }
+
+  const fallbackCompleted = loadSet(userScopedStorageKey(COMPLETED_KEY, uid));
+  const legacyCompleted = fallbackCompleted.size ? fallbackCompleted : loadSet(COMPLETED_KEY);
+  const fallbackSaved = loadLocalSavedIds(uid);
+
+  try {
+    const libraryRef = getUserLibraryDocRef(user);
+    const snapshot = libraryRef ? await getDoc(libraryRef) : null;
+    if (snapshot?.exists()) {
+      const data = snapshot.data() || {};
+      state.completedIds = new Set(
+        Array.isArray(data.completed_video_ids)
+          ? data.completed_video_ids.map((item) => String(item))
+          : []
+      );
+      state.savedIds = new Set(
+        Array.isArray(data.saved_video_ids)
+          ? data.saved_video_ids.map((item) => String(item))
+          : []
+      );
+      cacheUserLibraryState(user);
+      return;
+    }
+  } catch (error) {
+    console.error("Library state load error:", error);
+  }
+
+  state.completedIds = legacyCompleted;
+  state.savedIds = fallbackSaved;
+
+  if (state.completedIds.size || state.savedIds.size) {
+    try {
+      await persistUserLibraryState(user);
+    } catch (error) {
+      console.error("Library state migration error:", error);
+      cacheUserLibraryState(user);
+    }
+  } else {
+    cacheUserLibraryState(user);
+  }
+}
+
+async function persistUserLibraryState(user = state.currentUser) {
+  const libraryRef = getUserLibraryDocRef(user);
+  if (!libraryRef) return;
+
+  cacheUserLibraryState(user);
+  await setDoc(
+    libraryRef,
+    {
+      completed_video_ids: Array.from(state.completedIds),
+      saved_video_ids: Array.from(state.savedIds),
+      updated_at: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
 function loadSet(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -2710,8 +3238,8 @@ function loadHistory() {
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed)
       ? parsed
-          .filter((item) => item && item.id && item.at)
-          .map((item) => ({ id: String(item.id), at: String(item.at) }))
+        .filter((item) => item && item.id && item.at)
+        .map((item) => ({ id: String(item.id), at: String(item.at) }))
       : [];
   } catch {
     return [];

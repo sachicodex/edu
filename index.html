@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -66,15 +66,35 @@
               required
             />
           </div>
-          <div class="row">
+          <div id="auth-password-row" class="row">
             <label class="upload-label" for="auth-password">Password</label>
-            <input
-              id="auth-password"
-              type="password"
-              placeholder="Enter password"
-              minlength="6"
-              required
-            />
+            <div class="password-field">
+              <input
+                id="auth-password"
+                type="password"
+                placeholder="Enter password"
+                minlength="6"
+                required
+              />
+              <button
+                id="auth-password-toggle"
+                class="password-toggle"
+                type="button"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+          <div id="auth-helper-row" class="auth-helper-row hidden">
+            <button
+              id="auth-forgot"
+              type="button"
+              class="link-btn auth-helper-link"
+            >
+              Forgot password?
+            </button>
           </div>
           <button
             id="auth-submit"
@@ -82,6 +102,13 @@
             class="primary-btn auth-submit"
           >
             Create account
+          </button>
+          <button
+            id="auth-secondary"
+            type="button"
+            class="soft-btn auth-secondary hidden"
+          >
+            Resend verification email
           </button>
         </form>
 
@@ -151,10 +178,10 @@
 
         <div class="sidebar-foot">
           <div class="profile-card">
-            <div id="profile-avatar" class="avatar">SC</div>
+            <div id="profile-avatar" class="avatar">U</div>
             <div class="profile-meta">
-              <div id="profile-name" class="name">Sachi</div>
-              <div id="profile-role" class="role">hello@example.com</div>
+              <div id="profile-name" class="name">User</div>
+              <div id="profile-role" class="role">email@example.com</div>
             </div>
             <button
               id="logout-btn"
