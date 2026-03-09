@@ -1285,22 +1285,35 @@ function getBaseFilteredVideos() {
   return SEARCH.sortVideos(filtered, state.sortBy);
 }
 
+function sortCompletedLast(videos) {
+  return [...(videos || [])].sort((a, b) => {
+    const aDone = state.completedIds.has(String(a?.id || ""));
+    const bDone = state.completedIds.has(String(b?.id || ""));
+    if (aDone === bDone) return 0;
+    return aDone ? 1 : -1;
+  });
+}
+
 function getRouteVideos() {
   const filtered = getBaseFilteredVideos();
 
   if (state.route === "saved") {
-    return filtered.filter((video) => state.savedIds.has(String(video.id)));
+    return sortCompletedLast(
+      filtered.filter((video) => state.savedIds.has(String(video.id)))
+    );
   }
 
   if (state.route === "overview") {
-    const ranked = filtered
-      .map((video) => ({ video, score: overviewScore(video) }))
-      .sort((a, b) => b.score - a.score)
-      .map((row) => row.video);
+    const ranked = sortCompletedLast(
+      filtered
+        .map((video) => ({ video, score: overviewScore(video) }))
+        .sort((a, b) => b.score - a.score)
+        .map((row) => row.video)
+    );
     return ranked.slice(0, 9);
   }
 
-  return filtered;
+  return sortCompletedLast(filtered);
 }
 
 function renderVideoRoute() {
@@ -1365,7 +1378,9 @@ function renderPlaylistsRoute() {
   }
   dom.playlistGrid?.classList.toggle("list-view", state.viewMode === "list");
   if (dom.playlistGrid) {
-    dom.playlistGrid.innerHTML = selected.items.map((video) => videoCard(video)).join("");
+    dom.playlistGrid.innerHTML = sortCompletedLast(selected.items)
+      .map((video) => videoCard(video))
+      .join("");
   }
   if (dom.contentMeta) {
     dom.contentMeta.textContent = `${selected.items.length} video${selected.items.length === 1 ? "" : "s"} in playlist`;
@@ -2137,6 +2152,13 @@ function setPausedOverlayVisible(controls, visible) {
   controls.shell.classList.toggle("is-paused", Boolean(visible));
 }
 
+function finalizeSeekInteraction(controls, isPlaying) {
+  if (controls?.seek && typeof controls.seek.blur === "function") {
+    controls.seek.blur();
+  }
+  scheduleCustomControlsHide(controls, Boolean(isPlaying), 5000);
+}
+
 function isCoarsePointerDevice() {
   return Boolean(window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches);
 }
@@ -2494,6 +2516,10 @@ function setupYouTubeCustomPlayer({ videoId, title }) {
           controls.seek?.addEventListener("change", () => {
             isScrubbing = true;
             commitSeek();
+            const stateCode = modalPlayer.getPlayerState?.();
+            const isPlaying =
+              stateCode === YT.PlayerState.PLAYING || stateCode === YT.PlayerState.BUFFERING;
+            finalizeSeekInteraction(controls, isPlaying);
           });
 
           controls.volume?.addEventListener("input", () => {
@@ -2632,6 +2658,7 @@ function setupHtml5CustomPlayer() {
 
   controls.seek?.addEventListener("change", () => {
     commitSeek();
+    finalizeSeekInteraction(controls, !player.paused);
   });
 
   controls.volume?.addEventListener("input", () => {

@@ -1278,9 +1278,9 @@ h1 {
   left: 8px;
   top: auto;
   bottom: 8px;
-  background: color-mix(in srgb, var(--success) 26%, transparent);
-  border: 1px solid color-mix(in srgb, var(--success) 60%, transparent);
-  color: var(--surface);
+  background: color-mix(in srgb, var(--surface-secondary) 78%, transparent);
+  border: 2px solid var(--success);
+  color: var(--success);
 }
 
 .card-body {
