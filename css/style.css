@@ -1,5 +1,4 @@
 ﻿:root {
-  /* === Core Surfaces === */
   --bg: #020202; /* Deep slate background */
   --surface: #161616; /* Main cards / containers */
   --surface-secondary: #2a2a2a; /* Section blocks / panels */
@@ -30,15 +29,6 @@
   --field-text: var(--text-primary);
   --field-label: var(--text-tertiary);
   --field-label-active: var(--text-tertiary);
-
-  /* === Radius & Shadow === */
-  --radius: 14px;
-  --radius-lg: 18px;
-  --radius-md: 12px;
-  --radius-sm: 10px;
-
-  --shadow-soft: 0 10px 30px rgb(0 0 0 / 0.35);
-  --shadow-strong: 0 20px 60px rgb(0 0 0 / 0.55);
 }
 
 * {
@@ -285,7 +275,7 @@ select:invalid {
 
 .auth-form input {
   min-height: 49px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   border: 1px solid
     color-mix(in srgb, var(--field-border-focus) 28%, var(--field-border) 72%);
   background: linear-gradient(
@@ -668,7 +658,7 @@ select:invalid {
   border: 0;
   background: transparent;
   color: var(--text-secondary);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -704,7 +694,7 @@ select:invalid {
 
 .profile-card {
   padding: 12px;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
 
   background: linear-gradient(
     to bottom,
@@ -844,7 +834,7 @@ select:invalid {
 .icon-btn,
 .soft-select,
 .danger-btn {
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   border: 1px solid transparent;
   min-height: 42px;
 }
@@ -1000,7 +990,7 @@ select:invalid {
 
 .hero-panel {
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   padding: clamp(16px, 2.4vw, 24px);
   background: var(--surface);
   display: grid;
@@ -1053,7 +1043,7 @@ h1 {
 }
 
 .hero-kpis article {
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   padding: 12px;
 
   background: linear-gradient(
@@ -1082,7 +1072,7 @@ h1 {
   display: grid;
   gap: 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   background: var(--surface);
   padding: 14px;
 }
@@ -1147,10 +1137,10 @@ h1 {
 .playlist-card,
 .analytics-card,
 .empty-card {
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   border: 1px solid var(--border);
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
 }
 
 .video-card {
@@ -1399,7 +1389,7 @@ h1 {
 
 .playlist-detail {
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   padding: 14px;
   display: grid;
@@ -1447,10 +1437,10 @@ h1 {
   width: min(820px, 100%);
   max-height: calc(100vh - 30px);
   overflow: auto;
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   border: 1px solid var(--border);
   background: var(--surface);
-  box-shadow: var(--shadow-strong);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.55);
   padding: 16px;
 }
 
@@ -1481,7 +1471,7 @@ h1 {
 
 .video-frame-wrap {
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   overflow: hidden;
   background: var(--bg);
   position: relative;
@@ -1886,7 +1876,7 @@ h1 {
 .edit-form textarea,
 .edit-form select {
   min-height: 48px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   border: 1px solid
     color-mix(in srgb, var(--field-border-focus) 28%, var(--field-border) 72%);
   background: linear-gradient(
@@ -1976,7 +1966,7 @@ h1 {
   width: 100%;
   min-height: 48px;
   padding: 0 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 1rem;
 }
 
@@ -1986,7 +1976,7 @@ h1 {
   right: 0;
   min-width: 100%;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   background: linear-gradient(
     to bottom,
     var(--surface-secondary),
@@ -2141,7 +2131,7 @@ h1 {
   overflow: auto;
   background: color-mix(in srgb, var(--surface) 94%, #000000 6%);
   border: 1px solid color-mix(in srgb, var(--border) 75%, var(--border) 25%);
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   padding: 22px;
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.55),
@@ -2234,7 +2224,7 @@ h1 {
 .upload-form input,
 .upload-form textarea {
   min-height: 48px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   border: 1px solid
     color-mix(in srgb, var(--field-border-focus) 28%, var(--field-border) 72%);
   background: linear-gradient(
@@ -2337,7 +2327,7 @@ h1 {
   justify-content: center;
   gap: 8px;
   min-height: 44px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 80%, transparent);
   color: var(--text-primary);
@@ -2404,7 +2394,7 @@ h1 {
     transition: transform 0.24s ease;
     width: min(90vw, 360px);
     border-right: 1px solid var(--border);
-    box-shadow: var(--shadow-strong);
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.55);
   }
 
   .sidebar.open {
